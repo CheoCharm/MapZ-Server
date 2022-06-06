@@ -1,13 +1,12 @@
 package com.cheocharm.MapZ.agreement;
 
-import com.cheocharm.MapZ.common.BaseEntity;
+import com.cheocharm.MapZ.common.domain.BaseEntity;
 import com.cheocharm.MapZ.user.domain.UserEntity;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
-import javax.validation.OverridesAttribute;
 
 @Getter
 @AttributeOverride(name = "id", column = @Column(name = "agreement_id"))
