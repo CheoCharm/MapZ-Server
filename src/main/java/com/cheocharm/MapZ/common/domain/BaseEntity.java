@@ -1,4 +1,4 @@
-package com.cheocharm.MapZ.common;
+package com.cheocharm.MapZ.common.domain;
 
 import lombok.Getter;
 import org.springframework.data.annotation.CreatedDate;
