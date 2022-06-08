@@ -15,11 +15,11 @@ import javax.persistence.*;
 @Entity
 public class UserGroupEntity extends BaseEntity {
 
-    @Column(name = "group_id")
+    @JoinColumn(name = "group_id")
     @ManyToOne(fetch = FetchType.LAZY)
     private GroupEntity groupEntity;
 
-    @Column(name = "member_id")
+    @JoinColumn(name = "member_id")
     @ManyToOne(fetch = FetchType.LAZY)
     private UserEntity userEntity;
 
