@@ -24,11 +24,11 @@ public class DiaryEntity extends BaseEntity {
 
     private Double longitude;
 
-    @Column(name = "member_id")
+    @JoinColumn(name = "member_id")
     @ManyToOne(fetch = FetchType.LAZY)
     private UserEntity userEntity;
 
-    @Column(name = "group_id")
+    @JoinColumn(name = "group_id")
     @ManyToOne(fetch = FetchType.LAZY)
     private GroupEntity groupEntity;
 

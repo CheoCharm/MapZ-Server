@@ -15,7 +15,7 @@ import javax.persistence.Entity;
 @Entity
 public class GroupEntity extends BaseEntity {
 
-    @Column(name = "group_name")
+    @Column(name = "group_name", unique = true)
     private String groupName;
 
     private String bio;

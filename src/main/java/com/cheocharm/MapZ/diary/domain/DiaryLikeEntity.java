@@ -14,11 +14,11 @@ import javax.persistence.*;
 @Entity
 public class DiaryLikeEntity extends BaseEntity {
 
-    @Column(name = "diary_id")
+    @JoinColumn(name = "diary_id")
     @ManyToOne(fetch = FetchType.LAZY)
     private DiaryEntity diaryEntity;
 
-    @Column(name = "member_id")
+    @JoinColumn(name = "member_id")
     @ManyToOne(fetch = FetchType.LAZY)
     private UserEntity userEntity;
 }

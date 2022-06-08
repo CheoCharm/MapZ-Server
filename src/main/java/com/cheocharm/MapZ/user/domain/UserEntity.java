@@ -15,8 +15,10 @@ import javax.persistence.Entity;
 @Entity
 public class UserEntity extends BaseEntity {
 
+    @Column(unique = true)
     private String email;
 
+    @Column(unique = true)
     private String username;
 
     private String password;

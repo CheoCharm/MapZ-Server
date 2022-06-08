@@ -13,7 +13,7 @@ import javax.persistence.*;
 @Entity
 public class DiaryImageEntity extends BaseEntity {
 
-    @Column(name = "diary_id")
+    @JoinColumn(name = "diary_id")
     @ManyToOne(fetch = FetchType.LAZY)
     private DiaryEntity diaryEntity;
 
