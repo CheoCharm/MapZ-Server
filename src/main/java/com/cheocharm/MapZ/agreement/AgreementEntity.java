@@ -9,11 +9,12 @@ import lombok.NoArgsConstructor;
 import javax.persistence.*;
 
 @Getter
-@AttributeOverride(name = "id", column = @Column(name = "agreement_id"))
+@Table(name = "Agreement")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
 public class AgreementEntity extends BaseEntity {
 
+    @JoinColumn(name = "user_id")
     @OneToOne(fetch = FetchType.LAZY)
     private UserEntity userEntity;
 

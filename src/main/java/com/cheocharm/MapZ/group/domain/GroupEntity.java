@@ -5,12 +5,12 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import javax.persistence.AttributeOverride;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.Table;
 
 @Getter
-@AttributeOverride(name = "id", column = @Column(name = "group_id"))
+@Table(name = "Groups")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
 public class GroupEntity extends BaseEntity {
