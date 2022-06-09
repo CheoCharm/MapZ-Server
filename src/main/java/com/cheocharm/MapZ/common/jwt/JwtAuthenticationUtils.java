@@ -31,8 +31,7 @@ public class JwtAuthenticationUtils {
             Jwts.parserBuilder()
                     .setSigningKey(jwtCommonUtils.getKey().getBytes(StandardCharsets.UTF_8))
                     .build()
-                    .parseClaimsJws(token)
-                    .getBody();
+                    .parseClaimsJws(token);
 
             return true;
         } catch (RuntimeException e) {
