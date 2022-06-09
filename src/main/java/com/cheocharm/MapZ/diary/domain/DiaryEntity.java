@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 import javax.persistence.*;
 
 @Getter
-@AttributeOverride(name = "id", column = @Column(name = "diary_id"))
+@Table(name = "Diary")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
 public class DiaryEntity extends BaseEntity {
@@ -24,7 +24,7 @@ public class DiaryEntity extends BaseEntity {
 
     private Double longitude;
 
-    @JoinColumn(name = "member_id")
+    @JoinColumn(name = "user_id")
     @ManyToOne(fetch = FetchType.LAZY)
     private UserEntity userEntity;
 

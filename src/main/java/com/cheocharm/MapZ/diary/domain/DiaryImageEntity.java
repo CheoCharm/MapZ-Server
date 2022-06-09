@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 import javax.persistence.*;
 
 @Getter
-@AttributeOverride(name = "id", column = @Column(name = "diary_image_id"))
+@Table(name = "Diary_Image")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
 public class DiaryImageEntity extends BaseEntity {
