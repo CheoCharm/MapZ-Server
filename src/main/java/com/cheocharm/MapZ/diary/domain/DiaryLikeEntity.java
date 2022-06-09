@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 import javax.persistence.*;
 
 @Getter
-@AttributeOverride(name = "id", column = @Column(name = "diary_like_id"))
+@Table(name = "Diary_Like")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
 public class DiaryLikeEntity extends BaseEntity {
@@ -18,7 +18,7 @@ public class DiaryLikeEntity extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     private DiaryEntity diaryEntity;
 
-    @JoinColumn(name = "member_id")
+    @JoinColumn(name = "user_id")
     @ManyToOne(fetch = FetchType.LAZY)
     private UserEntity userEntity;
 }
