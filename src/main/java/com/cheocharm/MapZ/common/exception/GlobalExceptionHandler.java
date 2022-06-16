@@ -1,6 +1,7 @@
 package com.cheocharm.MapZ.common.exception;
 
 import com.cheocharm.MapZ.common.CommonResponse;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -13,7 +14,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(Exception.class)
-    protected CommonResponse handleException() {
-        return CommonResponse.fail(ExceptionDetails.INTERNAL_SERVER_ERROR.getStatusCode(), ExceptionDetails.INTERNAL_SERVER_ERROR.getMessage());
+    protected CommonResponse handleException(Exception ex) {
+        return CommonResponse.fail(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage());
     }
 }
