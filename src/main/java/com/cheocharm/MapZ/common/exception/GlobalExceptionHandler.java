@@ -13,7 +13,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(Exception.class)
-    protected CommonResponse handleException(CustomException ex) {
-        return CommonResponse.fail(ex.getStatusCode(), ex.getMessage());
+    protected CommonResponse handleException() {
+        return CommonResponse.fail(ExceptionDetails.INTERNAL_SERVER_ERROR.getStatusCode(), ExceptionDetails.INTERNAL_SERVER_ERROR.getMessage());
     }
 }
