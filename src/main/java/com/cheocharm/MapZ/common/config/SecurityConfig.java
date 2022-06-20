@@ -19,9 +19,15 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private final JwtAuthenticationUtils jwtAuthenticationUtils;
     private final AuthenticationEntryPointCustom authenticationEntryPointCustom;
 
+    private static final String[] IGNORE_URI = {
+            "/v3/api-docs/**",
+            "/mapz.html/**",
+            "/swagger-ui/**"
+    };
+
     @Override
     public void configure(WebSecurity web) throws Exception {
-
+        web.ignoring().antMatchers(IGNORE_URI);
     }
 
     @Override
@@ -30,6 +36,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .httpBasic().disable()
                 .csrf().disable()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                .and()
+                .authorizeRequests()
+                    .antMatchers("/mapz.html/**").permitAll()
+                    .antMatchers("/swagger-ui/**").permitAll()
                 .and()
                 .authorizeRequests()
                     .anyRequest().hasAuthority("ROLE_USER")
