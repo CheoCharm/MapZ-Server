@@ -1,6 +1,7 @@
 package com.cheocharm.MapZ.common.jwt;
 
 import com.cheocharm.MapZ.user.domain.UserEntity;
+import com.cheocharm.MapZ.user.domain.dto.TokenPairResponseDto;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
@@ -57,6 +58,12 @@ public class JwtCreateUtils {
                 .compact();
     }
 
+    public TokenPairResponseDto createTokenPair(String email, String username) {
+        return TokenPairResponseDto.builder()
+                .accessToken(createAccessToken(email, username))
+                .refreshToken(createRefreshToken(email, username))
+                .build();
+    }
 
     private Map<String, Object> createHeader() {
         HashMap<String, Object> headerMap = new HashMap<>();
@@ -72,4 +79,8 @@ public class JwtCreateUtils {
     }
 
 
+    public TokenPairResponseDto createNullToken() {
+        return TokenPairResponseDto.builder()
+                .build();
+    }
 }
