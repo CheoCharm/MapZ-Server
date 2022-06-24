@@ -31,7 +31,7 @@ public class UserController {
 
     @Operation(description = "구글로그인")
     @PostMapping("/login")
-    public CommonResponse<TokenPairResponseDto> googleLogin(@Parameter @RequestBody UserLoginDto userLoginDto) {
+    public CommonResponse<TokenPairResponseDto> googleLogin(@Parameter @RequestBody @Valid UserLoginDto userLoginDto) {
         return CommonResponse.success(userService.loginGoogle(userLoginDto));
     }
 
