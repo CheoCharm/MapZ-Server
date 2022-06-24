@@ -42,7 +42,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                     .antMatchers("/swagger-ui/**").permitAll()
                 .and()
                 .authorizeRequests()
-                    .anyRequest().hasAuthority("ROLE_USER")
+                //로그인 예외
+                    .antMatchers("/board/**").hasAuthority("ROLE_USER")
                 .and()
                 .exceptionHandling().authenticationEntryPoint(authenticationEntryPointCustom);
 
