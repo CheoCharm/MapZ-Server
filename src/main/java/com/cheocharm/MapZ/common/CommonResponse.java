@@ -16,6 +16,7 @@ public class CommonResponse<T> {
     public static <T> CommonResponse<T> success(T data) {
         return CommonResponse.<T>builder()
                 .statusCode(HttpStatus.OK.value())
+                .customCode("0000")
                 .message(HttpStatus.OK.toString())
                 .data(data)
                 .build();
@@ -24,6 +25,7 @@ public class CommonResponse<T> {
     public static <T> CommonResponse<T> success() {
         return CommonResponse.<T>builder()
                 .statusCode(HttpStatus.OK.value())
+                .customCode("0000")
                 .message(HttpStatus.OK.toString())
                 .data(null)
                 .build();
