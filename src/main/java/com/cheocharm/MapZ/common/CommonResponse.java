@@ -1,18 +1,21 @@
 package com.cheocharm.MapZ.common;
 
 import lombok.Builder;
+import lombok.Getter;
 import org.springframework.http.HttpStatus;
 
+@Getter
 @Builder
 public class CommonResponse<T> {
 
-    private int code;
+    private int statusCode;
+    private String customCode;
     private T data;
     private String message;
 
     public static <T> CommonResponse<T> success(T data) {
         return CommonResponse.<T>builder()
-                .code(HttpStatus.OK.value())
+                .statusCode(HttpStatus.OK.value())
                 .message(HttpStatus.OK.toString())
                 .data(data)
                 .build();
@@ -20,15 +23,16 @@ public class CommonResponse<T> {
 
     public static <T> CommonResponse<T> success() {
         return CommonResponse.<T>builder()
-                .code(HttpStatus.OK.value())
+                .statusCode(HttpStatus.OK.value())
                 .message(HttpStatus.OK.toString())
                 .data(null)
                 .build();
     }
 
-    public static <T extends HttpStatus> CommonResponse<T> fail(T status, String message) {
+    public static <T extends HttpStatus> CommonResponse<T> fail(T statusCode, String customCdoe, String message) {
         return CommonResponse.<T>builder()
-                .code(status.value())
+                .statusCode(statusCode.value())
+                .customCode(customCdoe)
                 .message(message)
                 .data(null)
                 .build();
@@ -36,7 +40,7 @@ public class CommonResponse<T> {
 
     public static <T> CommonResponse<T> expiredToken() {
         return CommonResponse.<T>builder()
-                .code(HttpStatus.UNAUTHORIZED.value())
+                .statusCode(HttpStatus.UNAUTHORIZED.value())
                 .message(HttpStatus.UNAUTHORIZED.toString())
                 .data(null)
                 .build();
