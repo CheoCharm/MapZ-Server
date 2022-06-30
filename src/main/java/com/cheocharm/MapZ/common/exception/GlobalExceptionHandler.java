@@ -15,13 +15,13 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(NoHandlerFoundException.class)
-    protected CommonResponse handleNoHandlerFoundException(NoHandlerFoundException exception) {
+    protected CommonResponse handleNoHandlerFoundException() {
         ExceptionDetails exceptionDetails = ExceptionDetails.NOT_FOUND_API;
         return CommonResponse.fail(exceptionDetails.getStatusCode(), exceptionDetails.getCustomCode(), exceptionDetails.getMessage());
     }
 
     @ExceptionHandler(Exception.class)
-    protected CommonResponse handleException(Exception ex) {
+    protected CommonResponse handleException() {
         ExceptionDetails exceptionDetails = ExceptionDetails.INTERNAL_SERVER_ERROR;
         return CommonResponse.fail(exceptionDetails.getStatusCode(), exceptionDetails.getCustomCode(), exceptionDetails.getMessage());
     }
