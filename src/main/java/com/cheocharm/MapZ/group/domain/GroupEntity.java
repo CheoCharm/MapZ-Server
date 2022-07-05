@@ -2,6 +2,7 @@ package com.cheocharm.MapZ.group.domain;
 
 import com.cheocharm.MapZ.common.domain.BaseEntity;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -25,4 +26,11 @@ public class GroupEntity extends BaseEntity {
 
     private String groupUUID;
 
+    @Builder
+    public GroupEntity(String groupName, String bio, String groupImageUrl, String groupUUID) {
+        this.groupName = groupName;
+        this.bio = bio;
+        this.groupImageUrl = groupImageUrl;
+        this.groupUUID = groupUUID;
+    }
 }
