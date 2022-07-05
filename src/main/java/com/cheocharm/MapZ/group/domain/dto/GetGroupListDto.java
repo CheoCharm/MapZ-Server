@@ -5,7 +5,7 @@ import lombok.Builder;
 import java.util.List;
 
 @Builder
-public class GroupListDto {
+public class GetGroupListDto {
 
     String groupImageUrl;
     int count;

@@ -2,7 +2,7 @@ package com.cheocharm.MapZ.group.domain;
 
 import com.cheocharm.MapZ.common.CommonResponse;
 import com.cheocharm.MapZ.group.domain.dto.CreateGroupDto;
-import com.cheocharm.MapZ.group.domain.dto.GroupListDto;
+import com.cheocharm.MapZ.group.domain.dto.GetGroupListDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
@@ -32,7 +32,7 @@ public class GroupController {
     @Operation(description = "그룹 선택을 위한 그룹 조회")
     @Parameter(name = "accessToken", in = ParameterIn.HEADER, required = true)
     @GetMapping
-    public CommonResponse<List<GroupListDto>> getGroup() {
+    public CommonResponse<List<GetGroupListDto>> getGroup() {
         return CommonResponse.success(groupService.getGroup());
     }
 }

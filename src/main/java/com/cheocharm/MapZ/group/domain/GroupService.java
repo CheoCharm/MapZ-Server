@@ -2,7 +2,7 @@ package com.cheocharm.MapZ.group.domain;
 
 import com.cheocharm.MapZ.common.interceptor.UserThreadLocal;
 import com.cheocharm.MapZ.group.domain.dto.CreateGroupDto;
-import com.cheocharm.MapZ.group.domain.dto.GroupListDto;
+import com.cheocharm.MapZ.group.domain.dto.GetGroupListDto;
 import com.cheocharm.MapZ.group.domain.repository.GroupRepository;
 import com.cheocharm.MapZ.user.domain.UserEntity;
 import com.cheocharm.MapZ.usergroup.InvitationStatus;
@@ -47,14 +47,14 @@ public class GroupService {
         groupRepository.save(groupEntity);
     }
 
-    public List<GroupListDto> getGroup() {
+    public List<GetGroupListDto> getGroup() {
         UserEntity userEntity = UserThreadLocal.get();
 
         List<UserGroupEntity> userGroupEntityList = userGroupRepository.fetchJoinByUserEntity(userEntity);
 
         return userGroupEntityList.stream()
                 .map(userGroupEntity ->
-                    GroupListDto.builder()
+                    GetGroupListDto.builder()
                             .groupImageUrl(userGroupEntity.getGroupEntity().getGroupImageUrl())
                             .userImageUrlList(userGroupRepository.findUserImage(userGroupEntity.getGroupEntity()))
                             .count(getCount(userGroupEntity))
