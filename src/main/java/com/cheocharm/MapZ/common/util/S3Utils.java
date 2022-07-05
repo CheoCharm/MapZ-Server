@@ -6,6 +6,7 @@ import com.cheocharm.MapZ.common.exception.S3.FailDeleteFileException;
 import com.cheocharm.MapZ.group.domain.GroupEntity;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -14,9 +15,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Optional;
 
-@Service
 @RequiredArgsConstructor
-public class S3Service {
+@Component
+public class S3Utils {
 
     private final AmazonS3Client amazonS3Client;
     private final String USER = "Mapz/User/";
