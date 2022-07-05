@@ -34,6 +34,7 @@ public class UserGroupRepositoryCustomImpl implements UserGroupRepositoryCustom 
                 .select(userGroupEntity.userEntity.userImageUrl)
                 .from(userGroupEntity)
                 .where(groupEq(groupEntity))
+                .limit(4)
                 .fetch();
     }
 
