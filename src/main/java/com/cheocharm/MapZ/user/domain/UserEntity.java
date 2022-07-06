@@ -30,6 +30,7 @@ public class UserEntity extends BaseEntity {
 
     private String fcmToken;
 
+    @Column(length = 600)
     private String refreshToken;
 
     @Builder
