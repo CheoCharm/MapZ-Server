@@ -4,6 +4,7 @@ import com.cheocharm.MapZ.common.domain.BaseEntity;
 import com.cheocharm.MapZ.group.domain.GroupEntity;
 import com.cheocharm.MapZ.user.domain.UserEntity;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -29,4 +30,12 @@ public class UserGroupEntity extends BaseEntity {
 
     @Enumerated(value = EnumType.STRING)
     private UserRole userRole;
+
+    @Builder
+    public UserGroupEntity(GroupEntity groupEntity, UserEntity userEntity, InvitationStatus invitationStatus, UserRole userRole) {
+        this.groupEntity = groupEntity;
+        this.userEntity = userEntity;
+        this.invitationStatus = invitationStatus;
+        this.userRole = userRole;
+    }
 }

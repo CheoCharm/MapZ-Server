@@ -55,6 +55,10 @@ tasks.named('test') {
 	useJUnitPlatform()
 }
 
+tasks.named('jar') {
+	enabled = false
+}
+
 def querydslDir = "$buildDir/generated/querydsl"
 querydsl {
 	jpa = true
