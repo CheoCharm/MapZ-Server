@@ -18,11 +18,12 @@ public enum ExceptionDetails {
 
     // 사용자 관련 에러
     INVALID_TOKEN(HttpStatus.BAD_REQUEST, "2001", "유효하지 않은 JWT 입니다. 토큰을 다시 확인해주세요"),
-    DUPLICATED_EMAIL(HttpStatus.BAD_REQUEST, "2002", "중복된 이메일입니다."),
-    DUPLICATED_USERNAME(HttpStatus.BAD_REQUEST, "2003", "중복된 닉네임입니다."),
-    NOT_FOUND_USER(HttpStatus.NOT_FOUND, "2004", "가입된 사용자가 아닙니다."),
-    WRONG_PASSWORD(HttpStatus.BAD_REQUEST, "2005", "비밀번호가 일치하지 않습니다."),
-    INVALID_USER_INFO(HttpStatus.BAD_REQUEST, "2006", "유효성 검사 통과에 실패하였습니다");
+    EXPIRED_TOKEN(HttpStatus.BAD_REQUEST, "2002", "만료된 JWT 입니다."),
+    DUPLICATED_EMAIL(HttpStatus.BAD_REQUEST, "2003", "중복된 이메일입니다."),
+    DUPLICATED_USERNAME(HttpStatus.BAD_REQUEST, "2004", "중복된 닉네임입니다."),
+    NOT_FOUND_USER(HttpStatus.NOT_FOUND, "2005", "가입된 사용자가 아닙니다."),
+    WRONG_PASSWORD(HttpStatus.BAD_REQUEST, "2006", "비밀번호가 일치하지 않습니다."),
+    INVALID_USER_INFO(HttpStatus.BAD_REQUEST, "2007", "유효성 검사 통과에 실패하였습니다");
 
     // 비즈니스 로직 에러
 

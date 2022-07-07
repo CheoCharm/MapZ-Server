@@ -1,5 +1,6 @@
 package com.cheocharm.MapZ.user.domain;
 
+import com.cheocharm.MapZ.common.exception.jwt.InvalidJwtException;
 import com.cheocharm.MapZ.common.exception.user.*;
 import com.cheocharm.MapZ.common.jwt.JwtCreateUtils;
 import com.cheocharm.MapZ.common.oauth.OauthApi;
@@ -165,7 +166,7 @@ public class UserService {
     public String sendEmail(CheckEmailPasswordDto checkEmailPasswordDto) {
         //이메일 중복 확인
         userRepository.findByEmail(checkEmailPasswordDto.getEmail()).ifPresent(userEntity -> {
-                    throw new DuplicatedEmailException();
+            throw new DuplicatedEmailException();
         });
 
         final String randomNumber = randomUtils.makeRandomNumber();

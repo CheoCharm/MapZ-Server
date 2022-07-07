@@ -13,6 +13,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.servlet.HandlerExceptionResolver;
 
 @RequiredArgsConstructor
 @Configuration
@@ -21,6 +22,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     private final JwtAuthenticationUtils jwtAuthenticationUtils;
     private final AuthenticationEntryPointCustom authenticationEntryPointCustom;
+    private final HandlerExceptionResolver handlerExceptionResolver;
 
     private static final String[] IGNORE_URI = {
             "/v3/api-docs/**",
@@ -50,7 +52,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .and()
                 .exceptionHandling().authenticationEntryPoint(authenticationEntryPointCustom);
 
-         http.addFilterBefore(new JwtAuthenticationFilter(jwtAuthenticationUtils), UsernamePasswordAuthenticationFilter.class);
+         http.addFilterBefore(new JwtAuthenticationFilter(jwtAuthenticationUtils, handlerExceptionResolver), UsernamePasswordAuthenticationFilter.class);
     }
 
     @Bean
