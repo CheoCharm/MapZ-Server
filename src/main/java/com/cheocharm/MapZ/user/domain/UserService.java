@@ -6,6 +6,7 @@ import com.cheocharm.MapZ.common.oauth.OauthApi;
 import com.cheocharm.MapZ.common.oauth.OauthUrl;
 import com.cheocharm.MapZ.common.util.ObjectMapperUtils;
 import com.cheocharm.MapZ.common.oauth.GoogleYml;
+import com.cheocharm.MapZ.common.util.RandomUtils;
 import com.cheocharm.MapZ.common.util.S3Utils;
 import com.cheocharm.MapZ.user.domain.dto.*;
 import com.cheocharm.MapZ.user.domain.repository.UserRepository;
@@ -22,7 +23,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.Optional;
-import java.util.Random;
 
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -36,6 +36,7 @@ public class UserService {
     private final OauthApi oauthApi;
     private final PasswordEncoder passwordEncoder;
     private final S3Utils s3Service;
+    private final RandomUtils randomUtils;
     private final JavaMailSender mailSender;
     private final String GMAIL_ADDRESS ="mapz.official@gmail.com";
 
@@ -111,10 +112,9 @@ public class UserService {
     @Transactional
     public TokenPairResponseDto signUpMapZ(MapZSignUpDto mapZSignUpDto, MultipartFile multipartFile) throws IOException {
         //닉네임 중복 확인
-        Optional<UserEntity> findUsername = userRepository.findByUsername(mapZSignUpDto.getUsername());
-        if (findUsername.isPresent()) {
+        userRepository.findByUsername(mapZSignUpDto.getUsername()).ifPresent(userEntity -> {
             throw new DuplicatedUsernameException();
-        }
+        });
 
         TokenPairResponseDto tokenPair = jwtCreateUtils.createTokenPair(mapZSignUpDto.getEmail(), mapZSignUpDto.getUsername());
 
@@ -128,34 +128,28 @@ public class UserService {
                             .refreshToken(tokenPair.getRefreshToken())
                             .build()
             );
+
+            return tokenPair;
         }
 
-        else {
-            userRepository.save(
-                    UserEntity.builder()
-                            .email(mapZSignUpDto.getEmail())
-                            .username(mapZSignUpDto.getUsername())
-                            .password(passwordEncoder.encode(mapZSignUpDto.getPassword()))
-                            .userImageUrl(s3Service.uploadUserImage(multipartFile, mapZSignUpDto.getUsername()))
-                            .bio("자기소개를 입력해주세요")
-                            .refreshToken(tokenPair.getRefreshToken())
-                            .build()
-            );
-        }
+        userRepository.save(
+                UserEntity.builder()
+                        .email(mapZSignUpDto.getEmail())
+                        .username(mapZSignUpDto.getUsername())
+                        .password(passwordEncoder.encode(mapZSignUpDto.getPassword()))
+                        .userImageUrl(s3Service.uploadUserImage(multipartFile, mapZSignUpDto.getUsername()))
+                        .bio("자기소개를 입력해주세요")
+                        .refreshToken(tokenPair.getRefreshToken())
+                        .build()
+        );
 
         return tokenPair;
     }
 
     @Transactional
     public TokenPairResponseDto signInMapZ(MapZSignInDto mapZSignInDto) {
-        Optional<UserEntity> findUser = userRepository.findByEmail(mapZSignInDto.getEmail());
-
-        //가입된 사용자인지 확인
-        if (findUser.isEmpty()) {
-            throw new NotFoundUserException();
-        }
-
-        final UserEntity userEntity = findUser.get();
+        final UserEntity userEntity = userRepository.findByEmail(mapZSignInDto.getEmail())
+                .orElseThrow(NotFoundUserException::new);
 
         //비밀번호 일치 여부 확인
         if (!passwordEncoder.matches(mapZSignInDto.getPassword(), userEntity.getPassword())) {
@@ -170,12 +164,11 @@ public class UserService {
 
     public String sendEmail(CheckEmailPasswordDto checkEmailPasswordDto) {
         //이메일 중복 확인
-        Optional<UserEntity> findEmail = userRepository.findByEmail(checkEmailPasswordDto.getEmail());
-        if (findEmail.isPresent()) {
-            throw new DuplicatedEmailException();
-        }
+        userRepository.findByEmail(checkEmailPasswordDto.getEmail()).ifPresent(userEntity -> {
+                    throw new DuplicatedEmailException();
+        });
 
-        final String randomNumber = makeRandomNumber();
+        final String randomNumber = randomUtils.makeRandomNumber();
         final String MAIL_TITLE = String.format("[MapZ] 이메일 인증을 진행해주세요. <%s>", randomNumber);
         final String MAIL_CONTEXT = String.format("안녕하세요. MapZ입니다.\n\n이메일 인증을 위해 아래 숫자를 MapZ에 입력해주세요.\n인증번호: %s\n\n궁금한 사항이 있으시면 mapz.official@gmail.com으로 문의주시길 바랍니다.\n감사합니다:)", randomNumber);
 
@@ -191,14 +184,4 @@ public class UserService {
 
     }
 
-    private String makeRandomNumber() {
-        Random random = new Random();
-        StringBuilder sb = new StringBuilder();
-
-        for (int i = 0; i < 4; i++) {
-            sb.append(random.nextInt(10));
-        }
-
-        return sb.toString();
-    }
 }
