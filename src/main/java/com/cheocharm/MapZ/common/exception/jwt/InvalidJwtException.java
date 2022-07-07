@@ -1,4 +1,4 @@
-package com.cheocharm.MapZ.common.exception.user;
+package com.cheocharm.MapZ.common.exception.jwt;
 
 import com.cheocharm.MapZ.common.exception.CustomException;
 import com.cheocharm.MapZ.common.exception.ExceptionDetails;
