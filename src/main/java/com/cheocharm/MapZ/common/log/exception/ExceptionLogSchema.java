@@ -1,7 +1,7 @@
 package com.cheocharm.MapZ.common.log.exception;
 
 import com.cheocharm.MapZ.common.CommonResponse;
-import com.cheocharm.MapZ.common.exception.FailConvertException;
+import com.cheocharm.MapZ.common.exception.common.FailConvertToJsonException;
 import com.cheocharm.MapZ.common.util.ObjectMapperUtils;
 import lombok.Builder;
 import lombok.Getter;
@@ -34,7 +34,7 @@ public class ExceptionLogSchema {
         try {
             json = ObjectMapperUtils.getObjectMapper().writeValueAsString(this);
         } catch (IOException e) {
-            throw new FailConvertException();
+            throw new FailConvertToJsonException();
         }
 
         return json;
