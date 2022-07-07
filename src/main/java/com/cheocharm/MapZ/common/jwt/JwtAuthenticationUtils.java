@@ -1,6 +1,12 @@
 package com.cheocharm.MapZ.common.jwt;
 
+import com.cheocharm.MapZ.common.exception.jwt.InvalidJwtException;
+import com.cheocharm.MapZ.common.exception.jwt.JwtExpiredException;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.UnsupportedJwtException;
+import io.jsonwebtoken.security.SignatureException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -34,8 +40,10 @@ public class JwtAuthenticationUtils {
                     .parseClaimsJws(token);
 
             return true;
-        } catch (RuntimeException e) {
-            throw new RuntimeException();
+        } catch (SignatureException | MalformedJwtException | IllegalArgumentException | UnsupportedJwtException e) {
+            throw new InvalidJwtException();
+        } catch (ExpiredJwtException e) {
+            throw new JwtExpiredException();
         }
     }
 
