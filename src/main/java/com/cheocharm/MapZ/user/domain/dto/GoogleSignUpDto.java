@@ -5,7 +5,10 @@ import lombok.Getter;
 import javax.validation.constraints.NotNull;
 
 @Getter
-public class UserLoginDto {
+public class GoogleSignUpDto {
+
+    @NotNull
+    private String username;
 
     @NotNull
     private String idToken;
