@@ -14,13 +14,14 @@ echo ">>docker login succeed"
 sudo docker build -t ${DOCKER_IMAGE} --build-arg SPRING_ENV=${PROFILE} --platform linux/amd64 .
 echo ">>docker build succeed"
 
-sudo docker push ${DOCKER_IMAGE}
-echo ">>docker push succeed"
-
-sudo docker stop $(sudo docker ps -aq)
-sudo docker rm $(sudo docker ps -aq)
-
-sudo docker run -d -p 8080:8080 -e "SPRING_ENV=${PROFILE}" --name=MapZ ${DOCKER_IMAGE}
+# Now no use this command
+#sudo docker push ${DOCKER_IMAGE}
+#echo ">>docker push succeed"
+#
+#sudo docker stop $(sudo docker ps -aq)
+#sudo docker rm $(sudo docker ps -aq)
+#
+#sudo docker run -d -p 8080:8080 -e "SPRING_ENV=${PROFILE}" --name=MapZ ${DOCKER_IMAGE}
 
 
 
