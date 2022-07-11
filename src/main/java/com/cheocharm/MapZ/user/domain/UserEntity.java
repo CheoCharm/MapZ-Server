@@ -47,4 +47,6 @@ public class UserEntity extends BaseEntity {
     public void updateRefreshToken(String refreshToken) {
         this.refreshToken = refreshToken;
     }
+
+    public void updateUserImageUrl(String url) { this.userImageUrl = url; }
 }
