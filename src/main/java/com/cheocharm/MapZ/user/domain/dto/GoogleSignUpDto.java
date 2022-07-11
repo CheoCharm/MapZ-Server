@@ -12,4 +12,6 @@ public class GoogleSignUpDto {
 
     @NotNull
     private String idToken;
+
+    private Boolean pushAgreement;
 }
