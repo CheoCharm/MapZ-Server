@@ -18,5 +18,6 @@ public class MapZSignUpDto {
 
     MultipartFile userImage;
 
+    @NotNull
     Boolean pushAgreement;
 }
