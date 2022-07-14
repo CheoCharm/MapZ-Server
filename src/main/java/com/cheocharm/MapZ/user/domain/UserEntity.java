@@ -49,4 +49,6 @@ public class UserEntity extends BaseEntity {
     }
 
     public void updateUserImageUrl(String url) { this.userImageUrl = url; }
+
+    public void updatePassword(String password) { this.password = password; }
 }
