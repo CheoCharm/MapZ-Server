@@ -26,11 +26,18 @@ public class GroupEntity extends BaseEntity {
 
     private String groupUUID;
 
+    private boolean openStatus;
+
     @Builder
-    public GroupEntity(String groupName, String bio, String groupImageUrl, String groupUUID) {
+    public GroupEntity(String groupName, String bio, String groupImageUrl, String groupUUID, boolean openStatus) {
         this.groupName = groupName;
         this.bio = bio;
         this.groupImageUrl = groupImageUrl;
         this.groupUUID = groupUUID;
+        this.openStatus = openStatus;
+    }
+
+    public void changeGroupStatus(boolean changeStatus) {
+        this.openStatus = changeStatus;
     }
 }
