@@ -13,4 +13,7 @@ public class CreateGroupDto {
 
     @NotNull
     private String bio;
+
+    @NotNull
+    private Boolean changeStatus;
 }
