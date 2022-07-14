@@ -33,9 +33,9 @@ public class UserController {
     }
 
     @Operation(description = "이메일 인증 및 비밀번호 유효성 검사")
-    @PostMapping("/email")
+    @GetMapping("/email")
     public CommonResponse<String> checkValidation(@Parameter @RequestBody @Valid CheckEmailPasswordDto checkEmailPasswordDto) {
-        return CommonResponse.success(userService.sendEmail(checkEmailPasswordDto));
+        return CommonResponse.success(userService.authEmail(checkEmailPasswordDto));
     }
 
     @Operation(description = "맵지회원가입")
@@ -50,6 +50,19 @@ public class UserController {
     @PostMapping("/signin")
     public CommonResponse<TokenPairResponseDto> signIn(@Parameter @RequestBody @Valid MapZSignInDto mapZSignInDto) {
         return CommonResponse.success(userService.signInMapZ(mapZSignInDto));
+    }
+
+    @Operation(description = "비밀번호 찾기")
+    @GetMapping("/password")
+    public CommonResponse<String> findPassword(@Parameter @RequestBody @Valid FindPasswordDto findPasswordDto) {
+        return CommonResponse.success(userService.findPassword(findPasswordDto));
+    }
+
+    @Operation(description = "새 비밀번호 설정")
+    @PatchMapping("/password")
+    public CommonResponse<?> setNewPassword(@Parameter @RequestBody @Valid GetNewPasswordDto getNewPasswordDto) {
+        userService.setNewPassword(getNewPasswordDto);
+        return CommonResponse.success();
     }
 
 }
