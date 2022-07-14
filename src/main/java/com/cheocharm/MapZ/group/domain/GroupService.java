@@ -1,6 +1,9 @@
 package com.cheocharm.MapZ.group.domain;
 
+import com.cheocharm.MapZ.common.exception.group.NotFoundGroupException;
+import com.cheocharm.MapZ.common.exception.user.NoPermissionUserException;
 import com.cheocharm.MapZ.common.interceptor.UserThreadLocal;
+import com.cheocharm.MapZ.group.domain.dto.ChangeGroupStatusDto;
 import com.cheocharm.MapZ.group.domain.dto.CreateGroupDto;
 import com.cheocharm.MapZ.group.domain.dto.GetGroupListDto;
 import com.cheocharm.MapZ.group.domain.repository.GroupRepository;
@@ -34,6 +37,7 @@ public class GroupService {
                 .bio(createGroupDto.getBio())
                 .groupImageUrl("")
                 .groupUUID(UUID.randomUUID().toString())
+                .openStatus(createGroupDto.getChangeStatus())
                 .build();
 
         userGroupRepository.save(
@@ -55,12 +59,31 @@ public class GroupService {
         return userGroupEntityList.stream()
                 .map(userGroupEntity ->
                     GetGroupListDto.builder()
+                            .groupName(userGroupEntity.getGroupEntity().getGroupName())
                             .groupImageUrl(userGroupEntity.getGroupEntity().getGroupImageUrl())
                             .userImageUrlList(userGroupRepository.findUserImage(userGroupEntity.getGroupEntity()))
                             .count(getCount(userGroupEntity))
                             .build()
                 )
                 .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public void changeGroupStatus(ChangeGroupStatusDto changeGroupStatusDto) {
+        final UserEntity userEntity = UserThreadLocal.get();
+
+        List<UserGroupEntity> userGroupEntityList = userGroupRepository.fetchJoinByUserEntity(userEntity);
+        final UserGroupEntity findUserGroup = userGroupEntityList.stream()
+                .filter(userGroupEntity -> userGroupEntity.getGroupEntity()
+                        .getGroupName().equals(changeGroupStatusDto.getGroup()))
+                .findAny()
+                .orElseThrow(NotFoundGroupException::new);
+
+        if (findUserGroup.getUserRole().equals(UserRole.MEMBER)) {
+            throw new NoPermissionUserException();
+        }
+
+        findUserGroup.getGroupEntity().changeGroupStatus(changeGroupStatusDto.getChangeStatus());
     }
 
     private int getCount(UserGroupEntity userGroupEntity) {

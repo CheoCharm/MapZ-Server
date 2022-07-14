@@ -18,7 +18,7 @@ public class AuthInterceptor implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws RuntimeException {
-        String token = request.getHeader("token");
+        String token = request.getHeader("accessToken");
 
         if (token == null) {
             throw new RuntimeException("token value null");
