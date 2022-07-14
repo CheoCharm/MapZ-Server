@@ -167,18 +167,33 @@ public class UserService {
 
     }
 
-    public String sendEmail(CheckEmailPasswordDto checkEmailPasswordDto) {
+    public String authEmail(CheckEmailPasswordDto checkEmailPasswordDto) {
         //이메일 중복 확인
         userRepository.findByEmail(checkEmailPasswordDto.getEmail()).ifPresent(userEntity -> {
             throw new DuplicatedEmailException();
         });
 
+        return sendEmail(checkEmailPasswordDto.getEmail());
+
+    }
+
+    public String findPassword(FindPasswordDto findPasswordDto) {
+        //가입된 사용자인지 확인
+        userRepository.findByEmail(findPasswordDto.getEmail()).orElseThrow(NotFoundUserException::new);
+
+        //소셜 로그인일 경우 예외처리
+
+        return sendEmail(findPasswordDto.getEmail());
+
+    }
+
+    public String sendEmail(String email) {
         final String randomNumber = randomUtils.makeRandomNumber();
         final String MAIL_TITLE = String.format("[MapZ] 이메일 인증을 진행해주세요. <%s>", randomNumber);
         final String MAIL_CONTEXT = String.format("안녕하세요. MapZ입니다.\n\n이메일 인증을 위해 아래 숫자를 MapZ에 입력해주세요.\n인증번호: %s\n\n궁금한 사항이 있으시면 mapz.official@gmail.com으로 문의주시길 바랍니다.\n감사합니다:)", randomNumber);
 
         SimpleMailMessage message = new SimpleMailMessage();
-        message.setTo(checkEmailPasswordDto.getEmail());
+        message.setTo(email);
         message.setFrom(GMAIL_ADDRESS);
         message.setSubject(MAIL_TITLE);
         message.setText(MAIL_CONTEXT);
@@ -186,7 +201,13 @@ public class UserService {
         mailSender.send(message);
 
         return randomNumber;
+    }
 
+    @Transactional
+    public void setNewPassword(GetNewPasswordDto getNewPasswordDto) {
+        UserEntity userEntity = userRepository.findByEmail(getNewPasswordDto.getEmail()).orElseThrow(NotFoundUserException::new);
+        String password = passwordEncoder.encode(getNewPasswordDto.getPassword());
+        userEntity.updatePassword(password);
     }
 
 }
