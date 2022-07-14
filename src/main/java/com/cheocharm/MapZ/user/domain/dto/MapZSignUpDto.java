@@ -13,8 +13,11 @@ public class MapZSignUpDto {
     @NotNull
     String password;
 
-    @NotNull @Pattern(regexp = "^[가-힣a-zA-Z0-9]{2,12}$" , message = "닉네임은 특수문자를 포함하지 않은 2~10자리여야 합니다.")
+    @NotNull @Pattern(regexp = "^[가-힣a-zA-Z0-9]{2,12}$" , message = "닉네임은 특수문자를 포함하지 않은 2~12자리여야 합니다.")
     String username;
 
     MultipartFile userImage;
+
+    @NotNull
+    Boolean pushAgreement;
 }

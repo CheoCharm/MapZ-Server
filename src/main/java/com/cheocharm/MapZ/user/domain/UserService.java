@@ -1,5 +1,7 @@
 package com.cheocharm.MapZ.user.domain;
 
+import com.cheocharm.MapZ.agreement.AgreementEntity;
+import com.cheocharm.MapZ.agreement.repository.AgreementRepository;
 import com.cheocharm.MapZ.common.exception.jwt.InvalidJwtException;
 import com.cheocharm.MapZ.common.exception.user.*;
 import com.cheocharm.MapZ.common.jwt.JwtCreateUtils;
@@ -31,6 +33,7 @@ import java.util.Optional;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final AgreementRepository agreementRepository;
 
     private final JwtCreateUtils jwtCreateUtils;
     private final GoogleYml googleYml;
@@ -63,7 +66,7 @@ public class UserService {
 
         TokenPairResponseDto tokenPair = jwtCreateUtils.createTokenPair(idToken.getEmail(), userSignUpDto.getUsername());
 
-        userRepository.save(
+        UserEntity user = userRepository.save(
                 UserEntity.builder()
                         .email(idToken.getEmail())
                         .username(userSignUpDto.getUsername())
@@ -71,6 +74,13 @@ public class UserService {
                         .bio("자기소개를 입력해주세요")
                         .refreshToken(tokenPair.getRefreshToken())
                         .build()
+        );
+
+        agreementRepository.save(
+                AgreementEntity.builder()
+                    .userEntity(user)
+                    .pushAgreement(userSignUpDto.getPushAgreement())
+                    .build()
         );
 
         return tokenPair;
@@ -118,30 +128,24 @@ public class UserService {
         });
 
         TokenPairResponseDto tokenPair = jwtCreateUtils.createTokenPair(mapZSignUpDto.getEmail(), mapZSignUpDto.getUsername());
+        UserEntity userEntity = UserEntity.builder()
+                .email(mapZSignUpDto.getEmail())
+                .username(mapZSignUpDto.getUsername())
+                .password(passwordEncoder.encode(mapZSignUpDto.getPassword()))
+                .bio("자기소개를 입력해주세요")
+                .refreshToken(tokenPair.getRefreshToken())
+                .build();
 
-        if (multipartFile.isEmpty()) {
-            userRepository.save(
-                    UserEntity.builder()
-                            .email(mapZSignUpDto.getEmail())
-                            .username(mapZSignUpDto.getUsername())
-                            .password(passwordEncoder.encode(mapZSignUpDto.getPassword()))
-                            .bio("자기소개를 입력해주세요")
-                            .refreshToken(tokenPair.getRefreshToken())
-                            .build()
-            );
-
-            return tokenPair;
+        if (!multipartFile.isEmpty()) {
+            userEntity.updateUserImageUrl(s3Service.uploadUserImage(multipartFile, mapZSignUpDto.getUsername()));
         }
 
-        userRepository.save(
-                UserEntity.builder()
-                        .email(mapZSignUpDto.getEmail())
-                        .username(mapZSignUpDto.getUsername())
-                        .password(passwordEncoder.encode(mapZSignUpDto.getPassword()))
-                        .userImageUrl(s3Service.uploadUserImage(multipartFile, mapZSignUpDto.getUsername()))
-                        .bio("자기소개를 입력해주세요")
-                        .refreshToken(tokenPair.getRefreshToken())
-                        .build()
+        UserEntity user = userRepository.save(userEntity);
+        agreementRepository.save(
+                AgreementEntity.builder()
+                    .userEntity(user)
+                    .pushAgreement(mapZSignUpDto.getPushAgreement())
+                    .build()
         );
 
         return tokenPair;
