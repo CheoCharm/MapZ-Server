@@ -23,7 +23,9 @@ public enum ExceptionDetails {
     DUPLICATED_USERNAME(HttpStatus.BAD_REQUEST, "2004", "중복된 닉네임입니다."),
     NOT_FOUND_USER(HttpStatus.NOT_FOUND, "2005", "가입된 사용자가 아닙니다."),
     WRONG_PASSWORD(HttpStatus.BAD_REQUEST, "2006", "비밀번호가 일치하지 않습니다."),
-    INVALID_USER_INFO(HttpStatus.BAD_REQUEST, "2007", "유효성 검사 통과에 실패하였습니다");
+    INVALID_USER_INFO(HttpStatus.BAD_REQUEST, "2007", "유효성 검사 통과에 실패하였습니다"),
+    NOT_FOUND_GROUP(HttpStatus.NOT_FOUND, "2008", "해당되는 그룹이 없습니다."),
+    NO_PERMISSION_USER(HttpStatus.BAD_REQUEST, "2009", "허가되지 않은 유저입니다.");
 
     // 비즈니스 로직 에러
 
