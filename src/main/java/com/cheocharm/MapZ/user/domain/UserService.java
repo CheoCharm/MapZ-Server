@@ -167,7 +167,7 @@ public class UserService {
 
     }
 
-    public String authEmail(CheckEmailPasswordDto checkEmailPasswordDto) {
+    public String authEmail(CheckEmailDto checkEmailPasswordDto) {
         //이메일 중복 확인
         userRepository.findByEmail(checkEmailPasswordDto.getEmail()).ifPresent(userEntity -> {
             throw new DuplicatedEmailException();
