@@ -33,13 +33,13 @@ public class UserController {
     }
 
     @Operation(description = "이메일 인증 유효성 검사")
-    @GetMapping("/auth/email")
+    @GetMapping("/valid/email")
     public CommonResponse<String> checkEmail(@Parameter @RequestBody @Valid CheckEmailDto checkEmailDto) {
         return CommonResponse.success(userService.authEmail(checkEmailDto));
     }
 
     @Operation(description = "비밀번호 유효성 검사")
-    @GetMapping("/auth/password")
+    @GetMapping("/valid/password")
     public CommonResponse<?> checkPassword(@Parameter @RequestBody @Valid CheckPasswordDto checkPasswordDto) {
         return CommonResponse.success();
     }
