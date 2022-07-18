@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
-import java.io.IOException;
 
 @Tag(name = "UserController")
 @RequiredArgsConstructor
@@ -22,8 +21,10 @@ public class UserController {
 
     @Operation(description = "구글회원가입")
     @PostMapping
-    public CommonResponse<TokenPairResponseDto> googleSignUp(@Parameter @RequestBody @Valid GoogleSignUpDto userSignUpDto) {
-        return CommonResponse.success(userService.signUpGoogle(userSignUpDto));
+    public CommonResponse<TokenPairResponseDto> googleSignUp(
+            @Parameter @RequestPart(value = "dto") @Valid GoogleSignUpDto userSignUpDto,
+            @RequestPart(value = "file", required = false) MultipartFile multipartFile) {
+        return CommonResponse.success(userService.signUpGoogle(userSignUpDto, multipartFile));
     }
 
     @Operation(description = "구글로그인")
@@ -48,7 +49,7 @@ public class UserController {
     @PostMapping("/signup")
     public CommonResponse<TokenPairResponseDto> signUp(
             @Parameter @RequestPart(value = "dto") @Valid MapZSignUpDto mapZSignUpDto,
-            @RequestPart(value = "file", required = false) MultipartFile multipartFile) throws IOException {
+            @RequestPart(value = "file", required = false) MultipartFile multipartFile) {
         return CommonResponse.success(userService.signUpMapZ(mapZSignUpDto, multipartFile));
     }
 
