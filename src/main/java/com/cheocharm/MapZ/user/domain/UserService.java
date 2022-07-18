@@ -24,7 +24,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.util.Optional;
 
 @RequiredArgsConstructor
@@ -45,15 +44,15 @@ public class UserService {
     private final String GMAIL_ADDRESS ="mapz.official@gmail.com";
 
     @Transactional
-    public TokenPairResponseDto signUpGoogle(GoogleSignUpDto userSignUpDto) {
+    public TokenPairResponseDto signUpGoogle(GoogleSignUpDto userSignUpDto, MultipartFile multipartFile) {
 
-        ResponseEntity<String> response = oauthApi.callGoogle(OauthUrl.GOOGLE, userSignUpDto.getIdToken());
+        final ResponseEntity<String> response = oauthApi.callGoogle(OauthUrl.GOOGLE, userSignUpDto.getIdToken());
 
         if (!response.getStatusCode().equals(HttpStatus.OK)) {
             throw new InvalidJwtException();
         }
 
-        GoogleIdTokenDto idToken = checkAudAndGetTokenDto(response);
+        final GoogleIdTokenDto idToken = checkAudAndGetTokenDto(response);
 
         Optional<UserEntity> findUser = userRepository.findByEmail(idToken.getEmail());
 
@@ -64,18 +63,19 @@ public class UserService {
             return tokenPair;
         }
 
-        TokenPairResponseDto tokenPair = jwtCreateUtils.createTokenPair(idToken.getEmail(), userSignUpDto.getUsername());
+        final TokenPairResponseDto tokenPair = jwtCreateUtils.createTokenPair(idToken.getEmail(), userSignUpDto.getUsername());
 
-        UserEntity user = userRepository.save(
+        final UserEntity user = userRepository.save(
                 UserEntity.builder()
                         .email(idToken.getEmail())
                         .username(userSignUpDto.getUsername())
-                        .userImageUrl("")
                         .bio("자기소개를 입력해주세요")
                         .refreshToken(tokenPair.getRefreshToken())
                         .build()
         );
-
+        if (!multipartFile.isEmpty()) {
+            user.updateUserImageUrl(s3Service.uploadUserImage(multipartFile, user.getUsername()));
+        }
         agreementRepository.save(
                 AgreementEntity.builder()
                     .userEntity(user)
@@ -121,7 +121,7 @@ public class UserService {
     }
 
     @Transactional
-    public TokenPairResponseDto signUpMapZ(MapZSignUpDto mapZSignUpDto, MultipartFile multipartFile) throws IOException {
+    public TokenPairResponseDto signUpMapZ(MapZSignUpDto mapZSignUpDto, MultipartFile multipartFile) {
         //닉네임 중복 확인
         userRepository.findByUsername(mapZSignUpDto.getUsername()).ifPresent(userEntity -> {
             throw new DuplicatedUsernameException();
