@@ -1,8 +1,10 @@
 package com.cheocharm.MapZ.group.domain;
 
+import com.cheocharm.MapZ.common.exception.group.DuplicatedGroupException;
 import com.cheocharm.MapZ.common.exception.group.NotFoundGroupException;
 import com.cheocharm.MapZ.common.exception.user.NoPermissionUserException;
 import com.cheocharm.MapZ.common.interceptor.UserThreadLocal;
+import com.cheocharm.MapZ.common.util.S3Utils;
 import com.cheocharm.MapZ.group.domain.dto.ChangeGroupStatusDto;
 import com.cheocharm.MapZ.group.domain.dto.CreateGroupDto;
 import com.cheocharm.MapZ.group.domain.dto.GetGroupListDto;
@@ -15,6 +17,7 @@ import com.cheocharm.MapZ.usergroup.repository.UserGroupRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.UUID;
@@ -28,17 +31,26 @@ public class GroupService {
     private final GroupRepository groupRepository;
     private final UserGroupRepository userGroupRepository;
 
-    @Transactional
-    public void createGroup(CreateGroupDto createGroupDto) {
-        UserEntity userEntity = UserThreadLocal.get();
+    private final S3Utils s3Utils;
 
-        GroupEntity groupEntity = GroupEntity.builder()
+    @Transactional
+    public void createGroup(CreateGroupDto createGroupDto, MultipartFile multipartFile) {
+        final UserEntity userEntity = UserThreadLocal.get();
+
+        if (groupRepository.findByGroupName(createGroupDto.getGroupName()).isPresent()) {
+            throw new DuplicatedGroupException();
+        }
+
+        final GroupEntity groupEntity = GroupEntity.builder()
                 .groupName(createGroupDto.getGroupName())
                 .bio(createGroupDto.getBio())
-                .groupImageUrl("")
                 .groupUUID(UUID.randomUUID().toString())
                 .openStatus(createGroupDto.getChangeStatus())
                 .build();
+
+        if (!multipartFile.isEmpty()) {
+            groupEntity.updateGroupImageUrl(s3Utils.uploadGroupImage(multipartFile, groupEntity.getGroupUUID()));
+        }
 
         userGroupRepository.save(
                 UserGroupEntity.builder()

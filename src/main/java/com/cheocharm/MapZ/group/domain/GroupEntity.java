@@ -40,4 +40,8 @@ public class GroupEntity extends BaseEntity {
     public void changeGroupStatus(boolean changeStatus) {
         this.openStatus = changeStatus;
     }
+
+    public void updateGroupImageUrl(String groupImageUrl) {
+        this.groupImageUrl = groupImageUrl;
+    }
 }

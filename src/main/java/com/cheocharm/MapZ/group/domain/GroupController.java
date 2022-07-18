@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
 import java.util.List;
@@ -25,8 +26,10 @@ public class GroupController {
     @Operation(description = "그룹 생성")
     @Parameter(name = "accessToken", in = ParameterIn.HEADER, required = true)
     @PostMapping
-    public CommonResponse<?> createGroup(@RequestBody @Valid CreateGroupDto createGroupDto) {
-        groupService.createGroup(createGroupDto);
+    public CommonResponse<?> createGroup(
+            @RequestPart(value = "dto") @Valid CreateGroupDto createGroupDto,
+            @RequestPart(value = "file", required = false) MultipartFile multipartFile) {
+        groupService.createGroup(createGroupDto, multipartFile);
         return CommonResponse.success();
     }
 
