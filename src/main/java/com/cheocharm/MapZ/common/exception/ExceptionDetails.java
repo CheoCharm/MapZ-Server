@@ -27,8 +27,8 @@ public enum ExceptionDetails {
     NO_PERMISSION_USER(HttpStatus.BAD_REQUEST, "2008", "허가되지 않은 유저입니다."),
 
     //그룹 관련 에러
-    NOT_FOUND_GROUP(HttpStatus.NOT_FOUND, "3000", "해당되는 그룹이 없습니다."),
-    DUPLICATED_GROUP(HttpStatus.BAD_REQUEST, "3001", "중복된 그룹명입니다");
+    NOT_FOUND_GROUP(HttpStatus.NOT_FOUND, "3001", "해당되는 그룹이 없습니다."),
+    DUPLICATED_GROUP(HttpStatus.BAD_REQUEST, "3002", "중복된 그룹명입니다");
     // 비즈니스 로직 에러
 
     private HttpStatus statusCode;
