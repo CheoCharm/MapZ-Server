@@ -4,7 +4,7 @@ import lombok.Getter;
 
 @Getter
 public enum InvitationStatus {
-    PENDING("대기중"), ACCEPT("수락완료");
+    PENDING("대기중"), ACCEPT("수락완료"), REFUSE("거절");
 
     private final String status;
 
