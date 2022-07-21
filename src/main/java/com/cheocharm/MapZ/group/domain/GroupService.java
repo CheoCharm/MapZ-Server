@@ -3,13 +3,14 @@ package com.cheocharm.MapZ.group.domain;
 import com.cheocharm.MapZ.common.exception.group.DuplicatedGroupException;
 import com.cheocharm.MapZ.common.exception.group.NotFoundGroupException;
 import com.cheocharm.MapZ.common.exception.user.NoPermissionUserException;
+import com.cheocharm.MapZ.common.exception.user.NotFoundUserException;
+import com.cheocharm.MapZ.common.exception.usergroup.NotFoundUserGroupException;
 import com.cheocharm.MapZ.common.interceptor.UserThreadLocal;
 import com.cheocharm.MapZ.common.util.S3Utils;
-import com.cheocharm.MapZ.group.domain.dto.ChangeGroupStatusDto;
-import com.cheocharm.MapZ.group.domain.dto.CreateGroupDto;
-import com.cheocharm.MapZ.group.domain.dto.GetGroupListDto;
+import com.cheocharm.MapZ.group.domain.dto.*;
 import com.cheocharm.MapZ.group.domain.repository.GroupRepository;
 import com.cheocharm.MapZ.user.domain.UserEntity;
+import com.cheocharm.MapZ.user.domain.repository.UserRepository;
 import com.cheocharm.MapZ.usergroup.InvitationStatus;
 import com.cheocharm.MapZ.usergroup.UserGroupEntity;
 import com.cheocharm.MapZ.usergroup.UserRole;
@@ -30,6 +31,7 @@ public class GroupService {
 
     private final GroupRepository groupRepository;
     private final UserGroupRepository userGroupRepository;
+    private final UserRepository userRepository;
 
     private final S3Utils s3Utils;
 
@@ -96,6 +98,51 @@ public class GroupService {
         }
 
         findUserGroup.getGroupEntity().changeGroupStatus(changeGroupStatusDto.getChangeStatus());
+    }
+
+    @Transactional
+    public void joinGroup(JoinGroupDto joinGroupDto) {
+        final UserEntity userEntity = UserThreadLocal.get();
+
+        final GroupEntity groupEntity = groupRepository.findByGroupName(joinGroupDto.getGroupName())
+                .orElseThrow(NotFoundGroupException::new);
+
+        userGroupRepository.save(
+                UserGroupEntity.builder()
+                        .groupEntity(groupEntity)
+                        .userEntity(userEntity)
+                        .invitationStatus(InvitationStatus.PENDING)
+                        .userRole(UserRole.MEMBER)
+                        .build()
+        );
+
+    }
+
+    @Transactional
+    public void changeInvitationStatus(ChangeInvitationStatusDto changeInvitationStatusDto) {
+        final UserEntity userEntity = UserThreadLocal.get();
+
+        final GroupEntity groupEntity = groupRepository.findByGroupName(changeInvitationStatusDto.getGroupName())
+                .orElseThrow(NotFoundGroupException::new);
+
+        final UserGroupEntity userGroupEntity = userGroupRepository.findByUserEntityAndGroupEntity(userEntity, groupEntity)
+                .orElseThrow(NotFoundUserException::new);
+
+        if (userGroupEntity.getUserRole() != UserRole.CHIEF) {
+            throw new NoPermissionUserException();
+        }
+
+        final UserEntity changeUser = userRepository.findByUsername(changeInvitationStatusDto.getUsername())
+                .orElseThrow(NotFoundUserException::new);
+
+        final UserGroupEntity findUserGroupEntity = userGroupRepository.findByUserEntityAndGroupEntity(changeUser, groupEntity)
+                .orElseThrow(NotFoundUserGroupException::new);
+
+        if (changeInvitationStatusDto.getStatus()) {
+            findUserGroupEntity.acceptUser();
+        } else if (!changeInvitationStatusDto.getStatus()) {
+            findUserGroupEntity.refuseUser();
+        }
     }
 
     private int getCount(UserGroupEntity userGroupEntity) {

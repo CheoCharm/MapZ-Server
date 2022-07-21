@@ -38,4 +38,12 @@ public class UserGroupEntity extends BaseEntity {
         this.invitationStatus = invitationStatus;
         this.userRole = userRole;
     }
+
+    public void acceptUser() {
+        this.invitationStatus = InvitationStatus.ACCEPT;
+    }
+
+    public void refuseUser() {
+        this.invitationStatus = InvitationStatus.REFUSE;
+    }
 }
