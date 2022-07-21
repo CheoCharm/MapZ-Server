@@ -1,9 +1,7 @@
 package com.cheocharm.MapZ.group.domain;
 
 import com.cheocharm.MapZ.common.CommonResponse;
-import com.cheocharm.MapZ.group.domain.dto.ChangeGroupStatusDto;
-import com.cheocharm.MapZ.group.domain.dto.CreateGroupDto;
-import com.cheocharm.MapZ.group.domain.dto.GetGroupListDto;
+import com.cheocharm.MapZ.group.domain.dto.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
@@ -45,6 +43,22 @@ public class GroupController {
     @PatchMapping("/status")
     public CommonResponse<?> changeGroupStatus(@RequestBody @Valid ChangeGroupStatusDto changeGroupStatusDto) {
         groupService.changeGroupStatus(changeGroupStatusDto);
+        return CommonResponse.success();
+    }
+
+    @Operation(description = "그룹 참가 신청")
+    @Parameter(name = "accessToken", in = ParameterIn.HEADER, required = true)
+    @PostMapping("/join")
+    public CommonResponse<?> joinGroup(@RequestBody @Valid JoinGroupDto joinGroupDto) {
+        groupService.joinGroup(joinGroupDto);
+        return CommonResponse.success();
+    }
+
+    @Operation(description = "그룹 참가 신청 변경")
+    @Parameter(name = "accessToken", in = ParameterIn.HEADER, required = true)
+    @PatchMapping("/join")
+    public CommonResponse<?> changeInvitationStatus(@RequestBody @Valid ChangeInvitationStatusDto changeInvitationStatusDto) {
+        groupService.changeInvitationStatus(changeInvitationStatusDto);
         return CommonResponse.success();
     }
 }
