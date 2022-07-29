@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
-import java.util.List;
 
 @Tag(name = "GroupController")
 @RequiredArgsConstructor
@@ -34,8 +33,8 @@ public class GroupController {
     @Operation(description = "그룹 선택을 위한 그룹 조회")
     @Parameter(name = "accessToken", in = ParameterIn.HEADER, required = true)
     @GetMapping
-    public CommonResponse<List<GetGroupListDto>> getGroup() {
-        return CommonResponse.success(groupService.getGroup());
+    public CommonResponse<GetGroupListDto> getGroup(@RequestBody @Valid SearchGroupDto searchGroupDto) {
+        return CommonResponse.success(groupService.getGroup(searchGroupDto));
     }
 
     @Operation(description = "그룹 공개여부 변경")
