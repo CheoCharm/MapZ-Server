@@ -16,6 +16,7 @@ import com.cheocharm.MapZ.usergroup.UserGroupEntity;
 import com.cheocharm.MapZ.usergroup.UserRole;
 import com.cheocharm.MapZ.usergroup.repository.UserGroupRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -24,6 +25,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
+
+import static com.cheocharm.MapZ.common.util.PagingUtils.*;
 
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -66,21 +69,32 @@ public class GroupService {
         groupRepository.save(groupEntity);
     }
 
-    public List<GetGroupListDto> getGroup() {
+    public GetGroupListDto getGroup(SearchGroupDto searchGroupDto) {
         UserEntity userEntity = UserThreadLocal.get();
 
-        List<UserGroupEntity> userGroupEntityList = userGroupRepository.fetchJoinByUserEntity(userEntity);
+        Slice<UserGroupEntity> content = userGroupRepository.fetchByUserEntityAndSearchNameAndOrderByUserName(
+                userEntity,
+                searchGroupDto.getSearchName(),
+                applyPageConfigBy(searchGroupDto.getPage(), GROUP_SIZE)
+        );
 
-        return userGroupEntityList.stream()
+        List<UserGroupEntity> userGroupEntityList = content.getContent();
+
+        List<GetGroupListDto.GroupList> GroupList = userGroupEntityList.stream()
                 .map(userGroupEntity ->
-                    GetGroupListDto.builder()
-                            .groupName(userGroupEntity.getGroupEntity().getGroupName())
-                            .groupImageUrl(userGroupEntity.getGroupEntity().getGroupImageUrl())
-                            .userImageUrlList(userGroupRepository.findUserImage(userGroupEntity.getGroupEntity()))
-                            .count(getCount(userGroupEntity))
-                            .build()
+                        GetGroupListDto.GroupList.builder()
+                                .groupName(userGroupEntity.getGroupEntity().getGroupName())
+                                .groupImageUrl(userGroupEntity.getGroupEntity().getGroupImageUrl())
+                                .userImageUrlList(userGroupRepository.findUserImage(userGroupEntity.getGroupEntity()))
+                                .count(getCount(userGroupEntity))
+                                .build()
                 )
                 .collect(Collectors.toList());
+
+        return GetGroupListDto.builder()
+                .hasNextPage(content.hasNext())
+                .groupList(GroupList)
+                .build();
     }
 
     @Transactional
