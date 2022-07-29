@@ -9,8 +9,15 @@ import java.util.List;
 @Builder
 public class GetGroupListDto {
 
-    String groupName;
-    String groupImageUrl;
-    int count;
-    List<String> userImageUrlList;
+    Boolean hasNextPage;
+    List<GroupList> groupList;
+
+    @Getter
+    @Builder
+    public static class GroupList {
+        String groupName;
+        String groupImageUrl;
+        int count;
+        List<String> userImageUrlList;
+    }
 }
