@@ -73,7 +73,7 @@ public class UserService {
                         .refreshToken(tokenPair.getRefreshToken())
                         .build()
         );
-        if (!multipartFile.isEmpty()) {
+        if (Optional.ofNullable(multipartFile).isPresent()) {
             user.updateUserImageUrl(s3Service.uploadUserImage(multipartFile, user.getUsername()));
         }
         agreementRepository.save(
@@ -136,7 +136,7 @@ public class UserService {
                 .refreshToken(tokenPair.getRefreshToken())
                 .build();
 
-        if (!multipartFile.isEmpty()) {
+        if (Optional.ofNullable(multipartFile).isPresent()) {
             userEntity.updateUserImageUrl(s3Service.uploadUserImage(multipartFile, mapZSignUpDto.getUsername()));
         }
 
