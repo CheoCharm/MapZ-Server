@@ -7,11 +7,13 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.Where;
 
 import javax.persistence.*;
 
 @Getter
 @Table(name = "Group_Management")
+@Where(clause = "deleted=0")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
 public class UserGroupEntity extends BaseEntity {

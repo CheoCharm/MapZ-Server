@@ -7,11 +7,13 @@ import com.cheocharm.MapZ.user.domain.UserEntity;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.Where;
 
 import javax.persistence.*;
 
 @Getter
 @Table(name = "Diary")
+@Where(clause = "deleted=0")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
 public class DiaryEntity extends BaseEntity {
