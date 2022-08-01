@@ -1,12 +1,16 @@
 package com.cheocharm.MapZ.group.domain;
 
+import com.cheocharm.MapZ.common.domain.BaseEntity;
 import com.cheocharm.MapZ.common.exception.group.DuplicatedGroupException;
 import com.cheocharm.MapZ.common.exception.group.NotFoundGroupException;
+import com.cheocharm.MapZ.common.exception.user.ExitGroupChiefException;
 import com.cheocharm.MapZ.common.exception.user.NoPermissionUserException;
 import com.cheocharm.MapZ.common.exception.user.NotFoundUserException;
 import com.cheocharm.MapZ.common.exception.usergroup.NotFoundUserGroupException;
 import com.cheocharm.MapZ.common.interceptor.UserThreadLocal;
 import com.cheocharm.MapZ.common.util.S3Utils;
+import com.cheocharm.MapZ.diary.domain.DiaryEntity;
+import com.cheocharm.MapZ.diary.domain.respository.DiaryRepository;
 import com.cheocharm.MapZ.group.domain.dto.*;
 import com.cheocharm.MapZ.group.domain.repository.GroupRepository;
 import com.cheocharm.MapZ.user.domain.UserEntity;
@@ -33,6 +37,7 @@ import static com.cheocharm.MapZ.common.util.PagingUtils.*;
 @Service
 public class GroupService {
 
+    private final DiaryRepository diaryRepository;
     private final GroupRepository groupRepository;
     private final UserGroupRepository userGroupRepository;
     private final UserRepository userRepository;
@@ -102,11 +107,7 @@ public class GroupService {
         final UserEntity userEntity = UserThreadLocal.get();
 
         List<UserGroupEntity> userGroupEntityList = userGroupRepository.fetchJoinByUserEntity(userEntity);
-        final UserGroupEntity findUserGroup = userGroupEntityList.stream()
-                .filter(userGroupEntity -> userGroupEntity.getGroupEntity()
-                        .getGroupName().equals(changeGroupStatusDto.getGroup()))
-                .findAny()
-                .orElseThrow(NotFoundGroupException::new);
+        final UserGroupEntity findUserGroup = findUserGroupEntity(changeGroupStatusDto.getGroup(), userGroupEntityList);
 
         if (findUserGroup.getUserRole().equals(UserRole.MEMBER)) {
             throw new NoPermissionUserException();
@@ -160,11 +161,33 @@ public class GroupService {
         }
     }
 
+    @Transactional
+    public void exitGroup(ExitGroupDto exitGroupDto) {
+        List<UserGroupEntity> userGroupEntityList = userGroupRepository.fetchJoinByUserEntity(UserThreadLocal.get());
+
+        UserGroupEntity userGroupEntity = findUserGroupEntity(exitGroupDto.getGroupName(), userGroupEntityList);
+        if (userGroupEntity.getUserRole() == UserRole.CHIEF) {
+            throw new ExitGroupChiefException();
+        }
+        List<DiaryEntity> diaryEntityList = diaryRepository.findAllByUserEntityAndGroupEntity(userGroupEntity.getUserEntity(), userGroupEntity.getGroupEntity());
+
+        userGroupEntity.delete();
+        diaryEntityList.forEach(BaseEntity::delete);
+    }
+
     private int getCount(UserGroupEntity userGroupEntity) {
         int count = userGroupRepository.countByGroupEntity(userGroupEntity.getGroupEntity());
         if (count > 4) {
             return count - 4;
         }
         return 0;
+    }
+
+    private UserGroupEntity findUserGroupEntity(String groupName, List<UserGroupEntity> userGroupEntityList) {
+        return userGroupEntityList.stream()
+                .filter(userGroupEntity -> userGroupEntity.getGroupEntity()
+                        .getGroupName().equals(groupName))
+                .findAny()
+                .orElseThrow(NotFoundGroupException::new);
     }
 }

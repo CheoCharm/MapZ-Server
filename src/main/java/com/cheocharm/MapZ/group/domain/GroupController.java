@@ -60,4 +60,12 @@ public class GroupController {
         groupService.changeInvitationStatus(changeInvitationStatusDto);
         return CommonResponse.success();
     }
+
+    @Operation(description = "그룹 나가기")
+    @Parameter(name = "accessToken", in = ParameterIn.HEADER, required = true)
+    @PatchMapping("/exit")
+    public CommonResponse<?> exitGroup(@RequestBody @Valid ExitGroupDto exitGroupDto) {
+        groupService.exitGroup(exitGroupDto);
+        return CommonResponse.success();
+    }
 }
