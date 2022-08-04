@@ -26,7 +26,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -59,7 +58,7 @@ public class GroupService {
                 .openStatus(createGroupDto.getChangeStatus())
                 .build();
 
-        if (Optional.ofNullable(multipartFile).isPresent()) {
+        if (!multipartFile.isEmpty()) {
             groupEntity.updateGroupImageUrl(s3Utils.uploadGroupImage(multipartFile, groupEntity.getGroupUUID()));
         }
 
