@@ -29,7 +29,7 @@ public class JwtAuthenticationUtils {
     private final JwtCommonUtils jwtCommonUtils;
 
     public Optional<String> resolveToken(HttpServletRequest request) {
-        return Optional.ofNullable(request.getHeader("token"));
+        return Optional.ofNullable(request.getHeader("accessToken"));
     }
 
     public boolean isValid(String token) {
@@ -55,7 +55,7 @@ public class JwtAuthenticationUtils {
 
     private Set<? extends GrantedAuthority> getAuthorities() {
         Set<GrantedAuthority> set = new HashSet<>();
-        set.add(new SimpleGrantedAuthority("ROLE_USER"));
+        set.add(new SimpleGrantedAuthority("USER_ROLE"));
 
         return set;
     }
