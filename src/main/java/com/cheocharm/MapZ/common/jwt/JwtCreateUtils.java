@@ -1,6 +1,7 @@
 package com.cheocharm.MapZ.common.jwt;
 
 import com.cheocharm.MapZ.user.domain.UserEntity;
+import com.cheocharm.MapZ.user.domain.UserProvider;
 import com.cheocharm.MapZ.user.domain.dto.TokenPairResponseDto;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -22,13 +23,13 @@ public class JwtCreateUtils {
 
     private final JwtCommonUtils jwtCommonUtils;
 
-    public String createAccessToken(String email, String username) {
+    public String createAccessToken(String email, String username, UserProvider userProvider) {
         Date issueDate = new Date();
         Date expireDate = new Date();
         expireDate.setTime(issueDate.getTime() + EXPIRE);
         return Jwts.builder()
                 .setHeaderParams(createHeader())
-                .setClaims(createClaims(email, username))
+                .setClaims(createClaims(email, username, userProvider))
                 .setIssuedAt(issueDate)
                 .setExpiration(expireDate)
                 .setSubject("accessToken")
@@ -41,16 +42,16 @@ public class JwtCreateUtils {
         if(!userEntity.getRefreshToken().equals(refreshToken)){
             throw new RuntimeException("토큰 정보 불일치");
         }
-        return createAccessToken(userEntity.getEmail(), userEntity.getUsername());
+        return createAccessToken(userEntity.getEmail(), userEntity.getUsername(), userEntity.getUserProvider());
     }
 
-    public String createRefreshToken(String email, String username) {
+    public String createRefreshToken(String email, String username, UserProvider userProvider) {
         Date issueDate = new Date();
         Date expireDate = new Date();
         expireDate.setTime(issueDate.getTime() + REFRESH_EXPIRE);
         return Jwts.builder()
                 .setHeaderParams(createHeader())
-                .setClaims(createClaims(email, username))
+                .setClaims(createClaims(email, username, userProvider))
                 .setIssuedAt(issueDate)
                 .setExpiration(expireDate)
                 .setSubject("refreshToken")
@@ -58,10 +59,10 @@ public class JwtCreateUtils {
                 .compact();
     }
 
-    public TokenPairResponseDto createTokenPair(String email, String username) {
+    public TokenPairResponseDto createTokenPair(String email, String username, UserProvider userProvider) {
         return TokenPairResponseDto.builder()
-                .accessToken(createAccessToken(email, username))
-                .refreshToken(createRefreshToken(email, username))
+                .accessToken(createAccessToken(email, username, userProvider))
+                .refreshToken(createRefreshToken(email, username, userProvider))
                 .build();
     }
 
@@ -71,10 +72,11 @@ public class JwtCreateUtils {
         return headerMap;
     }
 
-    private Map<String, Object> createClaims(String email, String username) {
+    private Map<String, Object> createClaims(String email, String username, UserProvider userProvider) {
         HashMap<String, Object> claimsMap = new HashMap<>();
         claimsMap.put(USER_EMAIL, email);
         claimsMap.put("username", username);
+        claimsMap.put("userProvider", userProvider);
         return claimsMap;
     }
 
