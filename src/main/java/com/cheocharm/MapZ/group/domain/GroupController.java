@@ -68,4 +68,12 @@ public class GroupController {
         groupService.exitGroup(exitGroupDto);
         return CommonResponse.success();
     }
+
+    @Operation(description = "그룹장 위임")
+    @Parameter(name = "accessToken", in = ParameterIn.HEADER, required = true)
+    @PatchMapping("/chief")
+    public CommonResponse<?> changeChief(@RequestBody @Valid ChangeChiefDto changeChiefDto) {
+        groupService.changeChief(changeChiefDto);
+        return CommonResponse.success();
+    }
 }

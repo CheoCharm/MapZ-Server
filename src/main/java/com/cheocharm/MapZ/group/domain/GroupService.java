@@ -174,6 +174,26 @@ public class GroupService {
         diaryEntityList.forEach(BaseEntity::delete);
     }
 
+    @Transactional
+    public void changeChief(ChangeChiefDto changeChiefDto) {
+        final UserEntity userEntity = UserThreadLocal.get();
+        final GroupEntity groupEntity = groupRepository.findByGroupName(changeChiefDto.getGroupName())
+                .orElseThrow(NotFoundGroupException::new);
+
+        UserGroupEntity userGroupEntity = userGroupRepository.findByUserEntityAndGroupEntity(userEntity, groupEntity)
+                .orElseThrow(NotFoundUserGroupException::new);
+        if (userGroupEntity.getUserRole() == UserRole.MEMBER) {
+            throw new NoPermissionUserException();
+        }
+        final UserEntity targetUserEntity = userRepository.findByUsername(changeChiefDto.getTargetUsername())
+                .orElseThrow(NotFoundUserException::new);
+
+        final UserGroupEntity targetUserGroupEntity = userGroupRepository.findByUserEntityAndGroupEntity(targetUserEntity, groupEntity)
+                .orElseThrow(NotFoundUserException::new);
+
+        targetUserGroupEntity.changeChief(userGroupEntity, targetUserGroupEntity);
+    }
+
     private int getCount(UserGroupEntity userGroupEntity) {
         int count = userGroupRepository.countByGroupEntity(userGroupEntity.getGroupEntity());
         if (count > 4) {
