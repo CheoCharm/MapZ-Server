@@ -1,6 +1,7 @@
 package com.cheocharm.MapZ.common.jwt;
 
 import com.cheocharm.MapZ.user.domain.UserEntity;
+import com.cheocharm.MapZ.user.domain.UserProvider;
 import com.cheocharm.MapZ.user.domain.repository.UserRepository;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -29,7 +30,7 @@ public class JwtCommonUtils {
     }
 
     public UserEntity findUserByToken(String token) {
-        return userRepository.findByEmail(findEmailByToken(token))
+        return userRepository.findByEmailAndUserProvider(findEmailByToken(token), findUserProviderByToken(token))
                 .orElseThrow(() -> new RuntimeException("이메일 유저 정보 없음"));
     }
 
@@ -40,6 +41,18 @@ public class JwtCommonUtils {
                 .parseClaimsJws(token)
                 .getBody()
                 .get(USER_EMAIL);
+    }
+
+    public UserProvider findUserProviderByToken(String token) {
+        String userProvider = (String) Jwts.parserBuilder()
+                .setSigningKey(Keys.hmacShaKeyFor(SECRET_KEY.getBytes(StandardCharsets.UTF_8)))
+                .build()
+                .parseClaimsJws(token)
+                .getBody()
+                .get("userProvider");
+
+        return UserProvider.valueOf(userProvider);
+
     }
 
     public String getKey() {

@@ -6,9 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 @Getter
 @Table(name = "User")
@@ -33,8 +31,11 @@ public class UserEntity extends BaseEntity {
     @Column(length = 600)
     private String refreshToken;
 
+    @Enumerated(value = EnumType.STRING)
+    private UserProvider userProvider;
+
     @Builder
-    public UserEntity(String email, String username, String password, String userImageUrl, String bio, String fcmToken, String refreshToken) {
+    public UserEntity(String email, String username, String password, String userImageUrl, String bio, String fcmToken, String refreshToken, UserProvider userProvider) {
         this.email = email;
         this.username = username;
         this.password = password;
@@ -42,6 +43,7 @@ public class UserEntity extends BaseEntity {
         this.bio = bio;
         this.fcmToken = fcmToken;
         this.refreshToken = refreshToken;
+        this.userProvider = userProvider;
     }
 
     public void updateRefreshToken(String refreshToken) {

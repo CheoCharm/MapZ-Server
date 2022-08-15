@@ -54,16 +54,16 @@ public class UserService {
 
         final GoogleIdTokenDto idToken = checkAudAndGetTokenDto(response);
 
-        Optional<UserEntity> findUser = userRepository.findByEmail(idToken.getEmail());
+        Optional<UserEntity> findUser = userRepository.findByEmailAndUserProvider(idToken.getEmail(), UserProvider.GOOGLE);
 
         if (findUser.isPresent()) {
             final UserEntity userEntity = findUser.get();
-            final TokenPairResponseDto tokenPair = jwtCreateUtils.createTokenPair(idToken.getEmail(), userSignUpDto.getUsername());
+            final TokenPairResponseDto tokenPair = jwtCreateUtils.createTokenPair(idToken.getEmail(), userSignUpDto.getUsername(), UserProvider.GOOGLE);
             userEntity.updateRefreshToken(tokenPair.getRefreshToken());
             return tokenPair;
         }
 
-        final TokenPairResponseDto tokenPair = jwtCreateUtils.createTokenPair(idToken.getEmail(), userSignUpDto.getUsername());
+        final TokenPairResponseDto tokenPair = jwtCreateUtils.createTokenPair(idToken.getEmail(), userSignUpDto.getUsername(), UserProvider.GOOGLE);
 
         final UserEntity user = userRepository.save(
                 UserEntity.builder()
@@ -71,6 +71,7 @@ public class UserService {
                         .username(userSignUpDto.getUsername())
                         .bio("자기소개를 입력해주세요")
                         .refreshToken(tokenPair.getRefreshToken())
+                        .userProvider(UserProvider.GOOGLE)
                         .build()
         );
         if (!multipartFile.isEmpty()) {
@@ -95,11 +96,11 @@ public class UserService {
         }
         GoogleIdTokenDto idToken = checkAudAndGetTokenDto(response);
 
-        Optional<UserEntity> findUser = userRepository.findByEmail(idToken.getEmail());
+        Optional<UserEntity> findUser = userRepository.findByEmailAndUserProvider(idToken.getEmail(), UserProvider.GOOGLE);
 
         if (findUser.isPresent()) {
             final UserEntity userEntity = findUser.get();
-            final TokenPairResponseDto tokenPair = jwtCreateUtils.createTokenPair(idToken.getEmail(), userEntity.getUsername());
+            final TokenPairResponseDto tokenPair = jwtCreateUtils.createTokenPair(idToken.getEmail(), userEntity.getUsername(), userEntity.getUserProvider());
             userEntity.updateRefreshToken(tokenPair.getRefreshToken());
             return tokenPair;
         }
@@ -127,13 +128,14 @@ public class UserService {
             throw new DuplicatedUsernameException();
         });
 
-        TokenPairResponseDto tokenPair = jwtCreateUtils.createTokenPair(mapZSignUpDto.getEmail(), mapZSignUpDto.getUsername());
+        TokenPairResponseDto tokenPair = jwtCreateUtils.createTokenPair(mapZSignUpDto.getEmail(), mapZSignUpDto.getUsername(), UserProvider.MAPZ);
         UserEntity userEntity = UserEntity.builder()
                 .email(mapZSignUpDto.getEmail())
                 .username(mapZSignUpDto.getUsername())
                 .password(passwordEncoder.encode(mapZSignUpDto.getPassword()))
                 .bio("자기소개를 입력해주세요")
                 .refreshToken(tokenPair.getRefreshToken())
+                .userProvider(UserProvider.MAPZ)
                 .build();
 
         if (!multipartFile.isEmpty()) {
@@ -153,7 +155,7 @@ public class UserService {
 
     @Transactional
     public TokenPairResponseDto signInMapZ(MapZSignInDto mapZSignInDto) {
-        final UserEntity userEntity = userRepository.findByEmail(mapZSignInDto.getEmail())
+        final UserEntity userEntity = userRepository.findByEmailAndUserProvider(mapZSignInDto.getEmail(), UserProvider.MAPZ)
                 .orElseThrow(NotFoundUserException::new);
 
         //비밀번호 일치 여부 확인
@@ -161,7 +163,7 @@ public class UserService {
             throw new WrongPasswordException();
         }
 
-        final TokenPairResponseDto tokenPair = jwtCreateUtils.createTokenPair(userEntity.getEmail(), userEntity.getUsername());
+        final TokenPairResponseDto tokenPair = jwtCreateUtils.createTokenPair(userEntity.getEmail(), userEntity.getUsername(), UserProvider.MAPZ);
         userEntity.updateRefreshToken(tokenPair.getRefreshToken());
         return tokenPair;
 
@@ -169,19 +171,18 @@ public class UserService {
 
     public String authEmail(CheckEmailDto checkEmailPasswordDto) {
         //이메일 중복 확인
-        userRepository.findByEmail(checkEmailPasswordDto.getEmail()).ifPresent(userEntity -> {
-            throw new DuplicatedEmailException();
-        });
+        userRepository.findByEmailAndUserProvider(checkEmailPasswordDto.getEmail(), UserProvider.MAPZ)
+                .ifPresent(userEntity -> {
+                    throw new DuplicatedEmailException();
+                });
 
         return sendEmail(checkEmailPasswordDto.getEmail());
-
     }
 
     public String findPassword(FindPasswordDto findPasswordDto) {
         //가입된 사용자인지 확인
-        userRepository.findByEmail(findPasswordDto.getEmail()).orElseThrow(NotFoundUserException::new);
-
-        //소셜 로그인일 경우 예외처리
+        userRepository.findByEmailAndUserProvider(findPasswordDto.getEmail(), UserProvider.MAPZ)
+                .orElseThrow(NotFoundUserException::new);
 
         return sendEmail(findPasswordDto.getEmail());
 
@@ -205,7 +206,9 @@ public class UserService {
 
     @Transactional
     public void setNewPassword(GetNewPasswordDto getNewPasswordDto) {
-        UserEntity userEntity = userRepository.findByEmail(getNewPasswordDto.getEmail()).orElseThrow(NotFoundUserException::new);
+        UserEntity userEntity = userRepository.findByEmailAndUserProvider(getNewPasswordDto.getEmail(), UserProvider.MAPZ)
+                .orElseThrow(NotFoundUserException::new);
+
         String password = passwordEncoder.encode(getNewPasswordDto.getPassword());
         userEntity.updatePassword(password);
     }
