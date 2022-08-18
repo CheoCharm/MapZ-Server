@@ -4,6 +4,7 @@ import com.cheocharm.MapZ.agreement.AgreementEntity;
 import com.cheocharm.MapZ.agreement.repository.AgreementRepository;
 import com.cheocharm.MapZ.common.exception.jwt.InvalidJwtException;
 import com.cheocharm.MapZ.common.exception.user.*;
+import com.cheocharm.MapZ.common.interceptor.UserThreadLocal;
 import com.cheocharm.MapZ.common.jwt.JwtCreateUtils;
 import com.cheocharm.MapZ.common.oauth.OauthApi;
 import com.cheocharm.MapZ.common.oauth.OauthUrl;
@@ -15,6 +16,7 @@ import com.cheocharm.MapZ.user.domain.dto.*;
 import com.cheocharm.MapZ.user.domain.repository.UserRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Slice;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.SimpleMailMessage;
@@ -24,7 +26,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+
+import static com.cheocharm.MapZ.common.util.PagingUtils.*;
 
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -213,4 +219,27 @@ public class UserService {
         userEntity.updatePassword(password);
     }
 
+    public GetUserListDto searchUser(Integer page, String searchName) {
+        Slice<UserEntity> content = userRepository.fetchByUserEntityAndSearchName(
+                UserThreadLocal.get(),
+                searchName,
+                applyAscPageConfigBy(page, USER_SIZE, FIELD_USERNAME)
+        );
+
+        final List<UserEntity> userEntityList = content.getContent();
+
+        List<GetUserListDto.UserList> userList = userEntityList.stream()
+                .map(userEntity ->
+                        GetUserListDto.UserList.builder()
+                                .username(userEntity.getUsername())
+                                .userImageUrl(userEntity.getUserImageUrl())
+                                .build()
+                )
+                .collect(Collectors.toList());
+
+        return GetUserListDto.builder()
+                .hasNext(content.hasNext())
+                .userList(userList)
+                .build();
+    }
 }

@@ -4,6 +4,7 @@ import com.cheocharm.MapZ.common.CommonResponse;
 import com.cheocharm.MapZ.user.domain.dto.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -70,6 +71,13 @@ public class UserController {
     public CommonResponse<?> setNewPassword(@Parameter @RequestBody @Valid GetNewPasswordDto getNewPasswordDto) {
         userService.setNewPassword(getNewPasswordDto);
         return CommonResponse.success();
+    }
+
+    @Operation(description = "유저 검색")
+    @Parameter(name = "accessToken", in = ParameterIn.HEADER, required = true)
+    @GetMapping("/user")
+    public CommonResponse<?> searchUser(@RequestParam @Valid Integer page, @RequestParam @Valid String searchName) {
+        return CommonResponse.success(userService.searchUser(page, searchName));
     }
 
 }

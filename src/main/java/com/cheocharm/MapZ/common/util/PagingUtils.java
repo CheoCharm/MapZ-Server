@@ -7,8 +7,10 @@ import org.springframework.data.domain.Sort;
 public class PagingUtils {
 
     public static final String FIELD_CREATED_AT = "createdAt";
+    public static final String FIELD_USERNAME = "username";
 
     public static final Integer GROUP_SIZE = 10;
+    public static final Integer USER_SIZE = 10;
 
     public static Pageable applyPageConfigBy(int page, int size) {
         return PageRequest.of(page, size);
