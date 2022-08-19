@@ -30,9 +30,11 @@ public class DiaryService {
                     throw new AlreadyLikedDiaryException();
                 });
 
-        DiaryLikeEntity.builder()
+        DiaryLikeEntity diaryLikeEntity = DiaryLikeEntity.builder()
                 .diaryEntity(diaryEntity)
                 .userEntity(userEntity)
                 .build();
+
+        diaryLikeRepository.save(diaryLikeEntity);
     }
 }
