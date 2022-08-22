@@ -1,6 +1,7 @@
 package com.cheocharm.MapZ.user.domain;
 
 import com.cheocharm.MapZ.common.CommonResponse;
+import com.cheocharm.MapZ.common.jwt.JwtCreateUtils;
 import com.cheocharm.MapZ.user.domain.dto.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -19,6 +20,7 @@ import javax.validation.Valid;
 public class UserController {
 
     private final UserService userService;
+    private final JwtCreateUtils jwtCreateUtils;
 
     @Operation(description = "구글회원가입")
     @PostMapping
@@ -80,4 +82,10 @@ public class UserController {
         return CommonResponse.success(userService.searchUser(page, searchName));
     }
 
+    @Operation(description = "accessToken 재발급")
+    @Parameter(name = "refreshToken", in = ParameterIn.HEADER, required = true)
+    @GetMapping("/refresh")
+    public CommonResponse<TokenPairResponseDto> refresh(@RequestHeader("refreshToken") String refreshToken) {
+        return CommonResponse.success(jwtCreateUtils.createAccessToken(refreshToken));
+    }
 }
