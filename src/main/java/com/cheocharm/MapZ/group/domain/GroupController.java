@@ -33,7 +33,7 @@ public class GroupController {
     @Operation(description = "그룹 선택을 위한 그룹 조회")
     @Parameter(name = "accessToken", in = ParameterIn.HEADER, required = true)
     @GetMapping
-    public CommonResponse<GetGroupListDto> getGroup(@RequestBody @Valid SearchGroupDto searchGroupDto) {
+    public CommonResponse<GetGroupListDto> getGroup(@RequestParam @Valid SearchGroupDto searchGroupDto) {
         return CommonResponse.success(groupService.getGroup(searchGroupDto));
     }
 

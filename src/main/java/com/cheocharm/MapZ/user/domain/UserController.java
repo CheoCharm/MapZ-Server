@@ -36,14 +36,8 @@ public class UserController {
 
     @Operation(description = "이메일 인증 유효성 검사")
     @GetMapping("/valid/email")
-    public CommonResponse<String> checkEmail(@Parameter @RequestBody @Valid CheckEmailDto checkEmailDto) {
+    public CommonResponse<String> checkEmail(@Parameter @RequestParam @Valid CheckEmailDto checkEmailDto) {
         return CommonResponse.success(userService.authEmail(checkEmailDto));
-    }
-
-    @Operation(description = "비밀번호 유효성 검사")
-    @GetMapping("/valid/password")
-    public CommonResponse<?> checkPassword(@Parameter @RequestBody @Valid CheckPasswordDto checkPasswordDto) {
-        return CommonResponse.success();
     }
 
     @Operation(description = "맵지회원가입")
@@ -62,7 +56,7 @@ public class UserController {
 
     @Operation(description = "비밀번호 찾기")
     @GetMapping("/password")
-    public CommonResponse<String> findPassword(@Parameter @RequestBody @Valid FindPasswordDto findPasswordDto) {
+    public CommonResponse<String> findPassword(@Parameter @RequestParam @Valid FindPasswordDto findPasswordDto) {
         return CommonResponse.success(userService.findPassword(findPasswordDto));
     }
 
