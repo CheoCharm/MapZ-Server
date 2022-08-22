@@ -8,8 +8,8 @@ import javax.validation.constraints.NotNull;
 public class SearchGroupDto {
 
     @NotNull
-    Integer page;
+    private Integer page;
 
     @NotNull
-    String searchName;
+    private String searchName;
 }

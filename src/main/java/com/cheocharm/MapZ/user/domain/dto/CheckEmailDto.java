@@ -8,5 +8,5 @@ import javax.validation.constraints.NotNull;
 @Getter
 public class CheckEmailDto {
     @NotNull @Email
-    String email;
+    private String email;
 }
