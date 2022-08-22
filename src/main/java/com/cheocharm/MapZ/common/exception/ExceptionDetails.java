@@ -32,7 +32,11 @@ public enum ExceptionDetails {
     DUPLICATED_GROUP(HttpStatus.BAD_REQUEST, "3002", "중복된 그룹명입니다."),
 
     //사용자 그룹(userGroup) 예외
-    NOT_FOUND_USERGROUP(HttpStatus.NOT_FOUND, "4001", "해당되는 유저그룹 테이블 데이터가 없습니다.");
+    NOT_FOUND_USERGROUP(HttpStatus.NOT_FOUND, "4001", "해당되는 유저그룹 테이블 데이터가 없습니다."),
+
+    //다이어리 예외
+    NOT_FOUND_DIARY(HttpStatus.NOT_FOUND, "5001", "게시글을 찾을 수 없습니다."),
+    ALREADY_LIKED_DIARY(HttpStatus.BAD_REQUEST, "5002", "이미 좋아요한 게시글입니다.");
 
     // 비즈니스 로직 에러
 
