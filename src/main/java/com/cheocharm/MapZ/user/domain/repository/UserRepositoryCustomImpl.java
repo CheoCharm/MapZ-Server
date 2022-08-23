@@ -9,6 +9,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 import static com.cheocharm.MapZ.common.util.QuerydslSupport.*;
 import static com.cheocharm.MapZ.user.domain.QUserEntity.*;
 
@@ -26,6 +28,14 @@ public class UserRepositoryCustomImpl implements UserRepositoryCustom {
                         .and(userNe(userCond))
                 );
         return fetchSlice(userEntity.getType(), userEntity.getMetadata(), query, pageable);
+    }
+
+    @Override
+    public List<UserEntity> getUserEntityListByUsernameList(List<String> username) {
+        return queryFactory
+                .selectFrom(userEntity)
+                .where(userEntity.username.in(username))
+                .fetch();
     }
 
     private BooleanExpression userNe(UserEntity userCond) {
