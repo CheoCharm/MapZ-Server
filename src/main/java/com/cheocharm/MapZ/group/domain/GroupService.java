@@ -194,6 +194,32 @@ public class GroupService {
         targetUserGroupEntity.changeChief(userGroupEntity, targetUserGroupEntity);
     }
 
+    @Transactional
+    public void inviteUser(InviteUserListDto inviteUserListDto) {
+        final UserEntity userEntity = UserThreadLocal.get();
+
+        final GroupEntity groupEntity = groupRepository.findByGroupName(inviteUserListDto.getGroupName())
+                .orElseThrow(NotFoundGroupException::new);
+
+        final UserGroupEntity userGroupEntity = userGroupRepository.findByUserEntityAndGroupEntity(userEntity, groupEntity)
+                .orElseThrow(NotFoundUserGroupException::new);
+        if (userGroupEntity.getInvitationStatus() != InvitationStatus.ACCEPT) {
+            throw new NoPermissionUserException();
+        }
+
+        List<UserEntity> userEntityList = userRepository.getUserEntityListByUsernameList(inviteUserListDto.getUsernameList());
+        for (UserEntity user : userEntityList) {
+            userGroupRepository.save(
+                    UserGroupEntity.builder()
+                            .userEntity(user)
+                            .groupEntity(groupEntity)
+                            .invitationStatus(InvitationStatus.PENDING)
+                            .userRole(UserRole.MEMBER)
+                            .build()
+            );
+        }
+    }
+
     private int getCount(UserGroupEntity userGroupEntity) {
         int count = userGroupRepository.countByGroupEntity(userGroupEntity.getGroupEntity());
         if (count > 4) {

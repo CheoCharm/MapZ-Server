@@ -76,4 +76,12 @@ public class GroupController {
         groupService.changeChief(changeChiefDto);
         return CommonResponse.success();
     }
+
+    @Operation(description = "그룹 초대")
+    @Parameter(name = "accessToken", in = ParameterIn.HEADER, required = true)
+    @PostMapping("/invite")
+    public CommonResponse<?> inviteUser(@RequestBody @Valid InviteUserListDto inviteUserListDto) {
+        groupService.inviteUser(inviteUserListDto);
+        return CommonResponse.success();
+    }
 }
