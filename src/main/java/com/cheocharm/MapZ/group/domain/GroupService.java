@@ -25,6 +25,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -89,6 +90,8 @@ public class GroupService {
                         GetGroupListDto.GroupList.builder()
                                 .groupName(userGroupEntity.getGroupEntity().getGroupName())
                                 .groupImageUrl(userGroupEntity.getGroupEntity().getGroupImageUrl())
+                                .bio(userGroupEntity.getGroupEntity().getBio())
+                                .createdAt(userGroupEntity.getGroupEntity().getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy.MM.dd")))
                                 .userImageUrlList(userGroupRepository.findUserImage(userGroupEntity.getGroupEntity()))
                                 .count(getCount(userGroupEntity))
                                 .build()
