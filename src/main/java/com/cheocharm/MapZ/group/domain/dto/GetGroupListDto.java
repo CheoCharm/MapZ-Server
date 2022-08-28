@@ -17,6 +17,8 @@ public class GetGroupListDto {
     public static class GroupList {
         String groupName;
         String groupImageUrl;
+        String bio;
+        String createdAt;
         int count;
         List<String> userImageUrlList;
     }
