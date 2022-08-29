@@ -25,6 +25,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -73,13 +74,13 @@ public class GroupService {
         groupRepository.save(groupEntity);
     }
 
-    public GetGroupListDto getGroup(SearchGroupDto searchGroupDto) {
+    public GetGroupListDto getGroup(String searchName, Integer page) {
         UserEntity userEntity = UserThreadLocal.get();
 
         Slice<UserGroupEntity> content = userGroupRepository.fetchByUserEntityAndSearchNameAndOrderByUserName(
                 userEntity,
-                searchGroupDto.getSearchName(),
-                applyPageConfigBy(searchGroupDto.getPage(), GROUP_SIZE)
+                searchName,
+                applyPageConfigBy(page, GROUP_SIZE)
         );
 
         List<UserGroupEntity> userGroupEntityList = content.getContent();
@@ -89,6 +90,8 @@ public class GroupService {
                         GetGroupListDto.GroupList.builder()
                                 .groupName(userGroupEntity.getGroupEntity().getGroupName())
                                 .groupImageUrl(userGroupEntity.getGroupEntity().getGroupImageUrl())
+                                .bio(userGroupEntity.getGroupEntity().getBio())
+                                .createdAt(userGroupEntity.getGroupEntity().getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy.MM.dd")))
                                 .userImageUrlList(userGroupRepository.findUserImage(userGroupEntity.getGroupEntity()))
                                 .count(getCount(userGroupEntity))
                                 .build()
@@ -192,6 +195,32 @@ public class GroupService {
                 .orElseThrow(NotFoundUserException::new);
 
         targetUserGroupEntity.changeChief(userGroupEntity, targetUserGroupEntity);
+    }
+
+    @Transactional
+    public void inviteUser(InviteUserListDto inviteUserListDto) {
+        final UserEntity userEntity = UserThreadLocal.get();
+
+        final GroupEntity groupEntity = groupRepository.findByGroupName(inviteUserListDto.getGroupName())
+                .orElseThrow(NotFoundGroupException::new);
+
+        final UserGroupEntity userGroupEntity = userGroupRepository.findByUserEntityAndGroupEntity(userEntity, groupEntity)
+                .orElseThrow(NotFoundUserGroupException::new);
+        if (userGroupEntity.getInvitationStatus() != InvitationStatus.ACCEPT) {
+            throw new NoPermissionUserException();
+        }
+
+        List<UserEntity> userEntityList = userRepository.getUserEntityListByUsernameList(inviteUserListDto.getUsernameList());
+        for (UserEntity user : userEntityList) {
+            userGroupRepository.save(
+                    UserGroupEntity.builder()
+                            .userEntity(user)
+                            .groupEntity(groupEntity)
+                            .invitationStatus(InvitationStatus.PENDING)
+                            .userRole(UserRole.MEMBER)
+                            .build()
+            );
+        }
     }
 
     private int getCount(UserGroupEntity userGroupEntity) {

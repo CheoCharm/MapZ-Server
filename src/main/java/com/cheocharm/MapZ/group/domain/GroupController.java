@@ -33,8 +33,8 @@ public class GroupController {
     @Operation(description = "그룹 선택을 위한 그룹 조회")
     @Parameter(name = "accessToken", in = ParameterIn.HEADER, required = true)
     @GetMapping
-    public CommonResponse<GetGroupListDto> getGroup(@RequestBody @Valid SearchGroupDto searchGroupDto) {
-        return CommonResponse.success(groupService.getGroup(searchGroupDto));
+    public CommonResponse<GetGroupListDto> getGroup(@RequestParam String searchName, @RequestParam Integer page) {
+        return CommonResponse.success(groupService.getGroup(searchName, page));
     }
 
     @Operation(description = "그룹 공개여부 변경")
@@ -74,6 +74,14 @@ public class GroupController {
     @PatchMapping("/chief")
     public CommonResponse<?> changeChief(@RequestBody @Valid ChangeChiefDto changeChiefDto) {
         groupService.changeChief(changeChiefDto);
+        return CommonResponse.success();
+    }
+
+    @Operation(description = "그룹 초대")
+    @Parameter(name = "accessToken", in = ParameterIn.HEADER, required = true)
+    @PostMapping("/invite")
+    public CommonResponse<?> inviteUser(@RequestBody @Valid InviteUserListDto inviteUserListDto) {
+        groupService.inviteUser(inviteUserListDto);
         return CommonResponse.success();
     }
 }

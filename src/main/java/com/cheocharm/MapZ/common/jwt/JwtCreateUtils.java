@@ -7,6 +7,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
@@ -37,12 +38,15 @@ public class JwtCreateUtils {
                 .compact();
     }
 
-    public String createAccessToken(String refreshToken) {
+    @Transactional
+    public TokenPairResponseDto createAccessToken(String refreshToken) {
         final UserEntity userEntity = jwtCommonUtils.findUserByToken(refreshToken);
         if(!userEntity.getRefreshToken().equals(refreshToken)){
             throw new RuntimeException("토큰 정보 불일치");
         }
-        return createAccessToken(userEntity.getEmail(), userEntity.getUsername(), userEntity.getUserProvider());
+        final TokenPairResponseDto tokenPair = createTokenPair(userEntity.getEmail(), userEntity.getUsername(), userEntity.getUserProvider());
+        userEntity.updateRefreshToken(tokenPair.getRefreshToken());
+        return tokenPair;
     }
 
     public String createRefreshToken(String email, String username, UserProvider userProvider) {

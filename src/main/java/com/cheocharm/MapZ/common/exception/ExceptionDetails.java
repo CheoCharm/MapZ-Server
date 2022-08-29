@@ -26,13 +26,18 @@ public enum ExceptionDetails {
     INVALID_USER_INFO(HttpStatus.BAD_REQUEST, "2007", "유효성 검사 통과에 실패하였습니다."),
     NO_PERMISSION_USER(HttpStatus.BAD_REQUEST, "2008", "허가되지 않은 유저입니다."),
     EXIT_GROUP_CHIEF(HttpStatus.BAD_REQUEST, "2009", "그룹장은 그룹을 나갈 수 없습니다."),
+    CONSTRAINT_VIOLATION(HttpStatus.BAD_REQUEST, "2010", "올바른 형식의 이메일 주소여야 합니다"),
 
     //그룹 관련 에러
     NOT_FOUND_GROUP(HttpStatus.NOT_FOUND, "3001", "해당되는 그룹이 없습니다."),
     DUPLICATED_GROUP(HttpStatus.BAD_REQUEST, "3002", "중복된 그룹명입니다."),
 
     //사용자 그룹(userGroup) 예외
-    NOT_FOUND_USERGROUP(HttpStatus.NOT_FOUND, "4001", "해당되는 유저그룹 테이블 데이터가 없습니다.");
+    NOT_FOUND_USERGROUP(HttpStatus.NOT_FOUND, "4001", "해당되는 유저그룹 테이블 데이터가 없습니다."),
+
+    //다이어리 예외
+    NOT_FOUND_DIARY(HttpStatus.NOT_FOUND, "5001", "게시글을 찾을 수 없습니다."),
+    ALREADY_LIKED_DIARY(HttpStatus.BAD_REQUEST, "5002", "이미 좋아요한 게시글입니다.");
 
     // 비즈니스 로직 에러
 

@@ -8,8 +8,8 @@ import javax.validation.constraints.NotNull;
 @Getter
 public class MapZSignInDto {
     @NotNull @Email
-    String email;
+    private String email;
 
     @NotNull
-    String password;
+    private String password;
 }

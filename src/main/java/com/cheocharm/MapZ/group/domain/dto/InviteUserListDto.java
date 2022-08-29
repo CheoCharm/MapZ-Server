@@ -3,13 +3,14 @@ package com.cheocharm.MapZ.group.domain.dto;
 import lombok.Getter;
 
 import javax.validation.constraints.NotNull;
+import java.util.List;
 
 @Getter
-public class SearchGroupDto {
+public class InviteUserListDto {
 
     @NotNull
-    Integer page;
+    private String groupName;
 
     @NotNull
-    String searchName;
+    private List<String> usernameList;
 }
