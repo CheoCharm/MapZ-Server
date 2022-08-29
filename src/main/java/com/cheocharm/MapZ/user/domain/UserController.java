@@ -8,12 +8,15 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Email;
 
 @Tag(name = "UserController")
+@Validated
 @RequiredArgsConstructor
 @RequestMapping("/api/users")
 @RestController
@@ -37,15 +40,10 @@ public class UserController {
     }
 
     @Operation(description = "이메일 인증 유효성 검사")
-    @GetMapping("/valid/email")
-    public CommonResponse<String> checkEmail(@Parameter @RequestBody @Valid CheckEmailDto checkEmailDto) {
-        return CommonResponse.success(userService.authEmail(checkEmailDto));
-    }
-
-    @Operation(description = "비밀번호 유효성 검사")
-    @GetMapping("/valid/password")
-    public CommonResponse<?> checkPassword(@Parameter @RequestBody @Valid CheckPasswordDto checkPasswordDto) {
-        return CommonResponse.success();
+    @GetMapping("/valid/email/{email}")
+    @Parameter(name = "email", in = ParameterIn.PATH, required = true)
+    public CommonResponse<String> checkEmail(@PathVariable("email") @Email String email) {
+        return CommonResponse.success(userService.authEmail(email));
     }
 
     @Operation(description = "맵지회원가입")
@@ -63,9 +61,9 @@ public class UserController {
     }
 
     @Operation(description = "비밀번호 찾기")
-    @GetMapping("/password")
-    public CommonResponse<String> findPassword(@Parameter @RequestBody @Valid FindPasswordDto findPasswordDto) {
-        return CommonResponse.success(userService.findPassword(findPasswordDto));
+    @GetMapping("/password/{email}")
+    public CommonResponse<String> findPassword(@Parameter @PathVariable("email") @Email String email) {
+        return CommonResponse.success(userService.findPassword(email));
     }
 
     @Operation(description = "새 비밀번호 설정")

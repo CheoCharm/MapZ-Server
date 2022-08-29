@@ -1,11 +1,12 @@
 package com.cheocharm.MapZ.common.exception;
 
 import com.cheocharm.MapZ.common.CommonResponse;
-import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.NoHandlerFoundException;
+
+import javax.validation.ConstraintViolationException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -25,6 +26,12 @@ public class GlobalExceptionHandler {
     protected CommonResponse handleMethodArgumentNotValidException(MethodArgumentNotValidException ex) {
         ExceptionDetails exceptionDetails = ExceptionDetails.INVALID_USER_INFO;
         return CommonResponse.fail(exceptionDetails.getStatusCode(), exceptionDetails.getCustomCode(), ex.getBindingResult().getAllErrors().get(0).getDefaultMessage());
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    protected CommonResponse handleConstraintViolationException(ConstraintViolationException ex) {
+        ExceptionDetails exceptionDetails = ExceptionDetails.CONSTRAINT_VIOLATION;
+        return CommonResponse.fail(exceptionDetails.getStatusCode(), exceptionDetails.getCustomCode(), ex.getMessage());
     }
 
     @ExceptionHandler(Exception.class)

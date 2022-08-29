@@ -8,14 +8,14 @@ import java.util.List;
 @Getter
 @Builder
 public class GetUserListDto {
-    Boolean hasNext;
-    List<UserList> userList;
+    private Boolean hasNext;
+    private List<UserList> userList;
 
     @Getter
     @Builder
     public static class UserList {
-        String username;
-        String userImageUrl;
+        private String username;
+        private String userImageUrl;
     }
 
 }

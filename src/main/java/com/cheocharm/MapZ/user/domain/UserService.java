@@ -175,22 +175,22 @@ public class UserService {
 
     }
 
-    public String authEmail(CheckEmailDto checkEmailPasswordDto) {
+    public String authEmail(String email) {
         //이메일 중복 확인
-        userRepository.findByEmailAndUserProvider(checkEmailPasswordDto.getEmail(), UserProvider.MAPZ)
+        userRepository.findByEmailAndUserProvider(email, UserProvider.MAPZ)
                 .ifPresent(userEntity -> {
                     throw new DuplicatedEmailException();
                 });
 
-        return sendEmail(checkEmailPasswordDto.getEmail());
+        return sendEmail(email);
     }
 
-    public String findPassword(FindPasswordDto findPasswordDto) {
+    public String findPassword(String email) {
         //가입된 사용자인지 확인
-        userRepository.findByEmailAndUserProvider(findPasswordDto.getEmail(), UserProvider.MAPZ)
+        userRepository.findByEmailAndUserProvider(email, UserProvider.MAPZ)
                 .orElseThrow(NotFoundUserException::new);
 
-        return sendEmail(findPasswordDto.getEmail());
+        return sendEmail(email);
 
     }
 
