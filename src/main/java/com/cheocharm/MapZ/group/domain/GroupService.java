@@ -73,13 +73,13 @@ public class GroupService {
         groupRepository.save(groupEntity);
     }
 
-    public GetGroupListDto getGroup(SearchGroupDto searchGroupDto) {
+    public GetGroupListDto getGroup(String searchName, Integer page) {
         UserEntity userEntity = UserThreadLocal.get();
 
         Slice<UserGroupEntity> content = userGroupRepository.fetchByUserEntityAndSearchNameAndOrderByUserName(
                 userEntity,
-                searchGroupDto.getSearchName(),
-                applyPageConfigBy(searchGroupDto.getPage(), GROUP_SIZE)
+                searchName,
+                applyPageConfigBy(page, GROUP_SIZE)
         );
 
         List<UserGroupEntity> userGroupEntityList = content.getContent();
