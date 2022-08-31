@@ -39,12 +39,4 @@ public class CommonResponse<T> {
                 .data(null)
                 .build();
     }
-
-    public static <T> CommonResponse<T> expiredToken() {
-        return CommonResponse.<T>builder()
-                .statusCode(HttpStatus.UNAUTHORIZED.value())
-                .message(HttpStatus.UNAUTHORIZED.toString())
-                .data(null)
-                .build();
-    }
 }
