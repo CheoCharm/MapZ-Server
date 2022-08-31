@@ -18,7 +18,7 @@ public enum ExceptionDetails {
 
     // 사용자 관련 에러
     INVALID_TOKEN(HttpStatus.BAD_REQUEST, "2001", "유효하지 않은 JWT 입니다. 토큰을 다시 확인해주세요."),
-    EXPIRED_TOKEN(HttpStatus.BAD_REQUEST, "2002", "만료된 JWT 입니다."),
+    EXPIRED_TOKEN(HttpStatus.UNAUTHORIZED, "2002", "만료된 JWT 입니다."),
     DUPLICATED_EMAIL(HttpStatus.BAD_REQUEST, "2003", "중복된 이메일입니다."),
     DUPLICATED_USERNAME(HttpStatus.BAD_REQUEST, "2004", "중복된 닉네임입니다."),
     NOT_FOUND_USER(HttpStatus.NOT_FOUND, "2005", "가입된 사용자가 아닙니다."),
