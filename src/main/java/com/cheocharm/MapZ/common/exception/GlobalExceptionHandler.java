@@ -38,9 +38,9 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(Exception.class)
-    protected CommonResponse<?> handleException() {
+    protected CommonResponse<?> handleException(Exception ex) {
         ExceptionDetails exceptionDetails = ExceptionDetails.INTERNAL_SERVER_ERROR;
-        return CommonResponse.fail(exceptionDetails.getStatusCode(), exceptionDetails.getCustomCode(), exceptionDetails.getMessage());
+        return CommonResponse.fail(exceptionDetails.getStatusCode(), exceptionDetails.getCustomCode(), exceptionDetails.getMessage().concat(ex.getMessage()));
     }
 
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
