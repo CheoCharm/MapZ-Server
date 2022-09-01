@@ -76,7 +76,7 @@ public class UserController {
     @Operation(description = "유저 검색")
     @Parameter(name = "accessToken", in = ParameterIn.HEADER, required = true)
     @GetMapping("/user")
-    public CommonResponse<?> searchUser(@RequestParam @Valid Integer page, @RequestParam @Valid String searchName) {
+    public CommonResponse<GetUserListDto> searchUser(@RequestParam @Valid Integer page, @RequestParam @Valid String searchName) {
         return CommonResponse.success(userService.searchUser(page, searchName));
     }
 
