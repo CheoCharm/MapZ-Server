@@ -28,7 +28,8 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addInterceptor(authInterceptor)
                 .addPathPatterns("/api/**")
                 .excludePathPatterns("/api/users", "/api/users/login", "/api/users/valid/email/**",
-                        "/api/users/password/**", "/api/users/signup", "/api/users/signin", "/api/users/password");
+                        "/api/users/password/**", "/api/users/signup", "/api/users/signin", "/api/users/password",
+                        "/api/users/refresh");
     }
 
     @Bean
