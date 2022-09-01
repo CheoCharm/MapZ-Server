@@ -9,7 +9,7 @@ import org.springframework.http.HttpStatus;
 public enum ExceptionDetails {
     // 공통 에러
     NOT_FOUND_API(HttpStatus.NOT_FOUND, "0001", "존재하지 않는 API입니다. 요청 경로를 확인해주세요."),
-    INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "0002", "서버 에러입니다. 서버측에 문의주세요."),
+    INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "0002", "서버 에러입니다. 서버측에 문의주세요. 메시지는: "),
     FAIL_CONVERT_TO_JSON(HttpStatus.INTERNAL_SERVER_ERROR, "0003", "JSON으로 변환하는 도중 오류가 발생하였습니다."),
 
     // S3 에러
