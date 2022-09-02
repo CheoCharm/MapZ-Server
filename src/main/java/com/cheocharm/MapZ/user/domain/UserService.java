@@ -2,6 +2,7 @@ package com.cheocharm.MapZ.user.domain;
 
 import com.cheocharm.MapZ.agreement.AgreementEntity;
 import com.cheocharm.MapZ.agreement.repository.AgreementRepository;
+import com.cheocharm.MapZ.common.exception.group.NotFoundGroupException;
 import com.cheocharm.MapZ.common.exception.jwt.InvalidJwtException;
 import com.cheocharm.MapZ.common.exception.user.*;
 import com.cheocharm.MapZ.common.interceptor.UserThreadLocal;
@@ -12,8 +13,12 @@ import com.cheocharm.MapZ.common.util.ObjectMapperUtils;
 import com.cheocharm.MapZ.common.oauth.GoogleYml;
 import com.cheocharm.MapZ.common.util.RandomUtils;
 import com.cheocharm.MapZ.common.util.S3Utils;
+import com.cheocharm.MapZ.group.domain.GroupEntity;
+import com.cheocharm.MapZ.group.domain.repository.GroupRepository;
 import com.cheocharm.MapZ.user.domain.dto.*;
 import com.cheocharm.MapZ.user.domain.repository.UserRepository;
+import com.cheocharm.MapZ.usergroup.UserGroupEntity;
+import com.cheocharm.MapZ.usergroup.repository.UserGroupRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Slice;
@@ -39,6 +44,8 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final AgreementRepository agreementRepository;
+    private final GroupRepository groupRepository;
+    private final UserGroupRepository userGroupRepository;
 
     private final JwtCreateUtils jwtCreateUtils;
     private final GoogleYml googleYml;
@@ -219,7 +226,7 @@ public class UserService {
         userEntity.updatePassword(password);
     }
 
-    public GetUserListDto searchUser(Integer page, String searchName) {
+    public GetUserListDto searchUser(Integer page, String searchName, String groupName) {
         Slice<UserEntity> content = userRepository.fetchByUserEntityAndSearchName(
                 UserThreadLocal.get(),
                 searchName,
@@ -228,11 +235,17 @@ public class UserService {
 
         final List<UserEntity> userEntityList = content.getContent();
 
-        List<GetUserListDto.UserList> userList = userEntityList.stream()
+        final GroupEntity groupEntity = groupRepository.findByGroupName(groupName)
+                .orElseThrow(NotFoundGroupException::new);
+
+        final List<UserGroupEntity> groupMemberList = userGroupRepository.findBySearchNameAndGroupEntity(searchName, groupEntity);
+
+        final List<GetUserListDto.UserList> userList = userEntityList.stream()
                 .map(userEntity ->
                         GetUserListDto.UserList.builder()
                                 .username(userEntity.getUsername())
                                 .userImageUrl(userEntity.getUserImageUrl())
+                                .member(isMember(userEntity, groupMemberList))
                                 .build()
                 )
                 .collect(Collectors.toList());
@@ -241,5 +254,14 @@ public class UserService {
                 .hasNext(content.hasNext())
                 .userList(userList)
                 .build();
+    }
+
+    private Boolean isMember(UserEntity userEntity, List<UserGroupEntity> groupMemberList) {
+        for (UserGroupEntity userGroupEntity : groupMemberList) {
+            if (userEntity.equals(userGroupEntity.getUserEntity())) {
+                return true;
+            }
+        }
+        return false;
     }
 }

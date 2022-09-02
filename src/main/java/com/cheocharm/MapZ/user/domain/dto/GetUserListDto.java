@@ -1,5 +1,6 @@
 package com.cheocharm.MapZ.user.domain.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -16,6 +17,8 @@ public class GetUserListDto {
     public static class UserList {
         private String username;
         private String userImageUrl;
+        @Schema(description = "그룹에 포함되어 있는 멤버면 true, 아니면 false")
+        private Boolean member;
     }
 
 }

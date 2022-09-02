@@ -52,10 +52,26 @@ public class UserGroupRepositoryCustomImpl implements UserGroupRepositoryCustom 
                 .fetch();
     }
 
+    @Override
+    public List<UserGroupEntity> findBySearchNameAndGroupEntity(String searchName, GroupEntity groupEntity) {
+        return fetchJoinUserEntity()
+                .where(userGroupEntity.userEntity.username.contains(searchName)
+                        .and(groupEq(groupEntity))
+                )
+                .fetch();
+    }
+
     private JPAQuery<UserGroupEntity> fetchJoinQuery() {
         return queryFactory
                 .selectFrom(userGroupEntity)
                 .innerJoin(userGroupEntity.groupEntity, groupEntity)
+                .innerJoin(userGroupEntity.userEntity, userEntity)
+                .fetchJoin();
+    }
+
+    private JPAQuery<UserGroupEntity> fetchJoinUserEntity() {
+        return queryFactory
+                .selectFrom(userGroupEntity)
                 .innerJoin(userGroupEntity.userEntity, userEntity)
                 .fetchJoin();
     }
