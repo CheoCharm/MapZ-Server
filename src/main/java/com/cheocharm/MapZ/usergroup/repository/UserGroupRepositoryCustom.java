@@ -14,4 +14,6 @@ public interface UserGroupRepositoryCustom {
     Slice<UserGroupEntity> fetchByUserEntityAndSearchNameAndOrderByUserName(UserEntity userEntity, String searchName, Pageable pageable);
 
     List<String> findUserImage(GroupEntity groupEntity);
+
+    List<UserGroupEntity> findBySearchNameAndGroupEntity(String searchName, GroupEntity groupEntity);
 }
