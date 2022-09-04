@@ -30,11 +30,11 @@ public class GroupController {
         return CommonResponse.success();
     }
 
-    @Operation(description = "그룹 선택을 위한 그룹 조회")
+    @Operation(description = "그룹 참가를 위한 그룹 조회")
     @Parameter(name = "accessToken", in = ParameterIn.HEADER, required = true)
     @GetMapping
-    public CommonResponse<GetGroupListDto> getGroup(@RequestParam String searchName, @RequestParam Integer page) {
-        return CommonResponse.success(groupService.getGroup(searchName, page));
+    public CommonResponse<GetGroupListDto> getGroup(@RequestParam String groupName, @RequestParam Integer page) {
+        return CommonResponse.success(groupService.getGroup(groupName, page));
     }
 
     @Operation(description = "그룹 공개여부 변경")
