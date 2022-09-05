@@ -74,33 +74,31 @@ public class GroupService {
         groupRepository.save(groupEntity);
     }
 
-    public GetGroupListDto getGroup(String searchName, Integer page) {
-        UserEntity userEntity = UserThreadLocal.get();
+    public GetGroupListDto getGroup(String groupName, Integer page) {
 
-        Slice<UserGroupEntity> content = userGroupRepository.fetchByUserEntityAndSearchNameAndOrderByUserName(
-                userEntity,
-                searchName,
-                applyPageConfigBy(page, GROUP_SIZE)
+        Slice<GroupEntity> content = groupRepository.findByGroupName(
+                groupName,
+                applyAscPageConfigBy(page, GROUP_SIZE, FIELD_GROUP_NAME)
         );
 
-        List<UserGroupEntity> userGroupEntityList = content.getContent();
+        List<GroupEntity> groupEntityList = content.getContent();
 
-        List<GetGroupListDto.GroupList> GroupList = userGroupEntityList.stream()
-                .map(userGroupEntity ->
+        List<GetGroupListDto.GroupList> groupList = groupEntityList.stream()
+                .map(groupEntity ->
                         GetGroupListDto.GroupList.builder()
-                                .groupName(userGroupEntity.getGroupEntity().getGroupName())
-                                .groupImageUrl(userGroupEntity.getGroupEntity().getGroupImageUrl())
-                                .bio(userGroupEntity.getGroupEntity().getBio())
-                                .createdAt(userGroupEntity.getGroupEntity().getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy.MM.dd")))
-                                .userImageUrlList(userGroupRepository.findUserImage(userGroupEntity.getGroupEntity()))
-                                .count(getCount(userGroupEntity))
+                                .groupName(groupEntity.getGroupName())
+                                .groupImageUrl(groupEntity.getGroupImageUrl())
+                                .bio(groupEntity.getBio())
+                                .createdAt(groupEntity.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy.MM.dd")))
+                                .userImageUrlList(userGroupRepository.findUserImage(groupEntity))
+                                .count(getCount(groupEntity))
                                 .build()
                 )
                 .collect(Collectors.toList());
 
         return GetGroupListDto.builder()
                 .hasNextPage(content.hasNext())
-                .groupList(GroupList)
+                .groupList(groupList)
                 .build();
     }
 
@@ -223,8 +221,8 @@ public class GroupService {
         }
     }
 
-    private int getCount(UserGroupEntity userGroupEntity) {
-        int count = userGroupRepository.countByGroupEntity(userGroupEntity.getGroupEntity());
+    private int getCount(GroupEntity groupEntity) {
+        int count = userGroupRepository.countByGroupEntity(groupEntity);
         if (count > 4) {
             return count - 4;
         }

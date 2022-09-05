@@ -7,13 +7,10 @@ import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 
-import static com.cheocharm.MapZ.common.util.QuerydslSupport.*;
 import static com.cheocharm.MapZ.group.domain.QGroupEntity.*;
 import static com.cheocharm.MapZ.user.domain.QUserEntity.*;
 import static com.cheocharm.MapZ.usergroup.QUserGroupEntity.*;
@@ -29,17 +26,6 @@ public class UserGroupRepositoryCustomImpl implements UserGroupRepositoryCustom 
         return fetchJoinQuery()
                 .where(userEq(userEntity))
                 .fetch();
-    }
-
-    @Override
-    public Slice<UserGroupEntity> fetchByUserEntityAndSearchNameAndOrderByUserName(UserEntity userEntity, String searchName, Pageable pageable) {
-        JPAQuery<UserGroupEntity> query = fetchJoinQuery()
-                .orderBy(userGroupEntity.groupEntity.groupName.asc())
-                .where(userGroupEntity.groupEntity.groupName.contains(searchName)
-                        .and(userEq(userEntity))
-                );
-
-        return fetchSlice(query, pageable);
     }
 
     @Override
