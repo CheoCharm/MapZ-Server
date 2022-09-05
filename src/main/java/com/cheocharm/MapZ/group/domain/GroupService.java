@@ -74,7 +74,7 @@ public class GroupService {
         groupRepository.save(groupEntity);
     }
 
-    public GetGroupListDto getGroup(String groupName, Integer page) {
+    public PagingGetGroupListDto getGroup(String groupName, Integer page) {
 
         Slice<GroupEntity> content = groupRepository.findByGroupName(
                 groupName,
@@ -83,9 +83,9 @@ public class GroupService {
 
         List<GroupEntity> groupEntityList = content.getContent();
 
-        List<GetGroupListDto.GroupList> groupList = groupEntityList.stream()
+        List<PagingGetGroupListDto.GroupList> groupList = groupEntityList.stream()
                 .map(groupEntity ->
-                        GetGroupListDto.GroupList.builder()
+                        PagingGetGroupListDto.GroupList.builder()
                                 .groupName(groupEntity.getGroupName())
                                 .groupImageUrl(groupEntity.getGroupImageUrl())
                                 .bio(groupEntity.getBio())
@@ -96,7 +96,7 @@ public class GroupService {
                 )
                 .collect(Collectors.toList());
 
-        return GetGroupListDto.builder()
+        return PagingGetGroupListDto.builder()
                 .hasNextPage(content.hasNext())
                 .groupList(groupList)
                 .build();
@@ -219,6 +219,23 @@ public class GroupService {
                             .build()
             );
         }
+    }
+
+    public List<GetGroupListDto> searchMyGroup() {
+        final UserEntity userEntity = UserThreadLocal.get();
+
+        final List<UserGroupEntity> list = userGroupRepository.fetchJoinByUserEntity(userEntity);
+
+        return list.stream()
+                .map(userGroupEntity ->
+                        GetGroupListDto.builder()
+                                .groupName(userGroupEntity.getGroupEntity().getGroupName())
+                                .groupImageUrl(userGroupEntity.getGroupEntity().getGroupImageUrl())
+                                .count(getCount(userGroupEntity.getGroupEntity()))
+                                .userImageUrlList(userGroupRepository.findUserImage(userGroupEntity.getGroupEntity()))
+                                .build()
+                )
+                .collect(Collectors.toList());
     }
 
     private int getCount(GroupEntity groupEntity) {
