@@ -49,9 +49,8 @@ public class GroupController {
     @Operation(description = "그룹 참가 신청")
     @Parameter(name = "accessToken", in = ParameterIn.HEADER, required = true)
     @PostMapping("/join")
-    public CommonResponse<?> joinGroup(@RequestBody @Valid JoinGroupDto joinGroupDto) {
-        groupService.joinGroup(joinGroupDto);
-        return CommonResponse.success();
+    public CommonResponse<JoinGroupResultDto> joinGroup(@RequestBody @Valid JoinGroupDto joinGroupDto) {
+        return CommonResponse.success(groupService.joinGroup(joinGroupDto));
     }
 
     @Operation(description = "그룹 참가 신청 변경")
