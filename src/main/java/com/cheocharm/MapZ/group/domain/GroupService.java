@@ -27,6 +27,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -117,11 +118,19 @@ public class GroupService {
     }
 
     @Transactional
-    public void joinGroup(JoinGroupDto joinGroupDto) {
+    public JoinGroupResultDto joinGroup(JoinGroupDto joinGroupDto) {
         final UserEntity userEntity = UserThreadLocal.get();
-
         final GroupEntity groupEntity = groupRepository.findByGroupName(joinGroupDto.getGroupName())
                 .orElseThrow(NotFoundGroupException::new);
+
+        Optional<UserGroupEntity> userGroupEntity = userGroupRepository.findByUserEntityAndGroupEntity(userEntity, groupEntity);
+
+        if (userGroupEntity.isPresent()) {
+            return JoinGroupResultDto.builder()
+                    .alreadyJoin(true)
+                    .status(userGroupEntity.get().getInvitationStatus().getStatus())
+                    .build();
+        }
 
         userGroupRepository.save(
                 UserGroupEntity.builder()
@@ -131,7 +140,10 @@ public class GroupService {
                         .userRole(UserRole.MEMBER)
                         .build()
         );
-
+        return JoinGroupResultDto.builder()
+                .alreadyJoin(false)
+                .status(InvitationStatus.PENDING.getStatus())
+                .build();
     }
 
     @Transactional
