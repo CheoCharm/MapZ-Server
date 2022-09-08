@@ -80,6 +80,13 @@ public class UserController {
         return CommonResponse.success(userService.searchUser(page, searchName, groupName));
     }
 
+    @Operation(description = "마이페이지 닉네임, 프로필 이미지 가져오기")
+    @Parameter(name = "accessToken", in = ParameterIn.HEADER, required = true)
+    @GetMapping("/mypage")
+    public CommonResponse<MyPageInfoDto> getMyPageInfo() {
+        return CommonResponse.success(userService.getMyPageInfo());
+    }
+
     @Operation(description = "accessToken 재발급")
     @Parameter(name = "refreshToken", in = ParameterIn.HEADER, required = true)
     @GetMapping("/refresh")
