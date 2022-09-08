@@ -256,6 +256,15 @@ public class UserService {
                 .build();
     }
 
+    public MyPageInfoDto getMyPageInfo() {
+        final UserEntity userEntity = UserThreadLocal.get();
+
+        return MyPageInfoDto.builder()
+                .username(userEntity.getUsername())
+                .userImageUrl(userEntity.getUserImageUrl())
+                .build();
+    }
+
     private Boolean isMember(UserEntity userEntity, List<UserGroupEntity> groupMemberList) {
         for (UserGroupEntity userGroupEntity : groupMemberList) {
             if (userEntity.equals(userGroupEntity.getUserEntity())) {
