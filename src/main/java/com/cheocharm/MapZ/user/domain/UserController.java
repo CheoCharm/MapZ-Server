@@ -73,11 +73,18 @@ public class UserController {
         return CommonResponse.success();
     }
 
-    @Operation(description = "유저 검색")
+    @Operation(description = "그룹 초대를 위한 유저 검색")
     @Parameter(name = "accessToken", in = ParameterIn.HEADER, required = true)
     @GetMapping("/user")
-    public CommonResponse<?> searchUser(@RequestParam @Valid Integer page, @RequestParam @Valid String searchName) {
-        return CommonResponse.success(userService.searchUser(page, searchName));
+    public CommonResponse<GetUserListDto> searchUser(@RequestParam Integer page, @RequestParam String searchName, @RequestParam String groupName) {
+        return CommonResponse.success(userService.searchUser(page, searchName, groupName));
+    }
+
+    @Operation(description = "마이페이지 닉네임, 프로필 이미지 가져오기")
+    @Parameter(name = "accessToken", in = ParameterIn.HEADER, required = true)
+    @GetMapping("/mypage")
+    public CommonResponse<MyPageInfoDto> getMyPageInfo() {
+        return CommonResponse.success(userService.getMyPageInfo());
     }
 
     @Operation(description = "accessToken 재발급")

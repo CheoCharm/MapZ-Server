@@ -7,13 +7,10 @@ import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 
-import static com.cheocharm.MapZ.common.util.QuerydslSupport.*;
 import static com.cheocharm.MapZ.group.domain.QGroupEntity.*;
 import static com.cheocharm.MapZ.user.domain.QUserEntity.*;
 import static com.cheocharm.MapZ.usergroup.QUserGroupEntity.*;
@@ -32,17 +29,6 @@ public class UserGroupRepositoryCustomImpl implements UserGroupRepositoryCustom 
     }
 
     @Override
-    public Slice<UserGroupEntity> fetchByUserEntityAndSearchNameAndOrderByUserName(UserEntity userEntity, String searchName, Pageable pageable) {
-        JPAQuery<UserGroupEntity> query = fetchJoinQuery()
-                .orderBy(userGroupEntity.groupEntity.groupName.asc())
-                .where(userGroupEntity.groupEntity.groupName.contains(searchName)
-                        .and(userEq(userEntity))
-                );
-
-        return fetchSlice(query, pageable);
-    }
-
-    @Override
     public List<String> findUserImage(GroupEntity groupEntity) {
         return queryFactory
                 .select(userGroupEntity.userEntity.userImageUrl)
@@ -52,10 +38,26 @@ public class UserGroupRepositoryCustomImpl implements UserGroupRepositoryCustom 
                 .fetch();
     }
 
+    @Override
+    public List<UserGroupEntity> findBySearchNameAndGroupEntity(String searchName, GroupEntity groupEntity) {
+        return fetchJoinUserEntity()
+                .where(userGroupEntity.userEntity.username.contains(searchName)
+                        .and(groupEq(groupEntity))
+                )
+                .fetch();
+    }
+
     private JPAQuery<UserGroupEntity> fetchJoinQuery() {
         return queryFactory
                 .selectFrom(userGroupEntity)
                 .innerJoin(userGroupEntity.groupEntity, groupEntity)
+                .innerJoin(userGroupEntity.userEntity, userEntity)
+                .fetchJoin();
+    }
+
+    private JPAQuery<UserGroupEntity> fetchJoinUserEntity() {
+        return queryFactory
+                .selectFrom(userGroupEntity)
                 .innerJoin(userGroupEntity.userEntity, userEntity)
                 .fetchJoin();
     }

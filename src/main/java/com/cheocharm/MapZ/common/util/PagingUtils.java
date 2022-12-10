@@ -8,13 +8,10 @@ public class PagingUtils {
 
     public static final String FIELD_CREATED_AT = "createdAt";
     public static final String FIELD_USERNAME = "username";
+    public static final String FIELD_GROUP_NAME = "groupName";
 
     public static final Integer GROUP_SIZE = 10;
     public static final Integer USER_SIZE = 10;
-
-    public static Pageable applyPageConfigBy(int page, int size) {
-        return PageRequest.of(page, size);
-    }
 
     public static Pageable applyAscPageConfigBy(int page, int size, String property) {
         return PageRequest.of(page, size, Sort.Direction.ASC, property);

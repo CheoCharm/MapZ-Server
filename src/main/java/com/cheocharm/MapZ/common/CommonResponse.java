@@ -31,19 +31,11 @@ public class CommonResponse<T> {
                 .build();
     }
 
-    public static <T extends HttpStatus> CommonResponse<T> fail(T statusCode, String customCdoe, String message) {
+    public static <T extends HttpStatus> CommonResponse<T> fail(T statusCode, String customCode, String message) {
         return CommonResponse.<T>builder()
                 .statusCode(statusCode.value())
-                .customCode(customCdoe)
+                .customCode(customCode)
                 .message(message)
-                .data(null)
-                .build();
-    }
-
-    public static <T> CommonResponse<T> expiredToken() {
-        return CommonResponse.<T>builder()
-                .statusCode(HttpStatus.UNAUTHORIZED.value())
-                .message(HttpStatus.UNAUTHORIZED.toString())
                 .data(null)
                 .build();
     }

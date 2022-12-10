@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
+import java.util.List;
 
 @Tag(name = "GroupController")
 @RequiredArgsConstructor
@@ -30,11 +31,11 @@ public class GroupController {
         return CommonResponse.success();
     }
 
-    @Operation(description = "그룹 선택을 위한 그룹 조회")
+    @Operation(description = "그룹 참가를 위한 그룹 조회")
     @Parameter(name = "accessToken", in = ParameterIn.HEADER, required = true)
     @GetMapping
-    public CommonResponse<GetGroupListDto> getGroup(@RequestParam String searchName, @RequestParam Integer page) {
-        return CommonResponse.success(groupService.getGroup(searchName, page));
+    public CommonResponse<PagingGetGroupListDto> getGroup(@RequestParam String groupName, @RequestParam Integer page) {
+        return CommonResponse.success(groupService.getGroup(groupName, page));
     }
 
     @Operation(description = "그룹 공개여부 변경")
@@ -48,9 +49,8 @@ public class GroupController {
     @Operation(description = "그룹 참가 신청")
     @Parameter(name = "accessToken", in = ParameterIn.HEADER, required = true)
     @PostMapping("/join")
-    public CommonResponse<?> joinGroup(@RequestBody @Valid JoinGroupDto joinGroupDto) {
-        groupService.joinGroup(joinGroupDto);
-        return CommonResponse.success();
+    public CommonResponse<JoinGroupResultDto> joinGroup(@RequestBody @Valid JoinGroupDto joinGroupDto) {
+        return CommonResponse.success(groupService.joinGroup(joinGroupDto));
     }
 
     @Operation(description = "그룹 참가 신청 변경")
@@ -83,5 +83,12 @@ public class GroupController {
     public CommonResponse<?> inviteUser(@RequestBody @Valid InviteUserListDto inviteUserListDto) {
         groupService.inviteUser(inviteUserListDto);
         return CommonResponse.success();
+    }
+
+    @Operation(description = "내 그룹 검색")
+    @Parameter(name = "accessToken", in = ParameterIn.HEADER, required = true)
+    @GetMapping("/mygroup")
+    public CommonResponse<List<GetGroupListDto>> searchMyGroup() {
+        return CommonResponse.success(groupService.searchMyGroup());
     }
 }

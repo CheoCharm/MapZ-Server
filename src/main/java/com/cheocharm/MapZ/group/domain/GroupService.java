@@ -25,7 +25,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -75,31 +77,31 @@ public class GroupService {
         );
     }
 
-    public GetGroupListDto getGroup(String searchName, Integer page) {
-        UserEntity userEntity = UserThreadLocal.get();
+    public PagingGetGroupListDto getGroup(String groupName, Integer page) {
 
-        Slice<UserGroupEntity> content = userGroupRepository.fetchByUserEntityAndSearchNameAndOrderByUserName(
-                userEntity,
-                searchName,
-                applyPageConfigBy(page, GROUP_SIZE)
+        Slice<GroupEntity> content = groupRepository.findByGroupName(
+                groupName,
+                applyAscPageConfigBy(page, GROUP_SIZE, FIELD_GROUP_NAME)
         );
 
-        List<UserGroupEntity> userGroupEntityList = content.getContent();
+        List<GroupEntity> groupEntityList = content.getContent();
 
-        List<GetGroupListDto.GroupList> GroupList = userGroupEntityList.stream()
-                .map(userGroupEntity ->
-                        GetGroupListDto.GroupList.builder()
-                                .groupName(userGroupEntity.getGroupEntity().getGroupName())
-                                .groupImageUrl(userGroupEntity.getGroupEntity().getGroupImageUrl())
-                                .userImageUrlList(userGroupRepository.findUserImage(userGroupEntity.getGroupEntity()))
-                                .count(getCount(userGroupEntity))
+        List<PagingGetGroupListDto.GroupList> groupList = groupEntityList.stream()
+                .map(groupEntity ->
+                        PagingGetGroupListDto.GroupList.builder()
+                                .groupName(groupEntity.getGroupName())
+                                .groupImageUrl(groupEntity.getGroupImageUrl())
+                                .bio(groupEntity.getBio())
+                                .createdAt(groupEntity.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy.MM.dd")))
+                                .userImageUrlList(userGroupRepository.findUserImage(groupEntity))
+                                .count(getCount(groupEntity))
                                 .build()
                 )
                 .collect(Collectors.toList());
 
-        return GetGroupListDto.builder()
+        return PagingGetGroupListDto.builder()
                 .hasNextPage(content.hasNext())
-                .groupList(GroupList)
+                .groupList(groupList)
                 .build();
     }
 
@@ -118,11 +120,19 @@ public class GroupService {
     }
 
     @Transactional
-    public void joinGroup(JoinGroupDto joinGroupDto) {
+    public JoinGroupResultDto joinGroup(JoinGroupDto joinGroupDto) {
         final UserEntity userEntity = UserThreadLocal.get();
-
         final GroupEntity groupEntity = groupRepository.findByGroupName(joinGroupDto.getGroupName())
                 .orElseThrow(NotFoundGroupException::new);
+
+        Optional<UserGroupEntity> userGroupEntity = userGroupRepository.findByUserEntityAndGroupEntity(userEntity, groupEntity);
+
+        if (userGroupEntity.isPresent()) {
+            return JoinGroupResultDto.builder()
+                    .alreadyJoin(true)
+                    .status(userGroupEntity.get().getInvitationStatus().getStatus())
+                    .build();
+        }
 
         userGroupRepository.save(
                 UserGroupEntity.builder()
@@ -132,7 +142,10 @@ public class GroupService {
                         .userRole(UserRole.MEMBER)
                         .build()
         );
-
+        return JoinGroupResultDto.builder()
+                .alreadyJoin(false)
+                .status(InvitationStatus.PENDING.getStatus())
+                .build();
     }
 
     @Transactional
@@ -222,8 +235,25 @@ public class GroupService {
         }
     }
 
-    private int getCount(UserGroupEntity userGroupEntity) {
-        int count = userGroupRepository.countByGroupEntity(userGroupEntity.getGroupEntity());
+    public List<GetGroupListDto> searchMyGroup() {
+        final UserEntity userEntity = UserThreadLocal.get();
+
+        final List<UserGroupEntity> list = userGroupRepository.fetchJoinByUserEntity(userEntity);
+
+        return list.stream()
+                .map(userGroupEntity ->
+                        GetGroupListDto.builder()
+                                .groupName(userGroupEntity.getGroupEntity().getGroupName())
+                                .groupImageUrl(userGroupEntity.getGroupEntity().getGroupImageUrl())
+                                .count(getCount(userGroupEntity.getGroupEntity()))
+                                .userImageUrlList(userGroupRepository.findUserImage(userGroupEntity.getGroupEntity()))
+                                .build()
+                )
+                .collect(Collectors.toList());
+    }
+
+    private int getCount(GroupEntity groupEntity) {
+        int count = userGroupRepository.countByGroupEntity(groupEntity);
         if (count > 4) {
             return count - 4;
         }
