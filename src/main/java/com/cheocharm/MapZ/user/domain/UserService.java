@@ -226,11 +226,12 @@ public class UserService {
         userEntity.updatePassword(password);
     }
 
-    public GetUserListDto searchUser(Integer page, String searchName, String groupName) {
+    public GetUserListDto searchUser(Integer page, Long cursorId, String searchName, String groupName) {
         Slice<UserEntity> content = userRepository.fetchByUserEntityAndSearchName(
                 UserThreadLocal.get(),
                 searchName,
-                applyAscPageConfigBy(page, USER_SIZE, FIELD_USERNAME)
+                applyCursorId(cursorId),
+                applyDescPageConfigBy(page, USER_SIZE, FIELD_CREATED_AT)
         );
 
         final List<UserEntity> userEntityList = content.getContent();
@@ -245,15 +246,13 @@ public class UserService {
                         GetUserListDto.UserList.builder()
                                 .username(userEntity.getUsername())
                                 .userImageUrl(userEntity.getUserImageUrl())
+                                .userId(userEntity.getId())
                                 .member(isMember(userEntity, groupMemberList))
                                 .build()
                 )
                 .collect(Collectors.toList());
 
-        return GetUserListDto.builder()
-                .hasNext(content.hasNext())
-                .userList(userList)
-                .build();
+        return new GetUserListDto(content.hasNext(), userList);
     }
 
     public MyPageInfoDto getMyPageInfo() {
