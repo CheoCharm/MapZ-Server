@@ -49,12 +49,13 @@ public class GroupService {
     public void createGroup(CreateGroupDto createGroupDto, MultipartFile multipartFile) {
         final UserEntity userEntity = UserThreadLocal.get();
 
-        if (groupRepository.findByGroupName(createGroupDto.getGroupName()).isPresent()) {
+        String groupName = createGroupDto.getGroupName().trim();
+        if (groupRepository.findByGroupName(groupName).isPresent()) {
             throw new DuplicatedGroupException();
         }
 
         final GroupEntity groupEntity = GroupEntity.builder()
-                .groupName(createGroupDto.getGroupName().trim())
+                .groupName(groupName)
                 .bio(createGroupDto.getBio())
                 .groupUUID(UUID.randomUUID().toString())
                 .openStatus(createGroupDto.getChangeStatus())
@@ -64,6 +65,8 @@ public class GroupService {
             groupEntity.updateGroupImageUrl(s3Utils.uploadGroupImage(multipartFile, groupEntity.getGroupUUID()));
         }
 
+        groupRepository.save(groupEntity);
+
         userGroupRepository.save(
                 UserGroupEntity.builder()
                         .userEntity(userEntity)
@@ -72,7 +75,6 @@ public class GroupService {
                         .userRole(UserRole.CHIEF)
                         .build()
         );
-        groupRepository.save(groupEntity);
     }
 
     public PagingGetGroupListDto getGroup(String groupName, Integer page) {
