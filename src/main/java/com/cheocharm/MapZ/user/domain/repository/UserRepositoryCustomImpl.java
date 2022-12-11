@@ -21,13 +21,14 @@ public class UserRepositoryCustomImpl implements UserRepositoryCustom {
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public Slice<UserEntity> fetchByUserEntityAndSearchName(UserEntity userCond, String searchName, Pageable pageable) {
+    public Slice<UserEntity> fetchByUserEntityAndSearchName(UserEntity userCond, String searchName, Long cursorId, Pageable pageable) {
         JPAQuery<UserEntity> query = queryFactory
                 .selectFrom(userEntity)
                 .where(userEntity.username.contains(searchName)
                         .and(userNe(userCond))
+                        .and(userEntity.id.lt(cursorId))
                 );
-        return fetchSlice(userEntity.getType(), userEntity.getMetadata(), query, pageable);
+        return fetchSliceByCursor(userEntity.getType(), userEntity.getMetadata(), query, pageable);
     }
 
     @Override
