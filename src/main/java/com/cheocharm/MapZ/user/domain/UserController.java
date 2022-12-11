@@ -76,8 +76,8 @@ public class UserController {
     @Operation(description = "그룹 초대를 위한 유저 검색")
     @Parameter(name = "accessToken", in = ParameterIn.HEADER, required = true)
     @GetMapping("/user")
-    public CommonResponse<GetUserListDto> searchUser(@RequestParam Integer page, @RequestParam String searchName, @RequestParam String groupName) {
-        return CommonResponse.success(userService.searchUser(page, searchName, groupName));
+    public CommonResponse<GetUserListDto> searchUser(@RequestParam Integer page, @RequestParam Long cursorId, @RequestParam String searchName, @RequestParam String groupName) {
+        return CommonResponse.success(userService.searchUser(page, cursorId, searchName, groupName));
     }
 
     @Operation(description = "마이페이지 닉네임, 프로필 이미지 가져오기")
