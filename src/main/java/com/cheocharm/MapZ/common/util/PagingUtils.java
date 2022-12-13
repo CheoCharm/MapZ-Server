@@ -13,11 +13,20 @@ public class PagingUtils {
     public static final Integer GROUP_SIZE = 10;
     public static final Integer USER_SIZE = 10;
 
+    private static final Long DEFAULT_CURSOR_ID = Long.MAX_VALUE;
+
     public static Pageable applyAscPageConfigBy(int page, int size, String property) {
         return PageRequest.of(page, size, Sort.Direction.ASC, property);
     }
 
     public static Pageable applyDescPageConfigBy(int page, int size, String property) {
         return PageRequest.of(page, size, Sort.Direction.DESC, property);
+    }
+
+    public static Long applyCursorId(Long cursorId) {
+        if (cursorId == 0) {
+            return DEFAULT_CURSOR_ID;
+        }
+        return cursorId;
     }
 }

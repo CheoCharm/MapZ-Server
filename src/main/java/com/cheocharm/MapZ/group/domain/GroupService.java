@@ -77,11 +77,11 @@ public class GroupService {
         );
     }
 
-    public PagingGetGroupListDto getGroup(String groupName, Integer page) {
-
+    public PagingGetGroupListDto getGroup(String groupName, Long cursorId, Integer page) {
         Slice<GroupEntity> content = groupRepository.findByGroupName(
                 groupName,
-                applyAscPageConfigBy(page, GROUP_SIZE, FIELD_GROUP_NAME)
+                applyCursorId(cursorId),
+                applyDescPageConfigBy(page, GROUP_SIZE, FIELD_CREATED_AT)
         );
 
         List<GroupEntity> groupEntityList = content.getContent();
@@ -95,14 +95,12 @@ public class GroupService {
                                 .createdAt(groupEntity.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy.MM.dd")))
                                 .userImageUrlList(userGroupRepository.findUserImage(groupEntity))
                                 .count(getCount(groupEntity))
+                                .groupId(groupEntity.getId())
                                 .build()
                 )
                 .collect(Collectors.toList());
 
-        return PagingGetGroupListDto.builder()
-                .hasNextPage(content.hasNext())
-                .groupList(groupList)
-                .build();
+        return new PagingGetGroupListDto(content.hasNext(), groupList);
     }
 
     @Transactional

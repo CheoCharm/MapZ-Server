@@ -7,7 +7,7 @@ import org.springframework.data.domain.Slice;
 import java.util.List;
 
 public interface UserRepositoryCustom {
-    Slice<UserEntity> fetchByUserEntityAndSearchName(UserEntity userEntity, String searchName, Pageable pageable);
+    Slice<UserEntity> fetchByUserEntityAndSearchName(UserEntity userEntity, String searchName, Long cursorId, Pageable pageable);
 
     List<UserEntity> getUserEntityListByUsernameList(List<String> username);
 }
