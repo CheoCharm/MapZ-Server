@@ -21,7 +21,7 @@ public class PagingGetGroupListDto {
         private Long groupId;
         private String bio;
         private String createdAt;
-        private int count;
-        private List<String> userImageUrlList;
+        private Long count;
+        private String chiefUserImage;
     }
 }

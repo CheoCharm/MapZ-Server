@@ -3,6 +3,11 @@ package com.cheocharm.MapZ.usergroup.repository;
 import com.cheocharm.MapZ.group.domain.GroupEntity;
 import com.cheocharm.MapZ.user.domain.UserEntity;
 import com.cheocharm.MapZ.usergroup.UserGroupEntity;
+import com.cheocharm.MapZ.usergroup.UserRole;
+import com.cheocharm.MapZ.usergroup.repository.vo.ChiefUserImageVO;
+import com.cheocharm.MapZ.usergroup.repository.vo.CountUserGroupVO;
+import com.cheocharm.MapZ.usergroup.repository.vo.QChiefUserImageVO;
+import com.cheocharm.MapZ.usergroup.repository.vo.QCountUserGroupVO;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -29,12 +34,23 @@ public class UserGroupRepositoryCustomImpl implements UserGroupRepositoryCustom 
     }
 
     @Override
-    public List<String> findUserImage(GroupEntity groupEntity) {
+    public List<GroupEntity> getGroupEntityList(UserEntity userEntity) {
         return queryFactory
-                .select(userGroupEntity.userEntity.userImageUrl)
+                .select(userGroupEntity.groupEntity)
                 .from(userGroupEntity)
-                .where(groupEq(groupEntity))
-                .limit(4)
+                .where(userEq(userEntity))
+                .fetch();
+    }
+
+    @Override
+    public List<ChiefUserImageVO> findChiefUserImage(List<GroupEntity> groupEntityList) {
+        return queryFactory
+                .select(new QChiefUserImageVO(
+                        userGroupEntity.userEntity.userImageUrl, userGroupEntity.id
+                ))
+                .from(userGroupEntity)
+                .where(userGroupEntity.groupEntity.in(groupEntityList)
+                        .and(userGroupEntity.userRole.eq(UserRole.CHIEF)))
                 .fetch();
     }
 
@@ -44,6 +60,18 @@ public class UserGroupRepositoryCustomImpl implements UserGroupRepositoryCustom 
                 .where(userGroupEntity.userEntity.username.contains(searchName)
                         .and(groupEq(groupEntity))
                 )
+                .fetch();
+    }
+
+    @Override
+    public List<CountUserGroupVO> countByGroupEntity(List<GroupEntity> groupEntityList) {
+        return queryFactory
+                .select(new QCountUserGroupVO(
+                        userGroupEntity.count(), userGroupEntity.groupEntity.id
+                ))
+                .from(userGroupEntity)
+                .where(userGroupEntity.groupEntity.in(groupEntityList))
+                .groupBy(userGroupEntity.groupEntity.id)
                 .fetch();
     }
 

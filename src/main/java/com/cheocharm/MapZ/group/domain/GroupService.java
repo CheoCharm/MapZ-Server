@@ -19,6 +19,8 @@ import com.cheocharm.MapZ.usergroup.InvitationStatus;
 import com.cheocharm.MapZ.usergroup.UserGroupEntity;
 import com.cheocharm.MapZ.usergroup.UserRole;
 import com.cheocharm.MapZ.usergroup.repository.UserGroupRepository;
+import com.cheocharm.MapZ.usergroup.repository.vo.ChiefUserImageVO;
+import com.cheocharm.MapZ.usergroup.repository.vo.CountUserGroupVO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
@@ -86,6 +88,9 @@ public class GroupService {
 
         List<GroupEntity> groupEntityList = content.getContent();
 
+        List<CountUserGroupVO> countUserGroupVOS = userGroupRepository.countByGroupEntity(groupEntityList);
+        List<ChiefUserImageVO> chiefUserImageVOS = userGroupRepository.findChiefUserImage(groupEntityList);
+
         List<PagingGetGroupListDto.GroupList> groupList = groupEntityList.stream()
                 .map(groupEntity ->
                         PagingGetGroupListDto.GroupList.builder()
@@ -93,8 +98,8 @@ public class GroupService {
                                 .groupImageUrl(groupEntity.getGroupImageUrl())
                                 .bio(groupEntity.getBio())
                                 .createdAt(groupEntity.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy.MM.dd")))
-                                .userImageUrlList(userGroupRepository.findUserImage(groupEntity))
-                                .count(getCount(groupEntity))
+                                .chiefUserImage(getChiefUserImage(groupEntity, chiefUserImageVOS))
+                                .count(getCount(groupEntity, countUserGroupVOS))
                                 .groupId(groupEntity.getId())
                                 .build()
                 )
@@ -236,26 +241,44 @@ public class GroupService {
     public List<GetGroupListDto> searchMyGroup() {
         final UserEntity userEntity = UserThreadLocal.get();
 
-        final List<UserGroupEntity> list = userGroupRepository.fetchJoinByUserEntity(userEntity);
+        List<GroupEntity> groupEntities = userGroupRepository.getGroupEntityList(userEntity);
 
-        return list.stream()
-                .map(userGroupEntity ->
+        List<CountUserGroupVO> countUserGroupVOS = userGroupRepository.countByGroupEntity(groupEntities);
+        List<ChiefUserImageVO> chiefUserImageVOS = userGroupRepository.findChiefUserImage(groupEntities);
+
+        return groupEntities.stream()
+                .map(groupEntity ->
                         GetGroupListDto.builder()
-                                .groupName(userGroupEntity.getGroupEntity().getGroupName())
-                                .groupImageUrl(userGroupEntity.getGroupEntity().getGroupImageUrl())
-                                .count(getCount(userGroupEntity.getGroupEntity()))
-                                .userImageUrlList(userGroupRepository.findUserImage(userGroupEntity.getGroupEntity()))
+                                .groupName(groupEntity.getGroupName())
+                                .groupImageUrl(groupEntity.getGroupImageUrl())
+                                .count(getCount(groupEntity,countUserGroupVOS))
+                                .chiefUserImage(getChiefUserImage(groupEntity, chiefUserImageVOS))
                                 .build()
                 )
                 .collect(Collectors.toList());
     }
 
-    private int getCount(GroupEntity groupEntity) {
-        int count = userGroupRepository.countByGroupEntity(groupEntity);
+    private Long getCount(GroupEntity groupEntity, List<CountUserGroupVO> countUserGroupVOS) {
+        Long count = 0L;
+        for (CountUserGroupVO countUserGroupVO : countUserGroupVOS) {
+            if (groupEntity.getId().equals(countUserGroupVO.getId())) {
+                count = countUserGroupVO.getCnt();
+                break;
+            }
+        }
         if (count > 4) {
             return count - 4;
         }
-        return 0;
+        return 0L;
+    }
+
+    private String getChiefUserImage(GroupEntity groupEntity, List<ChiefUserImageVO> chiefUserImageVOS) {
+        for (ChiefUserImageVO chiefUserImageVO : chiefUserImageVOS) {
+            if (groupEntity.getId().equals(chiefUserImageVO.getId())) {
+                return chiefUserImageVO.getChiefUserImage();
+            }
+        }
+        return null;
     }
 
     private UserGroupEntity findUserGroupEntity(String groupName, List<UserGroupEntity> userGroupEntityList) {
