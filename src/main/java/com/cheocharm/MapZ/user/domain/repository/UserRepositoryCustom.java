@@ -9,5 +9,5 @@ import java.util.List;
 public interface UserRepositoryCustom {
     Slice<UserEntity> fetchByUserEntityAndSearchName(UserEntity userEntity, String searchName, Long cursorId, Pageable pageable);
 
-    List<UserEntity> getUserEntityListByUsernameList(List<String> username);
+    List<UserEntity> getUserEntityListByUserIdList(List<Long> userIdList);
 }

@@ -32,10 +32,10 @@ public class UserRepositoryCustomImpl implements UserRepositoryCustom {
     }
 
     @Override
-    public List<UserEntity> getUserEntityListByUsernameList(List<String> username) {
+    public List<UserEntity> getUserEntityListByUserIdList(List<Long> userIdList) {
         return queryFactory
                 .selectFrom(userEntity)
-                .where(userEntity.username.in(username))
+                .where(userEntity.id.in(userIdList))
                 .fetch();
     }
 
