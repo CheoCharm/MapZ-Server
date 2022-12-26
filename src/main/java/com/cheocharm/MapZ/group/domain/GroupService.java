@@ -112,20 +112,21 @@ public class GroupService {
     public void changeGroupStatus(ChangeGroupStatusDto changeGroupStatusDto) {
         final UserEntity userEntity = UserThreadLocal.get();
 
-        List<UserGroupEntity> userGroupEntityList = userGroupRepository.fetchJoinByUserEntity(userEntity);
-        final UserGroupEntity findUserGroup = findUserGroupEntity(changeGroupStatusDto.getGroup(), userGroupEntityList);
+        final UserGroupEntity userGroupEntity = userGroupRepository.findByGroupIdAndUserId(changeGroupStatusDto.getGroupId(), userEntity.getId())
+                .orElseThrow(NotFoundUserGroupException::new);
 
-        if (findUserGroup.getUserRole().equals(UserRole.MEMBER)) {
+
+        if (userGroupEntity.getUserRole() != UserRole.CHIEF) {
             throw new NoPermissionUserException();
         }
 
-        findUserGroup.getGroupEntity().changeGroupStatus(changeGroupStatusDto.getChangeStatus());
+        userGroupEntity.getGroupEntity().changeGroupStatus(changeGroupStatusDto.getChangeStatus());
     }
 
     @Transactional
     public JoinGroupResultDto joinGroup(JoinGroupDto joinGroupDto) {
         final UserEntity userEntity = UserThreadLocal.get();
-        final GroupEntity groupEntity = groupRepository.findByGroupName(joinGroupDto.getGroupName())
+        final GroupEntity groupEntity = groupRepository.findById(joinGroupDto.getGroupId())
                 .orElseThrow(NotFoundGroupException::new);
 
         Optional<UserGroupEntity> userGroupEntity = userGroupRepository.findByUserEntityAndGroupEntity(userEntity, groupEntity);
@@ -155,20 +156,14 @@ public class GroupService {
     public void changeInvitationStatus(ChangeInvitationStatusDto changeInvitationStatusDto) {
         final UserEntity userEntity = UserThreadLocal.get();
 
-        final GroupEntity groupEntity = groupRepository.findByGroupName(changeInvitationStatusDto.getGroupName())
-                .orElseThrow(NotFoundGroupException::new);
-
-        final UserGroupEntity userGroupEntity = userGroupRepository.findByUserEntityAndGroupEntity(userEntity, groupEntity)
+        final UserGroupEntity userGroupEntity = userGroupRepository.findByGroupIdAndUserId(changeInvitationStatusDto.getGroupId(), userEntity.getId())
                 .orElseThrow(NotFoundUserException::new);
 
         if (userGroupEntity.getUserRole() != UserRole.CHIEF) {
             throw new NoPermissionUserException();
         }
 
-        final UserEntity changeUser = userRepository.findByUsername(changeInvitationStatusDto.getUsername())
-                .orElseThrow(NotFoundUserException::new);
-
-        final UserGroupEntity findUserGroupEntity = userGroupRepository.findByUserEntityAndGroupEntity(changeUser, groupEntity)
+        final UserGroupEntity findUserGroupEntity = userGroupRepository.findByGroupIdAndUserId(changeInvitationStatusDto.getGroupId(), changeInvitationStatusDto.getUserId())
                 .orElseThrow(NotFoundUserGroupException::new);
 
         if (changeInvitationStatusDto.getStatus()) {
@@ -180,9 +175,11 @@ public class GroupService {
 
     @Transactional
     public void exitGroup(ExitGroupDto exitGroupDto) {
-        List<UserGroupEntity> userGroupEntityList = userGroupRepository.fetchJoinByUserEntity(UserThreadLocal.get());
+        final UserEntity userEntity = UserThreadLocal.get();
 
-        UserGroupEntity userGroupEntity = findUserGroupEntity(exitGroupDto.getGroupName(), userGroupEntityList);
+        final UserGroupEntity userGroupEntity = userGroupRepository.findByGroupIdAndUserId(exitGroupDto.getGroupId(), userEntity.getId())
+                .orElseThrow(NotFoundUserGroupException::new);
+
         if (userGroupEntity.getUserRole() == UserRole.CHIEF) {
             throw new ExitGroupChiefException();
         }
@@ -195,18 +192,15 @@ public class GroupService {
     @Transactional
     public void changeChief(ChangeChiefDto changeChiefDto) {
         final UserEntity userEntity = UserThreadLocal.get();
-        final GroupEntity groupEntity = groupRepository.findByGroupName(changeChiefDto.getGroupName())
-                .orElseThrow(NotFoundGroupException::new);
 
-        UserGroupEntity userGroupEntity = userGroupRepository.findByUserEntityAndGroupEntity(userEntity, groupEntity)
+        final UserGroupEntity userGroupEntity = userGroupRepository.findByGroupIdAndUserId(changeChiefDto.getGroupId(), userEntity.getId())
                 .orElseThrow(NotFoundUserGroupException::new);
+
         if (userGroupEntity.getUserRole() == UserRole.MEMBER) {
             throw new NoPermissionUserException();
         }
-        final UserEntity targetUserEntity = userRepository.findByUsername(changeChiefDto.getTargetUsername())
-                .orElseThrow(NotFoundUserException::new);
 
-        final UserGroupEntity targetUserGroupEntity = userGroupRepository.findByUserEntityAndGroupEntity(targetUserEntity, groupEntity)
+        final UserGroupEntity targetUserGroupEntity = userGroupRepository.findByGroupIdAndUserId(changeChiefDto.getGroupId(), changeChiefDto.getUserId())
                 .orElseThrow(NotFoundUserException::new);
 
         targetUserGroupEntity.changeChief(userGroupEntity, targetUserGroupEntity);
@@ -216,21 +210,18 @@ public class GroupService {
     public void inviteUser(InviteUserListDto inviteUserListDto) {
         final UserEntity userEntity = UserThreadLocal.get();
 
-        final GroupEntity groupEntity = groupRepository.findByGroupName(inviteUserListDto.getGroupName())
-                .orElseThrow(NotFoundGroupException::new);
-
-        final UserGroupEntity userGroupEntity = userGroupRepository.findByUserEntityAndGroupEntity(userEntity, groupEntity)
+        final UserGroupEntity userGroupEntity = userGroupRepository.findByGroupIdAndUserId(inviteUserListDto.getGroupId(), userEntity.getId())
                 .orElseThrow(NotFoundUserGroupException::new);
         if (userGroupEntity.getInvitationStatus() != InvitationStatus.ACCEPT) {
             throw new NoPermissionUserException();
         }
 
-        List<UserEntity> userEntityList = userRepository.getUserEntityListByUsernameList(inviteUserListDto.getUsernameList());
+        List<UserEntity> userEntityList = userRepository.getUserEntityListByUserIdList(inviteUserListDto.getUserIdList());
         for (UserEntity user : userEntityList) {
             userGroupRepository.save(
                     UserGroupEntity.builder()
                             .userEntity(user)
-                            .groupEntity(groupEntity)
+                            .groupEntity(userGroupEntity.getGroupEntity())
                             .invitationStatus(InvitationStatus.PENDING)
                             .userRole(UserRole.MEMBER)
                             .build()
@@ -251,6 +242,7 @@ public class GroupService {
                         GetGroupListDto.builder()
                                 .groupName(groupEntity.getGroupName())
                                 .groupImageUrl(groupEntity.getGroupImageUrl())
+                                .groupId(groupEntity.getId())
                                 .count(getCount(groupEntity,countUserGroupVOS))
                                 .chiefUserImage(getChiefUserImage(groupEntity, chiefUserImageVOS))
                                 .build()
@@ -279,13 +271,5 @@ public class GroupService {
             }
         }
         return null;
-    }
-
-    private UserGroupEntity findUserGroupEntity(String groupName, List<UserGroupEntity> userGroupEntityList) {
-        return userGroupEntityList.stream()
-                .filter(userGroupEntity -> userGroupEntity.getGroupEntity()
-                        .getGroupName().equals(groupName))
-                .findAny()
-                .orElseThrow(NotFoundGroupException::new);
     }
 }
