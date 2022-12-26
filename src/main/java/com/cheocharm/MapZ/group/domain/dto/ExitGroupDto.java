@@ -8,5 +8,5 @@ import javax.validation.constraints.NotNull;
 public class ExitGroupDto {
 
     @NotNull
-    String groupName;
+    Long groupId;
 }

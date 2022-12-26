@@ -7,7 +7,7 @@ import javax.validation.constraints.NotNull;
 @Getter
 public class ChangeGroupStatusDto {
     @NotNull
-    private String group;
+    private Long groupId;
 
     @NotNull
     private Boolean changeStatus;

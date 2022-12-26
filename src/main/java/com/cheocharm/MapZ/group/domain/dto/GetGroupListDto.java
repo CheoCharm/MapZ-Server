@@ -11,5 +11,5 @@ public class GetGroupListDto {
     private String groupImageUrl;
     private Long count;
     private String chiefUserImage;
-
+    private Long groupId;
 }

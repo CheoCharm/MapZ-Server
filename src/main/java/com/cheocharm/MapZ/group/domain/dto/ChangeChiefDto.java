@@ -8,8 +8,8 @@ import javax.validation.constraints.NotNull;
 public class ChangeChiefDto {
 
     @NotNull
-    private String groupName;
+    private Long groupId;
 
     @NotNull
-    private String targetUsername;
+    private Long userId;
 }

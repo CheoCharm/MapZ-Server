@@ -9,8 +9,8 @@ import java.util.List;
 public class InviteUserListDto {
 
     @NotNull
-    private String groupName;
+    private Long groupId;
 
     @NotNull
-    private List<String> usernameList;
+    private List<Long> userIdList;
 }
