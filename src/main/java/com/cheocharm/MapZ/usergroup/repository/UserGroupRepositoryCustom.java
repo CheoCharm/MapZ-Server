@@ -7,14 +7,17 @@ import com.cheocharm.MapZ.usergroup.repository.vo.ChiefUserImageVO;
 import com.cheocharm.MapZ.usergroup.repository.vo.CountUserGroupVO;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface UserGroupRepositoryCustom {
-    List<UserGroupEntity> fetchJoinByUserEntity(UserEntity userEntity);
 
     List<GroupEntity> getGroupEntityList(UserEntity userEntity);
+
     List<ChiefUserImageVO> findChiefUserImage(List<GroupEntity> groupEntityList);
 
     List<UserGroupEntity> findBySearchNameAndGroupEntity(String searchName, GroupEntity groupEntity);
+
+    Optional<UserGroupEntity> findByGroupIdAndUserId(Long groupId, Long userId);
 
     List<CountUserGroupVO> countByGroupEntity(List<GroupEntity> groupEntityList);
 }
