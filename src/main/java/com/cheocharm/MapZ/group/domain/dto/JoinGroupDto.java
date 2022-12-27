@@ -8,6 +8,6 @@ import javax.validation.constraints.NotNull;
 public class JoinGroupDto {
 
     @NotNull
-    private String groupName;
+    private Long groupId;
 
 }

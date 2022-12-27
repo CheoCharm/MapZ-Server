@@ -8,11 +8,11 @@ import javax.validation.constraints.NotNull;
 public class ChangeInvitationStatusDto {
 
     @NotNull
-    private String groupName;
+    private Long groupId;
 
     @NotNull
     private Boolean status;
 
     @NotNull
-    private String username;
+    private Long userId;
 }
