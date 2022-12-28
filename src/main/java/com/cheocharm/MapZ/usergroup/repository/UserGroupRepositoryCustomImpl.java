@@ -69,6 +69,13 @@ public class UserGroupRepositoryCustomImpl implements UserGroupRepositoryCustom 
     }
 
     @Override
+    public List<UserGroupEntity> findByGroupId(Long groupId) {
+        return fetchJoinUserEntity()
+                .where(groupIdEq(groupId))
+                .fetch();
+    }
+
+    @Override
     public List<CountUserGroupVO> countByGroupEntity(List<GroupEntity> groupEntityList) {
         return queryFactory
                 .select(new QCountUserGroupVO(

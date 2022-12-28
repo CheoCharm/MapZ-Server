@@ -19,5 +19,7 @@ public interface UserGroupRepositoryCustom {
 
     Optional<UserGroupEntity> findByGroupIdAndUserId(Long groupId, Long userId);
 
+    List<UserGroupEntity> findByGroupId(Long groupId);
+
     List<CountUserGroupVO> countByGroupEntity(List<GroupEntity> groupEntityList);
 }
