@@ -28,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -248,6 +249,33 @@ public class GroupService {
                                 .build()
                 )
                 .collect(Collectors.toList());
+    }
+
+    public List<GroupMemberDto> getMember(Long groupId) {
+        UserEntity userEntity = UserThreadLocal.get();
+
+        List<UserGroupEntity> userGroupEntities = userGroupRepository.findByGroupId(groupId);
+        if (!containUser(userEntity.getId(), userGroupEntities)) {
+            throw new NoPermissionUserException();
+        }
+
+        return userGroupEntities.stream()
+                .map(userGroupEntity ->
+                        GroupMemberDto.builder()
+                                .username(userGroupEntity.getUserEntity().getUsername())
+                                .userImageUrl(userGroupEntity.getUserEntity().getUserImageUrl())
+                                .invitationStatus(userGroupEntity.getInvitationStatus())
+                                .build()
+                )
+                .collect(Collectors.toList());
+    }
+
+    private boolean containUser(Long userId, List<UserGroupEntity> userGroupEntities) {
+        ArrayList<Long> list = new ArrayList<>();
+        for (UserGroupEntity userGroupEntity : userGroupEntities) {
+            list.add(userGroupEntity.getUserEntity().getId());
+        }
+        return list.contains(userId);
     }
 
     private Long getCount(GroupEntity groupEntity, List<CountUserGroupVO> countUserGroupVOS) {
