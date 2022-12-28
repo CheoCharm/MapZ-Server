@@ -91,4 +91,12 @@ public class GroupController {
     public CommonResponse<List<GetGroupListDto>> searchMyGroup() {
         return CommonResponse.success(groupService.searchMyGroup());
     }
+
+    @Operation(description = "그룹 멤버 관리시 멤버 조회")
+    @Parameter(name = "accessToken", in = ParameterIn.HEADER, required = true)
+    @GetMapping("/member")
+    public CommonResponse<List<GroupMemberDto>> getMember(@RequestParam Long groupId) {
+        return CommonResponse.success(groupService.getMember(groupId));
+    }
+
 }
