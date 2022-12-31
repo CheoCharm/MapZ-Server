@@ -261,11 +261,15 @@ public class GroupService {
 
         return userGroupEntities.stream()
                 .map(userGroupEntity ->
-                        GroupMemberDto.builder()
-                                .username(userGroupEntity.getUserEntity().getUsername())
-                                .userImageUrl(userGroupEntity.getUserEntity().getUserImageUrl())
-                                .invitationStatus(userGroupEntity.getInvitationStatus())
-                                .build()
+                        {
+                            UserEntity user = userGroupEntity.getUserEntity();
+                            return GroupMemberDto.builder()
+                                    .username(user.getUsername())
+                                    .userImageUrl(user.getUserImageUrl())
+                                    .userId(user.getId())
+                                    .invitationStatus(userGroupEntity.getInvitationStatus())
+                                    .build();
+                        }
                 )
                 .collect(Collectors.toList());
     }
@@ -279,17 +283,14 @@ public class GroupService {
     }
 
     private Long getCount(GroupEntity groupEntity, List<CountUserGroupVO> countUserGroupVOS) {
-        Long count = 0L;
+        Long count = 1L;
         for (CountUserGroupVO countUserGroupVO : countUserGroupVOS) {
             if (groupEntity.getId().equals(countUserGroupVO.getId())) {
                 count = countUserGroupVO.getCnt();
                 break;
             }
         }
-        if (count > 4) {
-            return count - 4;
-        }
-        return 0L;
+        return count - 1;
     }
 
     private String getChiefUserImage(GroupEntity groupEntity, List<ChiefUserImageVO> chiefUserImageVOS) {
