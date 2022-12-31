@@ -13,7 +13,6 @@ import com.cheocharm.MapZ.common.util.ObjectMapperUtils;
 import com.cheocharm.MapZ.common.oauth.GoogleYml;
 import com.cheocharm.MapZ.common.util.RandomUtils;
 import com.cheocharm.MapZ.common.util.S3Utils;
-import com.cheocharm.MapZ.group.domain.GroupEntity;
 import com.cheocharm.MapZ.group.domain.repository.GroupRepository;
 import com.cheocharm.MapZ.user.domain.dto.*;
 import com.cheocharm.MapZ.user.domain.repository.UserRepository;
@@ -44,7 +43,6 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final AgreementRepository agreementRepository;
-    private final GroupRepository groupRepository;
     private final UserGroupRepository userGroupRepository;
 
     private final JwtCreateUtils jwtCreateUtils;
@@ -226,7 +224,7 @@ public class UserService {
         userEntity.updatePassword(password);
     }
 
-    public GetUserListDto searchUser(Integer page, Long cursorId, String searchName, String groupName) {
+    public GetUserListDto searchUser(Integer page, Long cursorId, String searchName, Long groupId) {
         Slice<UserEntity> content = userRepository.fetchByUserEntityAndSearchName(
                 UserThreadLocal.get(),
                 searchName,
@@ -236,10 +234,7 @@ public class UserService {
 
         final List<UserEntity> userEntityList = content.getContent();
 
-        final GroupEntity groupEntity = groupRepository.findByGroupName(groupName)
-                .orElseThrow(NotFoundGroupException::new);
-
-        final List<UserGroupEntity> groupMemberList = userGroupRepository.findBySearchNameAndGroupEntity(searchName, groupEntity);
+        final List<UserGroupEntity> groupMemberList = userGroupRepository.findBySearchNameAndGroupId(searchName, groupId);
 
         final List<GetUserListDto.UserList> userList = userEntityList.stream()
                 .map(userEntity ->
