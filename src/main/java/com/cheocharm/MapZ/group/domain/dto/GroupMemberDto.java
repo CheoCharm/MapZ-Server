@@ -9,5 +9,6 @@ import lombok.Getter;
 public class GroupMemberDto {
     private String username;
     private String userImageUrl;
+    private Long userId;
     private InvitationStatus invitationStatus;
 }

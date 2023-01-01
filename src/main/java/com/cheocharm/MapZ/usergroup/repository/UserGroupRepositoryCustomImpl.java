@@ -2,6 +2,7 @@ package com.cheocharm.MapZ.usergroup.repository;
 
 import com.cheocharm.MapZ.group.domain.GroupEntity;
 import com.cheocharm.MapZ.user.domain.UserEntity;
+import com.cheocharm.MapZ.usergroup.InvitationStatus;
 import com.cheocharm.MapZ.usergroup.UserGroupEntity;
 import com.cheocharm.MapZ.usergroup.UserRole;
 import com.cheocharm.MapZ.usergroup.repository.vo.ChiefUserImageVO;
@@ -49,10 +50,10 @@ public class UserGroupRepositoryCustomImpl implements UserGroupRepositoryCustom 
     }
 
     @Override
-    public List<UserGroupEntity> findBySearchNameAndGroupEntity(String searchName, GroupEntity groupEntity) {
+    public List<UserGroupEntity> findBySearchNameAndGroupId(String searchName, Long groupId) {
         return fetchJoinUserEntity()
                 .where(userGroupEntity.userEntity.username.contains(searchName)
-                        .and(groupEq(groupEntity))
+                        .and(groupIdEq(groupId))
                 )
                 .fetch();
     }
@@ -82,7 +83,9 @@ public class UserGroupRepositoryCustomImpl implements UserGroupRepositoryCustom 
                         userGroupEntity.count(), userGroupEntity.groupEntity.id
                 ))
                 .from(userGroupEntity)
-                .where(userGroupEntity.groupEntity.in(groupEntityList))
+                .where(userGroupEntity.groupEntity.in(groupEntityList)
+                        .and(userGroupEntity.invitationStatus.eq(InvitationStatus.ACCEPT))
+                )
                 .groupBy(userGroupEntity.groupEntity.id)
                 .fetch();
     }

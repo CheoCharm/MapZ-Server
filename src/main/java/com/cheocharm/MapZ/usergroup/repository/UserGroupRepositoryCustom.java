@@ -15,7 +15,7 @@ public interface UserGroupRepositoryCustom {
 
     List<ChiefUserImageVO> findChiefUserImage(List<GroupEntity> groupEntityList);
 
-    List<UserGroupEntity> findBySearchNameAndGroupEntity(String searchName, GroupEntity groupEntity);
+    List<UserGroupEntity> findBySearchNameAndGroupId(String searchName, Long groupId);
 
     Optional<UserGroupEntity> findByGroupIdAndUserId(Long groupId, Long userId);
 
