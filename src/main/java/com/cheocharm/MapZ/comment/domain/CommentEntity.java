@@ -1,8 +1,7 @@
-package com.cheocharm.MapZ.diary.domain;
-
+package com.cheocharm.MapZ.comment.domain;
 
 import com.cheocharm.MapZ.common.domain.BaseEntity;
-import com.cheocharm.MapZ.group.domain.GroupEntity;
+import com.cheocharm.MapZ.diary.domain.DiaryEntity;
 import com.cheocharm.MapZ.user.domain.UserEntity;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -13,35 +12,30 @@ import org.hibernate.annotations.Where;
 import javax.persistence.*;
 
 @Getter
-@Table(name = "Diary")
+@Table(name = "Comment")
 @Where(clause = "deleted=0")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
-public class DiaryEntity extends BaseEntity {
-
-    private String title;
+public class CommentEntity extends BaseEntity {
 
     private String content;
 
-    private Double latitude;
-
-    private Double longitude;
+    private Long parentId;
 
     @JoinColumn(name = "user_id")
     @ManyToOne(fetch = FetchType.LAZY)
     private UserEntity userEntity;
 
-    @JoinColumn(name = "group_id")
+    @JoinColumn(name = "diary_id")
     @ManyToOne(fetch = FetchType.LAZY)
-    private GroupEntity groupEntity;
+    private DiaryEntity diaryEntity;
 
     @Builder
-    public DiaryEntity(String title, String content, Double latitude, Double longitude, UserEntity userEntity, GroupEntity groupEntity) {
-        this.title = title;
+    public CommentEntity(String content, Long parentId, UserEntity userEntity, DiaryEntity diaryEntity) {
         this.content = content;
-        this.latitude = latitude;
-        this.longitude = longitude;
+        this.parentId = parentId;
         this.userEntity = userEntity;
-        this.groupEntity = groupEntity;
+        this.diaryEntity = diaryEntity;
     }
+
 }
