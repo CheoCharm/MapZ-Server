@@ -24,14 +24,13 @@ public class CommentService {
     @Transactional
     public void createComment(CreateCommentDto createCommentDto) {
         final UserEntity userEntity = UserThreadLocal.get();
-        Optional<DiaryEntity> diaryEntity = diaryRepository.findById(createCommentDto.getDiaryId());
-        diaryEntity.orElseThrow(() -> new NotFoundDiaryException());
+        DiaryEntity diaryEntity = diaryRepository.findById(createCommentDto.getDiaryId()).orElseThrow(() -> new NotFoundDiaryException());
         commentRepository.save(
                 CommentEntity.builder()
                         .content(createCommentDto.getContent())
                         .parentId(createCommentDto.getParentId())
                         .userEntity(userEntity)
-                        .diaryEntity(diaryEntity.get())
+                        .diaryEntity(diaryEntity)
                         .build()
         );
     }
