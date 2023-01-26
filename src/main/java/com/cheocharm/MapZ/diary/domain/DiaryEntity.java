@@ -9,6 +9,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.Where;
+import org.locationtech.jts.geom.Point;
 
 import javax.persistence.*;
 
@@ -23,9 +24,7 @@ public class DiaryEntity extends BaseEntity {
 
     private String content;
 
-    private Double latitude;
-
-    private Double longitude;
+    private Point point;
 
     @JoinColumn(name = "user_id")
     @ManyToOne(fetch = FetchType.LAZY)
@@ -36,11 +35,10 @@ public class DiaryEntity extends BaseEntity {
     private GroupEntity groupEntity;
 
     @Builder
-    public DiaryEntity(String title, String content, Double latitude, Double longitude, UserEntity userEntity, GroupEntity groupEntity) {
+    public DiaryEntity(String title, String content, Point point, UserEntity userEntity, GroupEntity groupEntity) {
         this.title = title;
         this.content = content;
-        this.latitude = latitude;
-        this.longitude = longitude;
+        this.point = point;
         this.userEntity = userEntity;
         this.groupEntity = groupEntity;
     }

@@ -52,6 +52,9 @@ dependencies {
 
 	//for health check
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+
+	//for coordinate
+	implementation group: 'org.hibernate', name: 'hibernate-spatial', version: '5.6.9.Final'
 }
 
 tasks.named('test') {
