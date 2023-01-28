@@ -1,7 +1,6 @@
 package com.cheocharm.MapZ.comment.domain.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.Builder;
 import lombok.Getter;
 
 import javax.validation.constraints.NotNull;
