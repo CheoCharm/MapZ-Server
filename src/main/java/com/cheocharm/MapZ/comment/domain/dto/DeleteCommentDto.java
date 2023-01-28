@@ -8,7 +8,6 @@ import javax.validation.constraints.NotNull;
 
 @Schema(description = "댓글 삭제 Request Body")
 @Getter
-@Builder
 public class DeleteCommentDto {
 
     @Schema(description = "원본 댓글일 경우 0")
