@@ -80,6 +80,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                     //commnet
                     .antMatchers(HttpMethod.POST, "/api/comment").authenticated()
 
+                    //actuator
+                    .antMatchers("/actuator/health").permitAll()
                     .anyRequest().denyAll()
                 .and()
                 .exceptionHandling().authenticationEntryPoint(authenticationEntryPointCustom);
