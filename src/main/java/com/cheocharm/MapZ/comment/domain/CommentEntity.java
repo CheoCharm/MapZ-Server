@@ -7,6 +7,7 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.Where;
 
 import javax.persistence.*;
@@ -20,6 +21,7 @@ public class CommentEntity extends BaseEntity {
 
     private String content;
 
+    @ColumnDefault("0")
     private Long parentId;
 
     @JoinColumn(name = "user_id")
