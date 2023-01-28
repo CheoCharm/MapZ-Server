@@ -1,6 +1,7 @@
 package com.cheocharm.MapZ.comment.domain;
 
 import com.cheocharm.MapZ.comment.domain.dto.CreateCommentDto;
+import com.cheocharm.MapZ.comment.domain.dto.DeleteCommentDto;
 import com.cheocharm.MapZ.comment.domain.repository.CommentRepository;
 import com.cheocharm.MapZ.common.exception.diary.NotFoundDiaryException;
 import com.cheocharm.MapZ.common.interceptor.UserThreadLocal;
@@ -31,5 +32,17 @@ public class CommentService {
                         .diaryEntity(diaryEntity)
                         .build()
         );
+    }
+
+    @Transactional
+    public void deleteComment(DeleteCommentDto deleteCommentDto) {
+        final Long commentId = deleteCommentDto.getCommentId();
+        final Long parentId = deleteCommentDto.getParentId();
+
+        commentRepository.deleteById(commentId);
+
+        if (parentId == 0) {
+            commentRepository.deleteAllByIdInQuery(commentId);
+        }
     }
 }
