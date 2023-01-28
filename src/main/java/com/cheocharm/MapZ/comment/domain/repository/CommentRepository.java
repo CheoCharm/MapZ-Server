@@ -9,10 +9,8 @@ import org.springframework.data.repository.query.Param;
 import javax.transaction.Transactional;
 
 public interface CommentRepository extends JpaRepository<CommentEntity, Long> {
-    @Override
     void deleteById(Long id);
 
-    @Transactional
     @Modifying
     @Query("delete from CommentEntity c where c.parentId in :id")
     void deleteAllByIdInQuery(@Param("id") Long id);
