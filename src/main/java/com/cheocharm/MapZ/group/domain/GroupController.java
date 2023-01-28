@@ -99,4 +99,11 @@ public class GroupController {
         return CommonResponse.success(groupService.getMember(groupId));
     }
 
+    @Operation(description = "그룹에서 내보내기")
+    @Parameter(name = "accessToken", in = ParameterIn.HEADER, required = true)
+    @DeleteMapping("/user")
+    public CommonResponse<?> kickUser(@RequestBody @Valid KickUserDto kickUserDto) {
+        groupService.kickUser(kickUserDto);
+        return CommonResponse.success();
+    }
 }

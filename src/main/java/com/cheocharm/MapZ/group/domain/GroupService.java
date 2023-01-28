@@ -7,6 +7,7 @@ import com.cheocharm.MapZ.common.exception.user.ExitGroupChiefException;
 import com.cheocharm.MapZ.common.exception.user.NoPermissionUserException;
 import com.cheocharm.MapZ.common.exception.user.NotFoundUserException;
 import com.cheocharm.MapZ.common.exception.usergroup.NotFoundUserGroupException;
+import com.cheocharm.MapZ.common.exception.usergroup.SelfKickException;
 import com.cheocharm.MapZ.common.interceptor.UserThreadLocal;
 import com.cheocharm.MapZ.common.util.S3Utils;
 import com.cheocharm.MapZ.diary.domain.DiaryEntity;
@@ -170,7 +171,7 @@ public class GroupService {
         if (changeInvitationStatusDto.getStatus()) {
             findUserGroupEntity.acceptUser();
         } else if (!changeInvitationStatusDto.getStatus()) {
-            findUserGroupEntity.refuseUser();
+            userGroupRepository.deleteById(findUserGroupEntity.getId());
         }
     }
 
@@ -272,6 +273,27 @@ public class GroupService {
                         }
                 )
                 .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public void kickUser(KickUserDto kickUserDto) {
+
+        UserEntity userEntity = UserThreadLocal.get();
+
+        if (userEntity.getId().equals(kickUserDto.getUserId())) {
+            throw new SelfKickException();
+        }
+        UserGroupEntity userGroupEntity = userGroupRepository.findByGroupIdAndUserId(kickUserDto.getGroupId(), userEntity.getId())
+                .orElseThrow(NotFoundUserGroupException::new);
+
+        if (userGroupEntity.getUserRole() == UserRole.MEMBER) {
+            throw new NoPermissionUserException();
+        }
+
+        UserGroupEntity targetUserGroupEntity = userGroupRepository.findByGroupIdAndUserId(kickUserDto.getGroupId(), kickUserDto.getUserId())
+                .orElseThrow(NotFoundUserGroupException::new);
+
+        userGroupRepository.deleteById(targetUserGroupEntity.getId());
     }
 
     private boolean containUser(Long userId, List<UserGroupEntity> userGroupEntities) {

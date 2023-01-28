@@ -45,10 +45,6 @@ public class UserGroupEntity extends BaseEntity {
         this.invitationStatus = InvitationStatus.ACCEPT;
     }
 
-    public void refuseUser() {
-        this.invitationStatus = InvitationStatus.REFUSE;
-    }
-
     public void changeChief(UserGroupEntity chiefUser, UserGroupEntity targetUser) {
         chiefUser.userRole = UserRole.MEMBER;
         targetUser.userRole = UserRole.CHIEF;
