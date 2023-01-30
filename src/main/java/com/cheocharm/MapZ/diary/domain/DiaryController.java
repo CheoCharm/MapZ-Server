@@ -1,6 +1,8 @@
 package com.cheocharm.MapZ.diary.domain;
 
 import com.cheocharm.MapZ.common.CommonResponse;
+import com.cheocharm.MapZ.diary.domain.dto.DeleteDiaryDto;
+import com.cheocharm.MapZ.diary.domain.dto.DiaryLikePeopleDto;
 import com.cheocharm.MapZ.diary.domain.dto.LikeDiaryDto;
 import com.cheocharm.MapZ.diary.domain.dto.WriteDiaryDto;
 import io.swagger.v3.oas.annotations.Operation;
@@ -11,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.List;
 
 @Tag(name = "DiaryController")
 @RequiredArgsConstructor
@@ -41,5 +44,20 @@ public class DiaryController {
     @GetMapping
     public CommonResponse<?> getDiary(@Parameter @RequestParam Long groupId) {
         return CommonResponse.success(diaryService.getDiary(groupId));
+    }
+
+    @Operation(description = "일기 삭제")
+    @Parameter(name = "accessToken", in = ParameterIn.HEADER, required = true)
+    @DeleteMapping
+    public CommonResponse<?> deleteDiary(@Parameter @RequestBody DeleteDiaryDto deleteDiaryDto) {
+        diaryService.deleteDiary(deleteDiaryDto);
+        return CommonResponse.success();
+    }
+
+    @Operation(description = "일기 좋아요 누른 명단 조회")
+    @Parameter(name = "accessToken", in = ParameterIn.HEADER, required = true)
+    @GetMapping("/like")
+    public CommonResponse<List<DiaryLikePeopleDto>> getDiaryLikePeople(@Parameter @RequestParam Long diaryId) {
+        return CommonResponse.success(diaryService.getDiaryLikePeople(diaryId));
     }
 }
