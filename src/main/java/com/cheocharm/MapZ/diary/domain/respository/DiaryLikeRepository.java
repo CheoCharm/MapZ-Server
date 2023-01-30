@@ -7,6 +7,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
 
-public interface DiaryLikeRepository extends JpaRepository<DiaryLikeEntity, Long> {
+public interface DiaryLikeRepository extends JpaRepository<DiaryLikeEntity, Long>, DiaryLikeRepositoryCustom {
     Optional<DiaryLikeEntity> findByDiaryEntityAndUserEntity(DiaryEntity diaryEntity, UserEntity userEntity);
 }
