@@ -5,6 +5,7 @@ import lombok.Getter;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
+import javax.validation.constraints.Size;
 
 @Getter
 public class CreateGroupDto {
@@ -14,6 +15,7 @@ public class CreateGroupDto {
     private String groupName;
 
     @NotNull
+    @Size(max = 30, message = "소개글은 30자 제한")
     private String bio;
 
     @NotNull
