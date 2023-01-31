@@ -3,10 +3,9 @@ package com.cheocharm.MapZ.diary.domain;
 import com.cheocharm.MapZ.common.exception.diary.AlreadyLikedDiaryException;
 import com.cheocharm.MapZ.common.exception.diary.NotFoundDiaryException;
 import com.cheocharm.MapZ.common.exception.group.NotFoundGroupException;
+import com.cheocharm.MapZ.common.exception.user.NoPermissionUserException;
 import com.cheocharm.MapZ.common.interceptor.UserThreadLocal;
-import com.cheocharm.MapZ.diary.domain.dto.GetDiaryListDto;
-import com.cheocharm.MapZ.diary.domain.dto.LikeDiaryDto;
-import com.cheocharm.MapZ.diary.domain.dto.WriteDiaryDto;
+import com.cheocharm.MapZ.diary.domain.dto.*;
 import com.cheocharm.MapZ.diary.domain.respository.DiaryLikeRepository;
 import com.cheocharm.MapZ.diary.domain.respository.DiaryRepository;
 import com.cheocharm.MapZ.group.domain.GroupEntity;
@@ -92,5 +91,32 @@ public class DiaryService {
                 .collect(Collectors.toList());
 
         return new GetDiaryListDto(true, list);
+    }
+
+    @Transactional
+    public void deleteDiary(DeleteDiaryDto deleteDiaryDto) {
+        UserEntity userEntity = UserThreadLocal.get();
+
+        if (!deleteDiaryDto.getUserId().equals(userEntity.getId())) {
+            throw new NoPermissionUserException();
+        }
+
+        diaryRepository.deleteById(deleteDiaryDto.getDiaryId());
+
+    }
+
+    public List<DiaryLikePeopleDto> getDiaryLikePeople(Long diaryId) {
+        List<DiaryLikeEntity> diaryLikeEntities = diaryLikeRepository.findByDiaryId(diaryId);
+
+        return diaryLikeEntities.stream()
+                .map(diaryLikeEntity -> {
+                    UserEntity userEntity = diaryLikeEntity.getUserEntity();
+                    return DiaryLikePeopleDto.builder()
+                            .userImageUrl(userEntity.getUserImageUrl())
+                            .username(userEntity.getUsername())
+                            .build();
+                    }
+                )
+                .collect(Collectors.toList());
     }
 }
