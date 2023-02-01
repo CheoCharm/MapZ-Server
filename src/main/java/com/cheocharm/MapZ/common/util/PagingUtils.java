@@ -12,6 +12,8 @@ public class PagingUtils {
 
     public static final Integer GROUP_SIZE = 10;
     public static final Integer USER_SIZE = 10;
+    public static final Integer MY_LIKE_DIARY_SIZE = 20;
+    public static final Integer MY_DIARY_SIZE = 20;
 
     private static final Long DEFAULT_CURSOR_ID = Long.MAX_VALUE;
 
