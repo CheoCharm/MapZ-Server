@@ -8,6 +8,8 @@ import com.cheocharm.MapZ.common.interceptor.UserThreadLocal;
 import com.cheocharm.MapZ.diary.domain.dto.*;
 import com.cheocharm.MapZ.diary.domain.respository.DiaryLikeRepository;
 import com.cheocharm.MapZ.diary.domain.respository.DiaryRepository;
+import com.cheocharm.MapZ.diary.domain.respository.vo.MyDiaryVO;
+import com.cheocharm.MapZ.diary.domain.respository.vo.MyLikeDiaryVO;
 import com.cheocharm.MapZ.group.domain.GroupEntity;
 import com.cheocharm.MapZ.group.domain.repository.GroupRepository;
 import com.cheocharm.MapZ.user.domain.UserEntity;
@@ -15,11 +17,15 @@ import lombok.RequiredArgsConstructor;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKTReader;
+import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static com.cheocharm.MapZ.common.util.PagingUtils.*;
 
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -118,5 +124,57 @@ public class DiaryService {
                     }
                 )
                 .collect(Collectors.toList());
+    }
+
+    public MyLikeDiaryDto getMyLikeDiary(Long cursorId, Integer page) {
+        UserEntity userEntity = UserThreadLocal.get();
+
+        Slice<MyLikeDiaryVO> content = diaryLikeRepository.findByUserId(
+                userEntity.getId(),
+                applyCursorId(cursorId),
+                applyDescPageConfigBy(page, MY_LIKE_DIARY_SIZE, FIELD_CREATED_AT)
+        );
+
+        List<MyLikeDiaryVO> myLikeDiaryVOS = content.getContent();
+
+        List<MyLikeDiaryDto.Diary> diaries = myLikeDiaryVOS.stream()
+                .map(myLikeDiary ->
+                        MyLikeDiaryDto.Diary.builder()
+                                .title(myLikeDiary.getTitle())
+                                .createdAt(myLikeDiary.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy.MM.dd")))
+                                .diaryId(myLikeDiary.getDiaryId())
+                                .groupId(myLikeDiary.getGroupId())
+                                .commentCount(myLikeDiary.getCommentCount())
+                                //일기 대표 이미지 빌더에 추가
+                                .build()
+                )
+                .collect(Collectors.toList());
+
+        return new MyLikeDiaryDto(content.hasNext(), diaries);
+    }
+
+    public MyDiaryDto getMyDiary(Long cursorId, Integer page) {
+        UserEntity userEntity = UserThreadLocal.get();
+
+        Slice<MyDiaryVO> content = diaryRepository.findByUserId(
+                userEntity.getId(),
+                applyCursorId(cursorId),
+                applyDescPageConfigBy(page, MY_DIARY_SIZE, FIELD_CREATED_AT)
+        );
+        List<MyDiaryVO> diaryVOS = content.getContent();
+
+        List<MyDiaryDto.Diary> diaryList = diaryVOS.stream()
+                .map(myDiaryVO ->
+                        MyDiaryDto.Diary.builder()
+                                .title(myDiaryVO.getTitle())
+                                .createdAt(myDiaryVO.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy.MM.dd")))
+                                .diaryId(myDiaryVO.getDiaryId())
+                                .groupId(myDiaryVO.getGroupId())
+                                .commentCount(myDiaryVO.getCommentCount())
+                                .build()
+                )
+                .collect(Collectors.toList());
+
+        return new MyDiaryDto(content.hasNext(), diaryList);
     }
 }
