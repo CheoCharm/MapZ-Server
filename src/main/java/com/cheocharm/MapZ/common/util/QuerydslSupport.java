@@ -28,7 +28,7 @@ public class QuerydslSupport {
         return new SliceImpl<>(content, pageable, isHasNext(pageSize, content));
     }
 
-    public static <T> Slice<T> fetchSliceByCursor(Class<? extends T> type, PathMetadata pathMetadata, JPAQuery<T> query, Pageable pageable) {
+    public static <T> Slice<T> fetchSliceByCursor(Class<?> type, PathMetadata pathMetadata, JPAQuery<T> query, Pageable pageable) {
         Sort.Order order = pageable.getSort().iterator().next();
 
         int pageSize = pageable.getPageSize();
@@ -40,7 +40,6 @@ public class QuerydslSupport {
 
         return new SliceImpl<>(content, pageable, isHasNext(pageSize, content));
     }
-    
 
     private static <T> OrderSpecifier<?> getOrderSpecifier(Class<? extends T> type, PathMetadata pathMetadata, Sort.Order order) {
         PathBuilder<? extends T> pathBuilder = new PathBuilder<T>(type, pathMetadata);

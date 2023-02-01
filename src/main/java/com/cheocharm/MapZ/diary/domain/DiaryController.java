@@ -1,10 +1,7 @@
 package com.cheocharm.MapZ.diary.domain;
 
 import com.cheocharm.MapZ.common.CommonResponse;
-import com.cheocharm.MapZ.diary.domain.dto.DeleteDiaryDto;
-import com.cheocharm.MapZ.diary.domain.dto.DiaryLikePeopleDto;
-import com.cheocharm.MapZ.diary.domain.dto.LikeDiaryDto;
-import com.cheocharm.MapZ.diary.domain.dto.WriteDiaryDto;
+import com.cheocharm.MapZ.diary.domain.dto.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
@@ -25,7 +22,7 @@ public class DiaryController {
 
     @Operation(description = "일기 좋아요")
     @Parameter(name = "accessToken", in = ParameterIn.HEADER, required = true)
-    @PutMapping("/like")
+    @PostMapping("/like")
     public CommonResponse<?> likeDiary(@Parameter @RequestBody @Valid LikeDiaryDto likeDiaryDto) {
         diaryService.likeDiary(likeDiaryDto);
         return CommonResponse.success();
@@ -59,5 +56,19 @@ public class DiaryController {
     @GetMapping("/like")
     public CommonResponse<List<DiaryLikePeopleDto>> getDiaryLikePeople(@Parameter @RequestParam Long diaryId) {
         return CommonResponse.success(diaryService.getDiaryLikePeople(diaryId));
+    }
+
+    @Operation(description = "좋아요한 일기 조회")
+    @Parameter(name = "accessToken", in = ParameterIn.HEADER, required = true)
+    @GetMapping("/mylike")
+    public CommonResponse<MyLikeDiaryDto> getMyLikeDiary(@Parameter @RequestParam Long cursorId, @RequestParam Integer page) {
+        return CommonResponse.success(diaryService.getMyLikeDiary(cursorId, page));
+    }
+
+    @Operation(description = "내가 쓴 일기 조회")
+    @Parameter(name = "accessToken", in = ParameterIn.HEADER, required = true)
+    @GetMapping("/my")
+    public CommonResponse<MyDiaryDto> getMyDiary(@Parameter @RequestParam Long cursorId, @RequestParam Integer page) {
+        return CommonResponse.success(diaryService.getMyDiary(cursorId, page));
     }
 }
