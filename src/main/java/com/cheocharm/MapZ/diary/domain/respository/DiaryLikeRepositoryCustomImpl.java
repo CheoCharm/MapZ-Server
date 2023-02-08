@@ -1,5 +1,6 @@
 package com.cheocharm.MapZ.diary.domain.respository;
 
+import com.cheocharm.MapZ.diary.domain.DiaryEntity;
 import com.cheocharm.MapZ.diary.domain.DiaryLikeEntity;
 import com.cheocharm.MapZ.diary.domain.respository.vo.MyLikeDiaryVO;
 import com.cheocharm.MapZ.diary.domain.respository.vo.QMyLikeDiaryVO;
@@ -55,6 +56,14 @@ public class DiaryLikeRepositoryCustomImpl implements DiaryLikeRepositoryCustom{
                 .groupBy(diaryEntity.id);
 
         return fetchSliceByCursor(diaryEntity.getType(), diaryEntity.getMetadata(), query, pageable);
+    }
+
+    @Override
+    public void deleteAllByDiaryEntityList(List<DiaryEntity> diaryEntityList) {
+        queryFactory
+                .delete(diaryLikeEntity)
+                .where(diaryLikeEntity.diaryEntity.in(diaryEntityList))
+                .execute();
     }
 
     private BooleanExpression diaryIdEq(Long diaryId) {

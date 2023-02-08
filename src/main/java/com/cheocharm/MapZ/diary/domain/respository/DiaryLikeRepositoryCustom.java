@@ -1,5 +1,6 @@
 package com.cheocharm.MapZ.diary.domain.respository;
 
+import com.cheocharm.MapZ.diary.domain.DiaryEntity;
 import com.cheocharm.MapZ.diary.domain.DiaryLikeEntity;
 import com.cheocharm.MapZ.diary.domain.respository.vo.MyLikeDiaryVO;
 import org.springframework.data.domain.Pageable;
@@ -12,4 +13,5 @@ public interface DiaryLikeRepositoryCustom {
 
     Slice<MyLikeDiaryVO> findByUserId(Long userId, Long cursorId, Pageable pageable);
 
+    void deleteAllByDiaryEntityList(List<DiaryEntity> diaryEntityList);
 }
