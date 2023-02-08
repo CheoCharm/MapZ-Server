@@ -11,4 +11,8 @@ public interface DiaryRepositoryCustom {
     List<DiaryEntity> findByUserIdAndGroupId(Long userId, Long groupId);
 
     Slice<MyDiaryVO> findByUserId(Long userId, Long cursorId, Pageable pageable);
+
+    void deleteAllByUserId(Long userId);
+
+    List<DiaryEntity> findAllByUserId(Long userId);
 }
