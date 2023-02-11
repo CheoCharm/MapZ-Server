@@ -11,8 +11,8 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 
-import static com.cheocharm.MapZ.common.util.QuerydslSupport.*;
-import static com.cheocharm.MapZ.user.domain.QUserEntity.*;
+import static com.cheocharm.MapZ.common.util.QuerydslSupport.fetchSliceByCursor;
+import static com.cheocharm.MapZ.user.domain.QUserEntity.userEntity;
 
 @RequiredArgsConstructor
 @Component

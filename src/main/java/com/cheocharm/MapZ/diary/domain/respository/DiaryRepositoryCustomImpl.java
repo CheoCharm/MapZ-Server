@@ -12,10 +12,10 @@ import org.springframework.data.domain.Slice;
 
 import java.util.List;
 
-import static com.cheocharm.MapZ.comment.domain.QCommentEntity.*;
-import static com.cheocharm.MapZ.common.util.QuerydslSupport.*;
-import static com.cheocharm.MapZ.diary.domain.QDiaryEntity.*;
-import static com.cheocharm.MapZ.group.domain.QGroupEntity.*;
+import static com.cheocharm.MapZ.comment.domain.QCommentEntity.commentEntity;
+import static com.cheocharm.MapZ.common.util.QuerydslSupport.fetchSliceByCursor;
+import static com.cheocharm.MapZ.diary.domain.QDiaryEntity.diaryEntity;
+import static com.cheocharm.MapZ.group.domain.QGroupEntity.groupEntity;
 
 @RequiredArgsConstructor
 public class DiaryRepositoryCustomImpl implements DiaryRepositoryCustom {

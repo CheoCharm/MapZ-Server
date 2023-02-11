@@ -7,8 +7,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 
-import static com.cheocharm.MapZ.common.util.QuerydslSupport.*;
-import static com.cheocharm.MapZ.group.domain.QGroupEntity.*;
+import static com.cheocharm.MapZ.common.util.QuerydslSupport.fetchSliceByCursor;
+import static com.cheocharm.MapZ.group.domain.QGroupEntity.groupEntity;
 
 @RequiredArgsConstructor
 public class GroupRepositoryCustomImpl implements GroupRepositoryCustom {
