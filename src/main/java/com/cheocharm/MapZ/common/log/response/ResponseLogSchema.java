@@ -1,7 +1,6 @@
 package com.cheocharm.MapZ.common.log.response;
 
 import com.cheocharm.MapZ.common.CommonResponse;
-import com.cheocharm.MapZ.common.exception.S3.FailConvertToFileException;
 import com.cheocharm.MapZ.common.exception.common.FailConvertToJsonException;
 import com.cheocharm.MapZ.common.util.ObjectMapperUtils;
 import lombok.Builder;
