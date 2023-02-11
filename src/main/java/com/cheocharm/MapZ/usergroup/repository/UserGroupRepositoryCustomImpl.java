@@ -18,9 +18,9 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.Optional;
 
-import static com.cheocharm.MapZ.group.domain.QGroupEntity.*;
-import static com.cheocharm.MapZ.user.domain.QUserEntity.*;
-import static com.cheocharm.MapZ.usergroup.QUserGroupEntity.*;
+import static com.cheocharm.MapZ.group.domain.QGroupEntity.groupEntity;
+import static com.cheocharm.MapZ.user.domain.QUserEntity.userEntity;
+import static com.cheocharm.MapZ.usergroup.QUserGroupEntity.userGroupEntity;
 
 @RequiredArgsConstructor
 @Component

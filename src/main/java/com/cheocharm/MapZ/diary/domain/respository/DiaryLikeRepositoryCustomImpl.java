@@ -13,12 +13,12 @@ import org.springframework.data.domain.Slice;
 
 import java.util.List;
 
-import static com.cheocharm.MapZ.comment.domain.QCommentEntity.*;
+import static com.cheocharm.MapZ.comment.domain.QCommentEntity.commentEntity;
 import static com.cheocharm.MapZ.common.util.QuerydslSupport.fetchSliceByCursor;
-import static com.cheocharm.MapZ.diary.domain.QDiaryEntity.*;
-import static com.cheocharm.MapZ.diary.domain.QDiaryLikeEntity.*;
-import static com.cheocharm.MapZ.group.domain.QGroupEntity.*;
-import static com.cheocharm.MapZ.user.domain.QUserEntity.*;
+import static com.cheocharm.MapZ.diary.domain.QDiaryEntity.diaryEntity;
+import static com.cheocharm.MapZ.diary.domain.QDiaryLikeEntity.diaryLikeEntity;
+import static com.cheocharm.MapZ.group.domain.QGroupEntity.groupEntity;
+import static com.cheocharm.MapZ.user.domain.QUserEntity.userEntity;
 
 @RequiredArgsConstructor
 public class DiaryLikeRepositoryCustomImpl implements DiaryLikeRepositoryCustom{
