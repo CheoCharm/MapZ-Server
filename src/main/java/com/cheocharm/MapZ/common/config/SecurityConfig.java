@@ -63,10 +63,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                     //group
                     .antMatchers(HttpMethod.POST, "/api/group").authenticated()
                     .antMatchers(HttpMethod.GET, "/api/group").authenticated()
-                    .antMatchers(HttpMethod.PATCH, "/api/group/status").authenticated()
+                    .antMatchers(HttpMethod.PATCH, "/api/group").authenticated()
                     .antMatchers(HttpMethod.POST, "/api/group/join").authenticated()
                     .antMatchers(HttpMethod.PATCH, "/api/group/join").authenticated()
                     .antMatchers(HttpMethod.PATCH, "/api/group/exit").authenticated()
+                    .antMatchers(HttpMethod.PATCH, "/api/group/chief").authenticated()
                     .antMatchers(HttpMethod.POST, "/api/group/invite").authenticated()
                     .antMatchers(HttpMethod.GET, "/api/group/mygroup").authenticated()
                     .antMatchers(HttpMethod.GET, "/api/group/member").authenticated()

@@ -38,11 +38,13 @@ public class GroupController {
         return CommonResponse.success(groupService.getGroup(groupName, cursorId, page));
     }
 
-    @Operation(description = "그룹 공개여부 변경")
+    @Operation(description = "그룹 정보 변경")
     @Parameter(name = "accessToken", in = ParameterIn.HEADER, required = true)
-    @PatchMapping("/status")
-    public CommonResponse<?> changeGroupStatus(@RequestBody @Valid ChangeGroupStatusDto changeGroupStatusDto) {
-        groupService.changeGroupStatus(changeGroupStatusDto);
+    @PatchMapping
+    public CommonResponse<?> changeGroupInfo(
+            @RequestPart(value = "dto") @Valid ChangeGroupInfoDto changeGroupInfoDto,
+            @RequestPart(value="file", required = false) MultipartFile multipartFile) {
+        groupService.changeGroupInfo(changeGroupInfoDto, multipartFile);
         return CommonResponse.success();
     }
 

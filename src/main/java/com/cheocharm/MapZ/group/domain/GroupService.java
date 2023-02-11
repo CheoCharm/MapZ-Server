@@ -1,16 +1,18 @@
 package com.cheocharm.MapZ.group.domain;
 
-import com.cheocharm.MapZ.common.domain.BaseEntity;
+import com.cheocharm.MapZ.comment.domain.repository.CommentRepository;
 import com.cheocharm.MapZ.common.exception.group.DuplicatedGroupException;
 import com.cheocharm.MapZ.common.exception.group.NotFoundGroupException;
 import com.cheocharm.MapZ.common.exception.user.ExitGroupChiefException;
 import com.cheocharm.MapZ.common.exception.user.NoPermissionUserException;
 import com.cheocharm.MapZ.common.exception.user.NotFoundUserException;
+import com.cheocharm.MapZ.common.exception.usergroup.NotAcceptedUserException;
 import com.cheocharm.MapZ.common.exception.usergroup.NotFoundUserGroupException;
 import com.cheocharm.MapZ.common.exception.usergroup.SelfKickException;
 import com.cheocharm.MapZ.common.interceptor.UserThreadLocal;
 import com.cheocharm.MapZ.common.util.S3Utils;
 import com.cheocharm.MapZ.diary.domain.DiaryEntity;
+import com.cheocharm.MapZ.diary.domain.respository.DiaryLikeRepository;
 import com.cheocharm.MapZ.diary.domain.respository.DiaryRepository;
 import com.cheocharm.MapZ.group.domain.dto.*;
 import com.cheocharm.MapZ.group.domain.repository.GroupRepository;
@@ -43,6 +45,8 @@ import static com.cheocharm.MapZ.common.util.PagingUtils.*;
 public class GroupService {
 
     private final DiaryRepository diaryRepository;
+    private final DiaryLikeRepository diaryLikeRepository;
+    private final CommentRepository commentRepository;
     private final GroupRepository groupRepository;
     private final UserGroupRepository userGroupRepository;
     private final UserRepository userRepository;
@@ -111,18 +115,25 @@ public class GroupService {
     }
 
     @Transactional
-    public void changeGroupStatus(ChangeGroupStatusDto changeGroupStatusDto) {
+    public void changeGroupInfo(ChangeGroupInfoDto changeGroupInfoDto, MultipartFile multipartFile) {
         final UserEntity userEntity = UserThreadLocal.get();
 
-        final UserGroupEntity userGroupEntity = userGroupRepository.findByGroupIdAndUserId(changeGroupStatusDto.getGroupId(), userEntity.getId())
+        final UserGroupEntity userGroupEntity = userGroupRepository.findByGroupIdAndUserId(changeGroupInfoDto.getGroupId(), userEntity.getId())
                 .orElseThrow(NotFoundUserGroupException::new);
-
 
         if (userGroupEntity.getUserRole() != UserRole.CHIEF) {
             throw new NoPermissionUserException();
         }
 
-        userGroupEntity.getGroupEntity().changeGroupStatus(changeGroupStatusDto.getChangeStatus());
+        GroupEntity groupEntity = userGroupEntity.getGroupEntity();
+        if (groupEntity.getGroupName().equals(changeGroupInfoDto.getGroupName())) {
+            throw new DuplicatedGroupException();
+        }
+        if (!multipartFile.isEmpty()) {
+            groupEntity.updateGroupImageUrl(s3Utils.uploadGroupImage(multipartFile, groupEntity.getGroupUUID()));
+        }
+
+        groupEntity.changeGroupInfo(changeGroupInfoDto);
     }
 
     @Transactional
@@ -177,18 +188,15 @@ public class GroupService {
 
     @Transactional
     public void exitGroup(ExitGroupDto exitGroupDto) {
-        final UserEntity userEntity = UserThreadLocal.get();
+        Long userId = UserThreadLocal.get().getId();
 
-        final UserGroupEntity userGroupEntity = userGroupRepository.findByGroupIdAndUserId(exitGroupDto.getGroupId(), userEntity.getId())
+        final UserGroupEntity userGroupEntity = userGroupRepository.findByGroupIdAndUserId(exitGroupDto.getGroupId(), userId)
                 .orElseThrow(NotFoundUserGroupException::new);
 
         if (userGroupEntity.getUserRole() == UserRole.CHIEF) {
             throw new ExitGroupChiefException();
         }
-        List<DiaryEntity> diaryEntityList = diaryRepository.findAllByUserEntityAndGroupEntity(userGroupEntity.getUserEntity(), userGroupEntity.getGroupEntity());
-
-        userGroupEntity.delete();
-        diaryEntityList.forEach(BaseEntity::delete);
+        deleteGroupActivityOfUser(userId, userGroupEntity.getId());
     }
 
     @Transactional
@@ -204,7 +212,9 @@ public class GroupService {
 
         final UserGroupEntity targetUserGroupEntity = userGroupRepository.findByGroupIdAndUserId(changeChiefDto.getGroupId(), changeChiefDto.getUserId())
                 .orElseThrow(NotFoundUserException::new);
-
+        if (targetUserGroupEntity.getInvitationStatus() != InvitationStatus.ACCEPT) {
+            throw new NotAcceptedUserException();
+        }
         targetUserGroupEntity.changeChief(userGroupEntity, targetUserGroupEntity);
     }
 
@@ -293,7 +303,19 @@ public class GroupService {
         UserGroupEntity targetUserGroupEntity = userGroupRepository.findByGroupIdAndUserId(kickUserDto.getGroupId(), kickUserDto.getUserId())
                 .orElseThrow(NotFoundUserGroupException::new);
 
-        userGroupRepository.deleteById(targetUserGroupEntity.getId());
+        Long targetUserId = targetUserGroupEntity.getUserEntity().getId();
+        deleteGroupActivityOfUser(targetUserId, targetUserGroupEntity.getId());
+
+    }
+
+    private void deleteGroupActivityOfUser(Long deleteUserId, Long deleteUserGroupEntityId) {
+        List<DiaryEntity> diaryEntities = diaryRepository.findAllByUserId(deleteUserId);
+
+        diaryLikeRepository.deleteAllByDiaryEntityList(diaryEntities);
+        commentRepository.deleteAllByDiaryEntityList(diaryEntities);
+        diaryRepository.deleteAllByUserId(deleteUserId);
+
+        userGroupRepository.deleteById(deleteUserGroupEntityId);
     }
 
     private boolean containUser(Long userId, List<UserGroupEntity> userGroupEntities) {

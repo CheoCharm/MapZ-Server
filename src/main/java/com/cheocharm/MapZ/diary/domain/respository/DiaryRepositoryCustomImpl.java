@@ -53,6 +53,22 @@ public class DiaryRepositoryCustomImpl implements DiaryRepositoryCustom {
         return fetchSliceByCursor(diaryEntity.getType(), diaryEntity.getMetadata(), query, pageable);
     }
 
+    @Override
+    public void deleteAllByUserId(Long userId) {
+        queryFactory
+                .delete(diaryEntity)
+                .where(userIdEq(userId))
+                .execute();
+    }
+
+    @Override
+    public List<DiaryEntity> findAllByUserId(Long userId) {
+        return queryFactory
+                .selectFrom(diaryEntity)
+                .where(userIdEq(userId))
+                .fetch();
+    }
+
     private BooleanExpression userIdEq(Long userId) {
         return diaryEntity.userEntity.id.eq(userId);
     }

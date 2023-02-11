@@ -93,9 +93,8 @@ public class UserGroupRepositoryCustomImpl implements UserGroupRepositoryCustom 
     private JPAQuery<UserGroupEntity> fetchJoinQuery() {
         return queryFactory
                 .selectFrom(userGroupEntity)
-                .innerJoin(userGroupEntity.groupEntity, groupEntity)
-                .innerJoin(userGroupEntity.userEntity, userEntity)
-                .fetchJoin();
+                .innerJoin(userGroupEntity.groupEntity, groupEntity).fetchJoin()
+                .innerJoin(userGroupEntity.userEntity, userEntity).fetchJoin();
     }
 
     private JPAQuery<UserGroupEntity> fetchJoinUserEntity() {
