@@ -14,6 +14,7 @@ import com.cheocharm.MapZ.group.domain.GroupEntity;
 import com.cheocharm.MapZ.group.domain.repository.GroupRepository;
 import com.cheocharm.MapZ.user.domain.UserEntity;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.ObjectUtils;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKTReader;
@@ -25,7 +26,11 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.cheocharm.MapZ.common.util.PagingUtils.*;
+import static com.cheocharm.MapZ.common.util.PagingUtils.applyCursorId;
+import static com.cheocharm.MapZ.common.util.PagingUtils.applyDescPageConfigBy;
+import static com.cheocharm.MapZ.common.util.PagingUtils.MY_LIKE_DIARY_SIZE;
+import static com.cheocharm.MapZ.common.util.PagingUtils.MY_DIARY_SIZE;
+import static com.cheocharm.MapZ.common.util.PagingUtils.FIELD_CREATED_AT;
 
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -103,7 +108,7 @@ public class DiaryService {
     public void deleteDiary(DeleteDiaryDto deleteDiaryDto) {
         UserEntity userEntity = UserThreadLocal.get();
 
-        if (!deleteDiaryDto.getUserId().equals(userEntity.getId())) {
+        if (ObjectUtils.notEqual(deleteDiaryDto.getUserId(), userEntity.getId())) {
             throw new NoPermissionUserException();
         }
 

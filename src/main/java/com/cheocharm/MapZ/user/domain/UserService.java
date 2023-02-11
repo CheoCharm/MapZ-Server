@@ -2,9 +2,11 @@ package com.cheocharm.MapZ.user.domain;
 
 import com.cheocharm.MapZ.agreement.AgreementEntity;
 import com.cheocharm.MapZ.agreement.repository.AgreementRepository;
-import com.cheocharm.MapZ.common.exception.group.NotFoundGroupException;
 import com.cheocharm.MapZ.common.exception.jwt.InvalidJwtException;
-import com.cheocharm.MapZ.common.exception.user.*;
+import com.cheocharm.MapZ.common.exception.user.DuplicatedEmailException;
+import com.cheocharm.MapZ.common.exception.user.DuplicatedUsernameException;
+import com.cheocharm.MapZ.common.exception.user.WrongPasswordException;
+import com.cheocharm.MapZ.common.exception.user.NotFoundUserException;
 import com.cheocharm.MapZ.common.interceptor.UserThreadLocal;
 import com.cheocharm.MapZ.common.jwt.JwtCreateUtils;
 import com.cheocharm.MapZ.common.oauth.OauthApi;
@@ -13,13 +15,13 @@ import com.cheocharm.MapZ.common.util.ObjectMapperUtils;
 import com.cheocharm.MapZ.common.oauth.GoogleYml;
 import com.cheocharm.MapZ.common.util.RandomUtils;
 import com.cheocharm.MapZ.common.util.S3Utils;
-import com.cheocharm.MapZ.group.domain.repository.GroupRepository;
 import com.cheocharm.MapZ.user.domain.dto.*;
 import com.cheocharm.MapZ.user.domain.repository.UserRepository;
 import com.cheocharm.MapZ.usergroup.UserGroupEntity;
 import com.cheocharm.MapZ.usergroup.repository.UserGroupRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.data.domain.Slice;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -34,7 +36,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static com.cheocharm.MapZ.common.util.PagingUtils.*;
+import static com.cheocharm.MapZ.common.util.PagingUtils.applyCursorId;
+import static com.cheocharm.MapZ.common.util.PagingUtils.applyDescPageConfigBy;
+import static com.cheocharm.MapZ.common.util.PagingUtils.FIELD_CREATED_AT;
+import static com.cheocharm.MapZ.common.util.PagingUtils.USER_SIZE;
 
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -59,7 +64,7 @@ public class UserService {
 
         final ResponseEntity<String> response = oauthApi.callGoogle(OauthUrl.GOOGLE, userSignUpDto.getIdToken());
 
-        if (!response.getStatusCode().equals(HttpStatus.OK)) {
+        if (ObjectUtils.notEqual(response.getStatusCode(), HttpStatus.OK)) {
             throw new InvalidJwtException();
         }
 
@@ -102,7 +107,7 @@ public class UserService {
     public TokenPairResponseDto loginGoogle(GoogleLoginDto userLoginDto) {
         ResponseEntity<String> response = oauthApi.callGoogle(OauthUrl.GOOGLE, userLoginDto.getIdToken());
 
-        if (!response.getStatusCode().equals(HttpStatus.OK)) {
+        if (ObjectUtils.notEqual(response.getStatusCode(), HttpStatus.OK)) {
             throw new InvalidJwtException();
         }
         GoogleIdTokenDto idToken = checkAudAndGetTokenDto(response);
@@ -117,19 +122,6 @@ public class UserService {
         }
 
         return jwtCreateUtils.createNullToken();
-    }
-
-    private GoogleIdTokenDto checkAudAndGetTokenDto(ResponseEntity<String> response) {
-        try {
-            GoogleIdTokenDto idToken = ObjectMapperUtils.getObjectMapper().readValue(response.getBody(), GoogleIdTokenDto.class);
-
-            if (!idToken.getAud().equals(googleYml.getClient_id())) {
-                throw new InvalidJwtException();
-            }
-            return idToken;
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException("readvalue 에러");
-        }
     }
 
     @Transactional
@@ -257,6 +249,19 @@ public class UserService {
                 .username(userEntity.getUsername())
                 .userImageUrl(userEntity.getUserImageUrl())
                 .build();
+    }
+
+    private GoogleIdTokenDto checkAudAndGetTokenDto(ResponseEntity<String> response) {
+        try {
+            GoogleIdTokenDto idToken = ObjectMapperUtils.getObjectMapper().readValue(response.getBody(), GoogleIdTokenDto.class);
+
+            if (ObjectUtils.notEqual(idToken.getAud(), googleYml.getClient_id())) {
+                throw new InvalidJwtException();
+            }
+            return idToken;
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("readvalue 에러");
+        }
     }
 
     private Boolean isMember(UserEntity userEntity, List<UserGroupEntity> groupMemberList) {

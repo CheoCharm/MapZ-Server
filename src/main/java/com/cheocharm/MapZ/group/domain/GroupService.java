@@ -25,6 +25,7 @@ import com.cheocharm.MapZ.usergroup.repository.UserGroupRepository;
 import com.cheocharm.MapZ.usergroup.repository.vo.ChiefUserImageVO;
 import com.cheocharm.MapZ.usergroup.repository.vo.CountUserGroupVO;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,11 +34,15 @@ import org.springframework.web.multipart.MultipartFile;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import static com.cheocharm.MapZ.common.util.PagingUtils.*;
+import static com.cheocharm.MapZ.common.util.PagingUtils.applyCursorId;
+import static com.cheocharm.MapZ.common.util.PagingUtils.applyDescPageConfigBy;
+import static com.cheocharm.MapZ.common.util.PagingUtils.FIELD_CREATED_AT;
+import static com.cheocharm.MapZ.common.util.PagingUtils.GROUP_SIZE;
 
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -121,7 +126,7 @@ public class GroupService {
         final UserGroupEntity userGroupEntity = userGroupRepository.findByGroupIdAndUserId(changeGroupInfoDto.getGroupId(), userEntity.getId())
                 .orElseThrow(NotFoundUserGroupException::new);
 
-        if (userGroupEntity.getUserRole() != UserRole.CHIEF) {
+        if (Objects.equals(userGroupEntity.getUserRole(), UserRole.MEMBER)) {
             throw new NoPermissionUserException();
         }
 
@@ -172,7 +177,7 @@ public class GroupService {
         final UserGroupEntity userGroupEntity = userGroupRepository.findByGroupIdAndUserId(changeInvitationStatusDto.getGroupId(), userEntity.getId())
                 .orElseThrow(NotFoundUserException::new);
 
-        if (userGroupEntity.getUserRole() != UserRole.CHIEF) {
+        if (Objects.equals(userGroupEntity.getUserRole(), UserRole.MEMBER)) {
             throw new NoPermissionUserException();
         }
 
@@ -193,7 +198,7 @@ public class GroupService {
         final UserGroupEntity userGroupEntity = userGroupRepository.findByGroupIdAndUserId(exitGroupDto.getGroupId(), userId)
                 .orElseThrow(NotFoundUserGroupException::new);
 
-        if (userGroupEntity.getUserRole() == UserRole.CHIEF) {
+        if (Objects.equals(userGroupEntity.getUserRole(), UserRole.CHIEF)) {
             throw new ExitGroupChiefException();
         }
         deleteGroupActivityOfUser(userId, userGroupEntity.getId());
@@ -206,13 +211,13 @@ public class GroupService {
         final UserGroupEntity userGroupEntity = userGroupRepository.findByGroupIdAndUserId(changeChiefDto.getGroupId(), userEntity.getId())
                 .orElseThrow(NotFoundUserGroupException::new);
 
-        if (userGroupEntity.getUserRole() == UserRole.MEMBER) {
+        if (Objects.equals(userGroupEntity.getUserRole(), UserRole.MEMBER)) {
             throw new NoPermissionUserException();
         }
 
         final UserGroupEntity targetUserGroupEntity = userGroupRepository.findByGroupIdAndUserId(changeChiefDto.getGroupId(), changeChiefDto.getUserId())
                 .orElseThrow(NotFoundUserException::new);
-        if (targetUserGroupEntity.getInvitationStatus() != InvitationStatus.ACCEPT) {
+        if (ObjectUtils.notEqual(targetUserGroupEntity.getInvitationStatus(), InvitationStatus.ACCEPT)) {
             throw new NotAcceptedUserException();
         }
         targetUserGroupEntity.changeChief(userGroupEntity, targetUserGroupEntity);
@@ -224,7 +229,7 @@ public class GroupService {
 
         final UserGroupEntity userGroupEntity = userGroupRepository.findByGroupIdAndUserId(inviteUserListDto.getGroupId(), userEntity.getId())
                 .orElseThrow(NotFoundUserGroupException::new);
-        if (userGroupEntity.getInvitationStatus() != InvitationStatus.ACCEPT) {
+        if (ObjectUtils.notEqual(userGroupEntity.getInvitationStatus(), InvitationStatus.ACCEPT)) {
             throw new NoPermissionUserException();
         }
 
@@ -266,7 +271,7 @@ public class GroupService {
         UserEntity userEntity = UserThreadLocal.get();
 
         List<UserGroupEntity> userGroupEntities = userGroupRepository.findByGroupId(groupId);
-        if (!containUser(userEntity.getId(), userGroupEntities)) {
+        if (isNotUser(userEntity.getId(), userGroupEntities)) {
             throw new NoPermissionUserException();
         }
 
@@ -296,7 +301,7 @@ public class GroupService {
         UserGroupEntity userGroupEntity = userGroupRepository.findByGroupIdAndUserId(kickUserDto.getGroupId(), userEntity.getId())
                 .orElseThrow(NotFoundUserGroupException::new);
 
-        if (userGroupEntity.getUserRole() == UserRole.MEMBER) {
+        if (Objects.equals(userGroupEntity.getUserRole(), UserRole.MEMBER)) {
             throw new NoPermissionUserException();
         }
 
@@ -318,7 +323,7 @@ public class GroupService {
         userGroupRepository.deleteById(deleteUserGroupEntityId);
     }
 
-    private boolean containUser(Long userId, List<UserGroupEntity> userGroupEntities) {
+    private boolean isNotUser(Long userId, List<UserGroupEntity> userGroupEntities) {
         ArrayList<Long> list = new ArrayList<>();
         for (UserGroupEntity userGroupEntity : userGroupEntities) {
             list.add(userGroupEntity.getUserEntity().getId());
