@@ -36,13 +36,15 @@ public class ReportService {
 
         if (count >= 2) {
             diaryRepository.deleteById(diaryId);
-        } else {
-            ReportEntity reportEntity = ReportEntity.builder()
-                    .userId(userId)
-                    .diaryId(diaryId)
-                    .build();
-
-            reportRepository.save(reportEntity);
+            return;
         }
+
+        ReportEntity reportEntity = ReportEntity.builder()
+                .userId(userId)
+                .diaryId(diaryId)
+                .build();
+
+        reportRepository.save(reportEntity);
+
     }
 }
