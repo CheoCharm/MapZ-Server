@@ -5,7 +5,7 @@ import lombok.Getter;
 import javax.validation.constraints.NotNull;
 
 @Getter
-public class WriteDiaryDto {
+public class WriteDiaryRequest {
 
     @NotNull
     private String title;
@@ -14,11 +14,5 @@ public class WriteDiaryDto {
     private String content;
 
     @NotNull
-    private Long groupId;
-
-    @NotNull
-    private Double latitude;
-
-    @NotNull
-    private Double longitude;
+    private Long diaryId;
 }

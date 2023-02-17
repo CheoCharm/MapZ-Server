@@ -71,11 +71,11 @@ public class DiaryService {
     }
 
     @Transactional
-    public void writeDiary(WriteDiaryDto writeDiaryDto) {
-        DiaryEntity diaryEntity = diaryRepository.findById(writeDiaryDto.getDiaryId())
+    public void writeDiary(WriteDiaryRequest writeDiaryRequest) {
+        DiaryEntity diaryEntity = diaryRepository.findById(writeDiaryRequest.getDiaryId())
                 .orElseThrow(NotFoundDiaryException::new);
 
-        diaryEntity.write(writeDiaryDto.getTitle(), writeDiaryDto.getContent());
+        diaryEntity.write(writeDiaryRequest.getTitle(), writeDiaryRequest.getContent());
     }
 
     public GetDiaryListDto getDiary(Long groupId) {

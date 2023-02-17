@@ -51,8 +51,8 @@ public class DiaryController {
     @Operation(description = "일기 본문까지 작성 완료 후 업데이트 (2차 요청)")
     @Parameter(name = "accessToken", in = ParameterIn.HEADER, required = true)
     @PostMapping("/write")
-    public CommonResponse<?> writeDiary(@Parameter @RequestBody @Valid WriteDiaryDto writeDiaryDto) {
-        diaryService.writeDiary(writeDiaryDto);
+    public CommonResponse<?> writeDiary(@Parameter @RequestBody @Valid WriteDiaryRequest writeDiaryRequest) {
+        diaryService.writeDiary(writeDiaryRequest);
         return CommonResponse.success();
     }
 
