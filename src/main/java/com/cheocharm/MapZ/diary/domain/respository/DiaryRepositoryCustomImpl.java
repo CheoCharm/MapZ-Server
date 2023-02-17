@@ -45,7 +45,7 @@ public class DiaryRepositoryCustomImpl implements DiaryRepositoryCustom {
                 ))
                 .from(diaryEntity)
                 .innerJoin(diaryEntity.groupEntity, groupEntity)
-                .leftJoin(diaryEntity.commentEntityList, commentEntity)
+                .leftJoin(diaryEntity.commentEntities, commentEntity)
                 .where(userIdEq(userId))
                 .where(diaryEntity.id.lt(cursorId))
                 .groupBy(diaryEntity.id);
