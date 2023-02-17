@@ -27,6 +27,8 @@ public class DiaryEntity extends BaseEntity {
 
     private Point point;
 
+    private String address;
+
     @JoinColumn(name = "user_id")
     @ManyToOne(fetch = FetchType.LAZY)
     private UserEntity userEntity;
@@ -35,18 +37,27 @@ public class DiaryEntity extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     private GroupEntity groupEntity;
 
-    @OneToMany(mappedBy = "diaryEntity", cascade = CascadeType.REMOVE)
-    private List<CommentEntity> commentEntityList = new ArrayList<>();
+    @OneToMany(mappedBy = "diaryEntity")
+    private List<CommentEntity> commentEntities = new ArrayList<>();
 
-    @OneToMany(mappedBy = "diaryEntity", cascade = CascadeType.REMOVE)
-    private List<DiaryLikeEntity> diaryLikeEntityList = new ArrayList<>();
+    @OneToMany(mappedBy = "diaryEntity")
+    private List<DiaryLikeEntity> diaryLikeEntities = new ArrayList<>();
+
+    @OneToMany(mappedBy = "diaryEntity")
+    private List<DiaryImageEntity> diaryImageEntities = new ArrayList<>();
 
     @Builder
-    public DiaryEntity(String title, String content, Point point, UserEntity userEntity, GroupEntity groupEntity) {
+    public DiaryEntity(String title, String content, Point point, String address, UserEntity userEntity, GroupEntity groupEntity) {
         this.title = title;
         this.content = content;
         this.point = point;
+        this.address = address;
         this.userEntity = userEntity;
         this.groupEntity = groupEntity;
+    }
+
+    public void write(String title, String content) {
+        this.title = title;
+        this.content = content;
     }
 }
