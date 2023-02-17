@@ -7,7 +7,7 @@ import com.cheocharm.MapZ.common.exception.user.NoPermissionUserException;
 import com.cheocharm.MapZ.common.interceptor.UserThreadLocal;
 import com.cheocharm.MapZ.common.util.S3Utils;
 import com.cheocharm.MapZ.diary.domain.dto.*;
-import com.cheocharm.MapZ.diary.domain.dto.request.DeleteTempDiary;
+import com.cheocharm.MapZ.diary.domain.dto.request.DeleteTempDiaryRequest;
 import com.cheocharm.MapZ.diary.domain.dto.request.WriteDiaryImageRequest;
 import com.cheocharm.MapZ.diary.domain.dto.response.WriteDiaryImageResponse;
 import com.cheocharm.MapZ.diary.domain.respository.DiaryImageRepository;
@@ -219,8 +219,8 @@ public class DiaryService {
     }
 
     @Transactional
-    public void deleteTempDiary(DeleteTempDiary deleteTempDiary) {
-        Long diaryId = deleteTempDiary.getDiaryId();
+    public void deleteTempDiary(DeleteTempDiaryRequest deleteTempDiaryRequest) {
+        Long diaryId = deleteTempDiaryRequest.getDiaryId();
         List<String> diaryImageURLs = diaryImageRepository.findAllByDiaryId(diaryId);
 
         s3Utils.deleteDiaryImage(diaryImageURLs);

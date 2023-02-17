@@ -2,7 +2,7 @@ package com.cheocharm.MapZ.diary.domain;
 
 import com.cheocharm.MapZ.common.CommonResponse;
 import com.cheocharm.MapZ.diary.domain.dto.*;
-import com.cheocharm.MapZ.diary.domain.dto.request.DeleteTempDiary;
+import com.cheocharm.MapZ.diary.domain.dto.request.DeleteTempDiaryRequest;
 import com.cheocharm.MapZ.diary.domain.dto.request.WriteDiaryImageRequest;
 import com.cheocharm.MapZ.diary.domain.dto.response.WriteDiaryImageResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -59,8 +59,8 @@ public class DiaryController {
     @Operation(description = "예외 사항으로 인해 일기 작성을 취소하면 일기, 이미지 데이터 삭제 (1차 요청 후 상황에 맞게 호출) ")
     @Parameter(name = "accessToken", in = ParameterIn.HEADER, required = true)
     @DeleteMapping("/image")
-    public CommonResponse<?> deleteTempDiary(@Parameter @RequestBody @Valid DeleteTempDiary deleteTempDiary) {
-        diaryService.deleteTempDiary(deleteTempDiary);
+    public CommonResponse<?> deleteTempDiary(@Parameter @RequestBody @Valid DeleteTempDiaryRequest deleteTempDiaryRequest) {
+        diaryService.deleteTempDiary(deleteTempDiaryRequest);
         return CommonResponse.success();
     }
 
