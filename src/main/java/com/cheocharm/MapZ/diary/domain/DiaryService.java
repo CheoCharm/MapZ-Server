@@ -5,7 +5,12 @@ import com.cheocharm.MapZ.common.exception.diary.NotFoundDiaryException;
 import com.cheocharm.MapZ.common.exception.group.NotFoundGroupException;
 import com.cheocharm.MapZ.common.exception.user.NoPermissionUserException;
 import com.cheocharm.MapZ.common.interceptor.UserThreadLocal;
+import com.cheocharm.MapZ.common.util.S3Utils;
 import com.cheocharm.MapZ.diary.domain.dto.*;
+import com.cheocharm.MapZ.diary.domain.dto.request.DeleteTempDiary;
+import com.cheocharm.MapZ.diary.domain.dto.request.WriteDiaryImageRequest;
+import com.cheocharm.MapZ.diary.domain.dto.response.WriteDiaryImageResponse;
+import com.cheocharm.MapZ.diary.domain.respository.DiaryImageRepository;
 import com.cheocharm.MapZ.diary.domain.respository.DiaryLikeRepository;
 import com.cheocharm.MapZ.diary.domain.respository.DiaryRepository;
 import com.cheocharm.MapZ.diary.domain.respository.vo.MyDiaryVO;
@@ -21,8 +26,10 @@ import org.locationtech.jts.io.WKTReader;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -39,7 +46,10 @@ public class DiaryService {
 
     private final DiaryRepository diaryRepository;
     private final DiaryLikeRepository diaryLikeRepository;
+    private final DiaryImageRepository diaryImageRepository;
     private final GroupRepository groupRepository;
+
+    private final S3Utils s3Utils;
 
     @Transactional
     public void likeDiary(LikeDiaryDto likeDiaryDto) {
@@ -62,27 +72,10 @@ public class DiaryService {
 
     @Transactional
     public void writeDiary(WriteDiaryDto writeDiaryDto) {
-        UserEntity userEntity = UserThreadLocal.get();
+        DiaryEntity diaryEntity = diaryRepository.findById(writeDiaryDto.getDiaryId())
+                .orElseThrow(NotFoundDiaryException::new);
 
-        GroupEntity groupEntity = groupRepository.findById(writeDiaryDto.getGroupId())
-                .orElseThrow(NotFoundGroupException::new);
-
-        String pointWKT = String.format("POINT(%s %s)", writeDiaryDto.getLatitude(), writeDiaryDto.getLongitude());
-
-        try {
-            Point point = (Point) new WKTReader().read(pointWKT);
-            diaryRepository.save(
-                    DiaryEntity.builder()
-                            .userEntity(userEntity)
-                            .groupEntity(groupEntity)
-                            .title(writeDiaryDto.getTitle())
-                            .content(writeDiaryDto.getContent())
-                            .point(point)
-                            .build()
-            );
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
+        diaryEntity.write(writeDiaryDto.getTitle(), writeDiaryDto.getContent());
     }
 
     public GetDiaryListDto getDiary(Long groupId) {
@@ -181,5 +174,57 @@ public class DiaryService {
                 .collect(Collectors.toList());
 
         return new MyDiaryDto(content.hasNext(), diaryList);
+    }
+
+    @Transactional
+    public WriteDiaryImageResponse writeDiaryImage(WriteDiaryImageRequest writeDiaryImageRequest, List<MultipartFile> files) {
+        UserEntity userEntity = UserThreadLocal.get();
+
+        GroupEntity groupEntity = groupRepository.findById(writeDiaryImageRequest.getGroupId())
+                .orElseThrow(NotFoundGroupException::new);
+
+        String pointWKT = String.format("POINT(%s %s)", writeDiaryImageRequest.getLatitude(), writeDiaryImageRequest.getLongitude());
+
+        Point point;
+        try {
+            point = (Point) new WKTReader().read(pointWKT);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
+        DiaryEntity diaryEntity = diaryRepository.save(
+                DiaryEntity.builder()
+                        .userEntity(userEntity)
+                        .groupEntity(groupEntity)
+                        .address(writeDiaryImageRequest.getAddress())
+                        .point(point)
+                        .build()
+        );
+        Long diaryId = diaryEntity.getId();
+
+        List<String> imageURLs = s3Utils.uploadDiaryImage(files, diaryId);
+        ArrayList<DiaryImageEntity> diaryImageEntities = new ArrayList<>();
+        int imageOrder = 1;
+        for (String imageURL : imageURLs) {
+            diaryImageEntities.add(
+                    DiaryImageEntity.builder()
+                            .diaryEntity(diaryEntity)
+                            .diaryImageUrl(imageURL)
+                            .imageOrder(imageOrder)
+                            .build()
+            );
+        }
+        diaryImageRepository.saveAll(diaryImageEntities);
+
+        return new WriteDiaryImageResponse(diaryId, imageURLs);
+    }
+
+    @Transactional
+    public void deleteTempDiary(DeleteTempDiary deleteTempDiary) {
+        Long diaryId = deleteTempDiary.getDiaryId();
+        List<String> diaryImageURLs = diaryImageRepository.findAllByDiaryId(diaryId);
+
+        s3Utils.deleteDiaryImage(diaryImageURLs);
+        diaryImageRepository.deleteAllByDiaryId(diaryId);
+        diaryRepository.deleteById(diaryId);
     }
 }
