@@ -11,6 +11,9 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 @RequiredArgsConstructor
 @Component
@@ -47,6 +50,24 @@ public class S3Utils {
 
         return imageURL;
 
+    }
+
+    public List<String> uploadDiaryImage(List<MultipartFile> files, Long diaryId) {
+        String directory = DIARY.concat(String.valueOf(diaryId)).concat("/");
+        List<String> imageURLs = new ArrayList<>();
+        for (MultipartFile multipartFile : files) {
+            File file = convert(multipartFile);
+            String key = directory.concat(UUID.randomUUID().toString());
+            amazonS3Client.putObject(bucket, key, file);
+            imageURLs.add(amazonS3Client.getUrl(bucket, key).toString());
+        }
+        return imageURLs;
+    }
+
+    public void deleteDiaryImage(List<String> imageURLs) {
+        for (String imageURL : imageURLs) {
+            amazonS3Client.deleteObject(bucket, imageURL);
+        }
     }
 
     @SuppressWarnings({"ConstantConditions", "ResultOfMethodCallIgnored"})
