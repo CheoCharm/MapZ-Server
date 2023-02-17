@@ -1,20 +1,16 @@
-package com.cheocharm.MapZ.diary.domain.dto;
+package com.cheocharm.MapZ.diary.domain.dto.request;
 
 import lombok.Getter;
 
 import javax.validation.constraints.NotNull;
 
 @Getter
-public class WriteDiaryDto {
-
-    @NotNull
-    private String title;
-
-    @NotNull
-    private String content;
-
+public class WriteDiaryImageRequest {
     @NotNull
     private Long groupId;
+
+    @NotNull
+    private String address;
 
     @NotNull
     private Double latitude;
