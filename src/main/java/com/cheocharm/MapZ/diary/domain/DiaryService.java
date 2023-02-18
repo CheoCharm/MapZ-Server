@@ -223,7 +223,7 @@ public class DiaryService {
         Long diaryId = deleteTempDiaryRequest.getDiaryId();
         List<String> diaryImageURLs = diaryImageRepository.findAllByDiaryId(diaryId);
 
-        s3Utils.deleteDiaryImage(diaryImageURLs);
+        s3Utils.deleteImages(diaryImageURLs);
         diaryImageRepository.deleteAllByDiaryId(diaryId);
         diaryRepository.deleteById(diaryId);
     }

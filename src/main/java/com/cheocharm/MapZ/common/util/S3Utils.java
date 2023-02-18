@@ -1,16 +1,15 @@
 package com.cheocharm.MapZ.common.util;
 
 import com.amazonaws.services.s3.AmazonS3Client;
-import com.cheocharm.MapZ.common.exception.S3.FailConvertToFileException;
-import com.cheocharm.MapZ.common.exception.S3.FailDeleteFileException;
+import com.amazonaws.services.s3.model.ObjectMetadata;
+import com.amazonaws.services.s3.model.PutObjectRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -27,28 +26,17 @@ public class S3Utils {
     private String bucket;
 
     public String uploadUserImage(MultipartFile multipartFile, String username) {
-        File file = convert(multipartFile);
-        String key = USER + username; //dir + filename
-        amazonS3Client.putObject(bucket, key, file);
-        String imageURL = amazonS3Client.getUrl(bucket, key).toString();
-        if (!file.delete()) {
-            throw new FailDeleteFileException();
-        }
+        String key = USER + username;
+        uploadImage(multipartFile, key);
 
-        return imageURL;
-
+        return amazonS3Client.getUrl(bucket, key).toString();
     }
 
     public String uploadGroupImage(MultipartFile multipartFile, String groupUUID) {
-        File file = convert(multipartFile);
-        String key = GROUP + groupUUID; //dir + filename
-        amazonS3Client.putObject(bucket, key, file);
-        String imageURL = amazonS3Client.getUrl(bucket, key).toString();
-        if (!file.delete()) {
-            throw new FailDeleteFileException();
-        }
+        String key = GROUP + groupUUID;
+        uploadImage(multipartFile, key);
 
-        return imageURL;
+        return amazonS3Client.getUrl(bucket, key).toString();
 
     }
 
@@ -56,35 +44,32 @@ public class S3Utils {
         String directory = DIARY.concat(String.valueOf(diaryId)).concat("/");
         List<String> imageURLs = new ArrayList<>();
         for (MultipartFile multipartFile : files) {
-            File file = convert(multipartFile);
             String key = directory.concat(UUID.randomUUID().toString());
-            amazonS3Client.putObject(bucket, key, file);
+            uploadImage(multipartFile, key);
             imageURLs.add(amazonS3Client.getUrl(bucket, key).toString());
         }
         return imageURLs;
     }
 
-    public void deleteDiaryImage(List<String> imageURLs) {
+    private void uploadImage(MultipartFile multipartFile, String key) {
+        try (final InputStream inputStream = multipartFile.getInputStream()) {
+            ObjectMetadata objectMetadata = new ObjectMetadata();
+            objectMetadata.setContentType(multipartFile.getContentType());
+            objectMetadata.setContentLength(multipartFile.getSize());
+
+            amazonS3Client.putObject(new PutObjectRequest(bucket, key, inputStream, objectMetadata));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void deleteImages(List<String> imageURLs) {
         for (String imageURL : imageURLs) {
-            amazonS3Client.deleteObject(bucket, imageURL);
+            deleteImage(imageURL);
         }
     }
 
-    @SuppressWarnings({"ConstantConditions", "ResultOfMethodCallIgnored"})
-    public File convert(MultipartFile multipartFile) {
-        File file = new File(multipartFile.getOriginalFilename());
-        try {
-            file.createNewFile();
-        } catch (IOException e) {
-            throw new FailConvertToFileException();
-        }
-
-        try (FileOutputStream fos = new FileOutputStream(file)) {
-            fos.write(multipartFile.getBytes());
-        } catch (IOException e) {
-            throw new RuntimeException();
-        }
-        return file;
+    public void deleteImage(String imageURL) {
+        amazonS3Client.deleteObject(bucket, imageURL);
     }
-
 }
