@@ -1,6 +1,6 @@
 package com.cheocharm.MapZ;
 
-import com.cheocharm.MapZ.common.config.JpaAuditConfig;
+import com.cheocharm.MapZ.common.config.JpaConfig;
 import com.cheocharm.MapZ.common.domain.BaseEntity;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
@@ -16,7 +16,7 @@ import static org.springframework.context.annotation.FilterType.ASSIGNABLE_TYPE;
 @ActiveProfiles("test")
 @DataJpaTest(includeFilters = @ComponentScan.Filter(
         type = ASSIGNABLE_TYPE,
-        classes = {JpaAuditConfig.class, BaseEntity.class}))
+        classes = {JpaConfig.class, BaseEntity.class}))
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 public @interface RepositoryTest {
 }
