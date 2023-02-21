@@ -1,4 +1,4 @@
-package com.cheocharm.MapZ.usergroup.repository.vo;
+package com.cheocharm.MapZ.usergroup.domain.repository.vo;
 
 import com.querydsl.core.annotations.QueryProjection;
 import lombok.Getter;
