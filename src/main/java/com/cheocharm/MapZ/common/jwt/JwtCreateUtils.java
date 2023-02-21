@@ -2,7 +2,7 @@ package com.cheocharm.MapZ.common.jwt;
 
 import com.cheocharm.MapZ.user.domain.UserEntity;
 import com.cheocharm.MapZ.user.domain.UserProvider;
-import com.cheocharm.MapZ.user.domain.dto.TokenPairResponseDto;
+import com.cheocharm.MapZ.user.presentation.dto.response.TokenPairResponse;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
@@ -39,12 +39,12 @@ public class JwtCreateUtils {
     }
 
     @Transactional
-    public TokenPairResponseDto createAccessToken(String refreshToken) {
+    public TokenPairResponse createAccessToken(String refreshToken) {
         final UserEntity userEntity = jwtCommonUtils.findUserByToken(refreshToken);
         if(!userEntity.getRefreshToken().equals(refreshToken)){
             throw new RuntimeException("토큰 정보 불일치");
         }
-        final TokenPairResponseDto tokenPair = createTokenPair(userEntity.getEmail(), userEntity.getUsername(), userEntity.getUserProvider());
+        final TokenPairResponse tokenPair = createTokenPair(userEntity.getEmail(), userEntity.getUsername(), userEntity.getUserProvider());
         userEntity.updateRefreshToken(tokenPair.getRefreshToken());
         return tokenPair;
     }
@@ -63,8 +63,8 @@ public class JwtCreateUtils {
                 .compact();
     }
 
-    public TokenPairResponseDto createTokenPair(String email, String username, UserProvider userProvider) {
-        return TokenPairResponseDto.builder()
+    public TokenPairResponse createTokenPair(String email, String username, UserProvider userProvider) {
+        return TokenPairResponse.builder()
                 .accessToken(createAccessToken(email, username, userProvider))
                 .refreshToken(createRefreshToken(email, username, userProvider))
                 .build();
@@ -85,8 +85,8 @@ public class JwtCreateUtils {
     }
 
 
-    public TokenPairResponseDto createNullToken() {
-        return TokenPairResponseDto.builder()
+    public TokenPairResponse createNullToken() {
+        return TokenPairResponse.builder()
                 .build();
     }
 }

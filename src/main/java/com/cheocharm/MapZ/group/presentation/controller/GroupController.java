@@ -1,7 +1,19 @@
-package com.cheocharm.MapZ.group.domain;
+package com.cheocharm.MapZ.group.presentation.controller;
 
 import com.cheocharm.MapZ.common.CommonResponse;
-import com.cheocharm.MapZ.group.domain.dto.*;
+import com.cheocharm.MapZ.group.application.GroupService;
+import com.cheocharm.MapZ.group.presentation.dto.request.ChangeChiefRequest;
+import com.cheocharm.MapZ.group.presentation.dto.request.ChangeGroupInfoRequest;
+import com.cheocharm.MapZ.group.presentation.dto.request.ChangeInvitationStatusRequest;
+import com.cheocharm.MapZ.group.presentation.dto.request.CreateGroupRequest;
+import com.cheocharm.MapZ.group.presentation.dto.request.ExitGroupRequest;
+import com.cheocharm.MapZ.group.presentation.dto.request.InviteGroupRequest;
+import com.cheocharm.MapZ.group.presentation.dto.request.JoinGroupRequest;
+import com.cheocharm.MapZ.group.presentation.dto.request.KickUserRequest;
+import com.cheocharm.MapZ.group.presentation.dto.response.GetMyGroupResponse;
+import com.cheocharm.MapZ.group.presentation.dto.response.GroupMemberResponse;
+import com.cheocharm.MapZ.group.presentation.dto.response.JoinGroupResultResponse;
+import com.cheocharm.MapZ.group.presentation.dto.response.PagingGroupListResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
@@ -33,16 +45,16 @@ public class GroupController {
     @Parameter(name = "accessToken", in = ParameterIn.HEADER, required = true)
     @PostMapping
     public CommonResponse<?> createGroup(
-            @RequestPart(value = "dto") @Valid CreateGroupDto createGroupDto,
+            @RequestPart(value = "dto") @Valid CreateGroupRequest createGroupRequest,
             @RequestPart(value = "file", required = false) MultipartFile multipartFile) {
-        groupService.createGroup(createGroupDto, multipartFile);
+        groupService.createGroup(createGroupRequest, multipartFile);
         return CommonResponse.success();
     }
 
     @Operation(description = "그룹 참가를 위한 그룹 조회")
     @Parameter(name = "accessToken", in = ParameterIn.HEADER, required = true)
     @GetMapping
-    public CommonResponse<PagingGetGroupListDto> getGroup(@RequestParam String groupName, @RequestParam Long cursorId, @RequestParam Integer page) {
+    public CommonResponse<PagingGroupListResponse> getGroup(@RequestParam String groupName, @RequestParam Long cursorId, @RequestParam Integer page) {
         return CommonResponse.success(groupService.getGroup(groupName, cursorId, page));
     }
 
@@ -50,70 +62,70 @@ public class GroupController {
     @Parameter(name = "accessToken", in = ParameterIn.HEADER, required = true)
     @PatchMapping
     public CommonResponse<?> changeGroupInfo(
-            @RequestPart(value = "dto") @Valid ChangeGroupInfoDto changeGroupInfoDto,
+            @RequestPart(value = "dto") @Valid ChangeGroupInfoRequest changeGroupInfoRequest,
             @RequestPart(value="file", required = false) MultipartFile multipartFile) {
-        groupService.changeGroupInfo(changeGroupInfoDto, multipartFile);
+        groupService.changeGroupInfo(changeGroupInfoRequest, multipartFile);
         return CommonResponse.success();
     }
 
     @Operation(description = "그룹 참가 신청")
     @Parameter(name = "accessToken", in = ParameterIn.HEADER, required = true)
     @PostMapping("/join")
-    public CommonResponse<JoinGroupResultDto> joinGroup(@RequestBody @Valid JoinGroupDto joinGroupDto) {
-        return CommonResponse.success(groupService.joinGroup(joinGroupDto));
+    public CommonResponse<JoinGroupResultResponse> joinGroup(@RequestBody @Valid JoinGroupRequest joinGroupRequest) {
+        return CommonResponse.success(groupService.joinGroup(joinGroupRequest));
     }
 
     @Operation(description = "그룹 참가 신청 변경")
     @Parameter(name = "accessToken", in = ParameterIn.HEADER, required = true)
     @PatchMapping("/join")
-    public CommonResponse<?> changeInvitationStatus(@RequestBody @Valid ChangeInvitationStatusDto changeInvitationStatusDto) {
-        groupService.changeInvitationStatus(changeInvitationStatusDto);
+    public CommonResponse<?> changeInvitationStatus(@RequestBody @Valid ChangeInvitationStatusRequest changeInvitationStatusRequest) {
+        groupService.changeInvitationStatus(changeInvitationStatusRequest);
         return CommonResponse.success();
     }
 
     @Operation(description = "그룹 나가기")
     @Parameter(name = "accessToken", in = ParameterIn.HEADER, required = true)
     @PatchMapping("/exit")
-    public CommonResponse<?> exitGroup(@RequestBody @Valid ExitGroupDto exitGroupDto) {
-        groupService.exitGroup(exitGroupDto);
+    public CommonResponse<?> exitGroup(@RequestBody @Valid ExitGroupRequest exitGroupRequest) {
+        groupService.exitGroup(exitGroupRequest);
         return CommonResponse.success();
     }
 
     @Operation(description = "그룹장 위임")
     @Parameter(name = "accessToken", in = ParameterIn.HEADER, required = true)
     @PatchMapping("/chief")
-    public CommonResponse<?> changeChief(@RequestBody @Valid ChangeChiefDto changeChiefDto) {
-        groupService.changeChief(changeChiefDto);
+    public CommonResponse<?> changeChief(@RequestBody @Valid ChangeChiefRequest changeChiefRequest) {
+        groupService.changeChief(changeChiefRequest);
         return CommonResponse.success();
     }
 
     @Operation(description = "그룹 초대")
     @Parameter(name = "accessToken", in = ParameterIn.HEADER, required = true)
     @PostMapping("/invite")
-    public CommonResponse<?> inviteUser(@RequestBody @Valid InviteUserListDto inviteUserListDto) {
-        groupService.inviteUser(inviteUserListDto);
+    public CommonResponse<?> inviteUser(@RequestBody @Valid InviteGroupRequest inviteGroupRequest) {
+        groupService.inviteUser(inviteGroupRequest);
         return CommonResponse.success();
     }
 
     @Operation(description = "내 그룹 검색")
     @Parameter(name = "accessToken", in = ParameterIn.HEADER, required = true)
     @GetMapping("/mygroup")
-    public CommonResponse<List<GetGroupListDto>> searchMyGroup() {
+    public CommonResponse<List<GetMyGroupResponse>> searchMyGroup() {
         return CommonResponse.success(groupService.searchMyGroup());
     }
 
     @Operation(description = "그룹 멤버 관리시 멤버 조회")
     @Parameter(name = "accessToken", in = ParameterIn.HEADER, required = true)
     @GetMapping("/member")
-    public CommonResponse<List<GroupMemberDto>> getMember(@RequestParam Long groupId) {
+    public CommonResponse<List<GroupMemberResponse>> getMember(@RequestParam Long groupId) {
         return CommonResponse.success(groupService.getMember(groupId));
     }
 
     @Operation(description = "그룹에서 내보내기")
     @Parameter(name = "accessToken", in = ParameterIn.HEADER, required = true)
     @DeleteMapping("/user")
-    public CommonResponse<?> kickUser(@RequestBody @Valid KickUserDto kickUserDto) {
-        groupService.kickUser(kickUserDto);
+    public CommonResponse<?> kickUser(@RequestBody @Valid KickUserRequest kickUserRequest) {
+        groupService.kickUser(kickUserRequest);
         return CommonResponse.success();
     }
 }
