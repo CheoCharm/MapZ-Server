@@ -1,14 +1,14 @@
-package com.cheocharm.MapZ.usergroup.repository;
+package com.cheocharm.MapZ.usergroup.domain.repository;
 
 import com.cheocharm.MapZ.group.domain.GroupEntity;
 import com.cheocharm.MapZ.user.domain.UserEntity;
-import com.cheocharm.MapZ.usergroup.InvitationStatus;
-import com.cheocharm.MapZ.usergroup.UserGroupEntity;
-import com.cheocharm.MapZ.usergroup.UserRole;
-import com.cheocharm.MapZ.usergroup.repository.vo.ChiefUserImageVO;
-import com.cheocharm.MapZ.usergroup.repository.vo.CountUserGroupVO;
-import com.cheocharm.MapZ.usergroup.repository.vo.QChiefUserImageVO;
-import com.cheocharm.MapZ.usergroup.repository.vo.QCountUserGroupVO;
+import com.cheocharm.MapZ.usergroup.domain.InvitationStatus;
+import com.cheocharm.MapZ.usergroup.domain.UserGroupEntity;
+import com.cheocharm.MapZ.usergroup.domain.UserRole;
+import com.cheocharm.MapZ.usergroup.domain.repository.vo.ChiefUserImageVO;
+import com.cheocharm.MapZ.usergroup.domain.repository.vo.CountUserGroupVO;
+import com.cheocharm.MapZ.usergroup.domain.repository.vo.QChiefUserImageVO;
+import com.cheocharm.MapZ.usergroup.domain.repository.vo.QCountUserGroupVO;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -20,7 +20,7 @@ import java.util.Optional;
 
 import static com.cheocharm.MapZ.group.domain.QGroupEntity.groupEntity;
 import static com.cheocharm.MapZ.user.domain.QUserEntity.userEntity;
-import static com.cheocharm.MapZ.usergroup.QUserGroupEntity.userGroupEntity;
+import static com.cheocharm.MapZ.usergroup.domain.QUserGroupEntity.userGroupEntity;
 
 @RequiredArgsConstructor
 @Component

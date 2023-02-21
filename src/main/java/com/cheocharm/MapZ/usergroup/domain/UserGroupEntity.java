@@ -1,4 +1,4 @@
-package com.cheocharm.MapZ.usergroup;
+package com.cheocharm.MapZ.usergroup.domain;
 
 import com.cheocharm.MapZ.common.domain.BaseEntity;
 import com.cheocharm.MapZ.group.domain.GroupEntity;

@@ -1,10 +1,10 @@
-package com.cheocharm.MapZ.usergroup.repository;
+package com.cheocharm.MapZ.usergroup.domain.repository;
 
 import com.cheocharm.MapZ.group.domain.GroupEntity;
 import com.cheocharm.MapZ.user.domain.UserEntity;
-import com.cheocharm.MapZ.usergroup.UserGroupEntity;
-import com.cheocharm.MapZ.usergroup.repository.vo.ChiefUserImageVO;
-import com.cheocharm.MapZ.usergroup.repository.vo.CountUserGroupVO;
+import com.cheocharm.MapZ.usergroup.domain.UserGroupEntity;
+import com.cheocharm.MapZ.usergroup.domain.repository.vo.ChiefUserImageVO;
+import com.cheocharm.MapZ.usergroup.domain.repository.vo.CountUserGroupVO;
 
 import java.util.List;
 import java.util.Optional;
