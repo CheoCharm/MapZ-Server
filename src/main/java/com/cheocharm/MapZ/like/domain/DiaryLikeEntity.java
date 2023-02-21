@@ -1,6 +1,7 @@
-package com.cheocharm.MapZ.diary.domain;
+package com.cheocharm.MapZ.like.domain;
 
 import com.cheocharm.MapZ.common.domain.BaseEntity;
+import com.cheocharm.MapZ.diary.domain.DiaryEntity;
 import com.cheocharm.MapZ.user.domain.UserEntity;
 import lombok.AccessLevel;
 import lombok.Builder;

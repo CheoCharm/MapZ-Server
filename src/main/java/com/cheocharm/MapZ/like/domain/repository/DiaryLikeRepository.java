@@ -1,7 +1,7 @@
-package com.cheocharm.MapZ.diary.domain.respository;
+package com.cheocharm.MapZ.like.domain.repository;
 
 import com.cheocharm.MapZ.diary.domain.DiaryEntity;
-import com.cheocharm.MapZ.diary.domain.DiaryLikeEntity;
+import com.cheocharm.MapZ.like.domain.DiaryLikeEntity;
 import com.cheocharm.MapZ.user.domain.UserEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 

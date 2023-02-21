@@ -1,7 +1,7 @@
-package com.cheocharm.MapZ.diary.domain.respository;
+package com.cheocharm.MapZ.like.domain.repository;
 
 import com.cheocharm.MapZ.diary.domain.DiaryEntity;
-import com.cheocharm.MapZ.diary.domain.DiaryLikeEntity;
+import com.cheocharm.MapZ.like.domain.DiaryLikeEntity;
 import com.cheocharm.MapZ.diary.domain.respository.vo.MyLikeDiaryVO;
 import com.cheocharm.MapZ.diary.domain.respository.vo.QMyLikeDiaryVO;
 import com.querydsl.core.types.dsl.BooleanExpression;
@@ -16,8 +16,8 @@ import java.util.List;
 import static com.cheocharm.MapZ.comment.domain.QCommentEntity.commentEntity;
 import static com.cheocharm.MapZ.common.util.QuerydslSupport.fetchSliceByCursor;
 import static com.cheocharm.MapZ.diary.domain.QDiaryEntity.diaryEntity;
-import static com.cheocharm.MapZ.diary.domain.QDiaryLikeEntity.diaryLikeEntity;
 import static com.cheocharm.MapZ.group.domain.QGroupEntity.groupEntity;
+import static com.cheocharm.MapZ.like.domain.QDiaryLikeEntity.diaryLikeEntity;
 import static com.cheocharm.MapZ.user.domain.QUserEntity.userEntity;
 
 @RequiredArgsConstructor
