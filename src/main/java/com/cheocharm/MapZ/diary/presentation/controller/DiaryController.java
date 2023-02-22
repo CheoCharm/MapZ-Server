@@ -1,4 +1,4 @@
-package com.cheocharm.MapZ.diary.presentation;
+package com.cheocharm.MapZ.diary.presentation.controller;
 
 import com.cheocharm.MapZ.common.CommonResponse;
 import com.cheocharm.MapZ.diary.application.DiaryService;

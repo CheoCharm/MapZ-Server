@@ -21,7 +21,7 @@ public class ResponseLogAspect {
     @Pointcut("execution(* com.cheocharm.MapZ.user.presentation.controller.UserController.*(..))")
     public void userControllerPointcut() {}
 
-    @Pointcut("execution(* com.cheocharm.MapZ.diary.presentation.DiaryController.*(..))")
+    @Pointcut("execution(* com.cheocharm.MapZ.diary.presentation.controller.DiaryController.*(..))")
     public void diaryControllerPointcut() {}
 
     @Pointcut("execution(* com.cheocharm.MapZ.group.presentation.controller.GroupController.*(..))")
