@@ -11,6 +11,9 @@ public enum ExceptionDetails {
     NOT_FOUND_API(HttpStatus.NOT_FOUND, "0001", "존재하지 않는 API입니다. 요청 경로를 확인해주세요."),
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "0002", "서버 에러입니다. 서버측에 문의주세요. 메시지는: "),
     FAIL_CONVERT_TO_JSON(HttpStatus.INTERNAL_SERVER_ERROR, "0003", "JSON으로 변환하는 도중 오류가 발생하였습니다."),
+    FAIL_JSON_PROCESS(HttpStatus.INTERNAL_SERVER_ERROR, "0004", "JSON에서 클래스로 변환하는 도중 오류가 발생했습니다."),
+    FAIL_PARSE(HttpStatus.INTERNAL_SERVER_ERROR, "0005", "파싱에 실패했습니다."),
+    INPUTSTREAM_IO(HttpStatus.INTERNAL_SERVER_ERROR, "0006", "입출력 예외입니다"),
 
     // S3 에러
     FAIL_CONVERT_TO_FILE(HttpStatus.BAD_REQUEST, "1001", "이미지를 파일로 변경하는데 실패하였습니다."),
@@ -49,4 +52,4 @@ public enum ExceptionDetails {
     private HttpStatus statusCode;
     private String customCode;
     private String message;
-    }
+}
