@@ -2,6 +2,7 @@ package com.cheocharm.MapZ.user.application;
 
 import com.cheocharm.MapZ.agreement.AgreementEntity;
 import com.cheocharm.MapZ.agreement.repository.AgreementRepository;
+import com.cheocharm.MapZ.common.exception.common.FailJsonProcessException;
 import com.cheocharm.MapZ.common.exception.jwt.InvalidJwtException;
 import com.cheocharm.MapZ.common.exception.user.DuplicatedEmailException;
 import com.cheocharm.MapZ.common.exception.user.DuplicatedUsernameException;
@@ -270,7 +271,7 @@ public class UserService {
             }
             return idToken;
         } catch (JsonProcessingException e) {
-            throw new RuntimeException("readvalue 에러");
+            throw new FailJsonProcessException(e);
         }
     }
 
