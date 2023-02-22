@@ -1,5 +1,6 @@
 package com.cheocharm.MapZ.diary.application;
 
+import com.cheocharm.MapZ.common.exception.common.FailParseException;
 import com.cheocharm.MapZ.common.exception.diary.NotFoundDiaryException;
 import com.cheocharm.MapZ.common.exception.group.NotFoundGroupException;
 import com.cheocharm.MapZ.common.exception.user.NoPermissionUserException;
@@ -128,7 +129,7 @@ public class DiaryService {
         try {
             point = (Point) new WKTReader().read(pointWKT);
         } catch (ParseException e) {
-            throw new RuntimeException(e);
+            throw new FailParseException(e);
         }
         DiaryEntity diaryEntity = diaryRepository.save(
                 DiaryEntity.builder()

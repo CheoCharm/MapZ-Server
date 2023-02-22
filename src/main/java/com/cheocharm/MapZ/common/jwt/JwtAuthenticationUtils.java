@@ -41,9 +41,9 @@ public class JwtAuthenticationUtils {
 
             return true;
         } catch (SignatureException | MalformedJwtException | IllegalArgumentException | UnsupportedJwtException e) {
-            throw new InvalidJwtException();
+            throw new InvalidJwtException(e);
         } catch (ExpiredJwtException e) {
-            throw new JwtExpiredException();
+            throw new JwtExpiredException(e);
         }
     }
 

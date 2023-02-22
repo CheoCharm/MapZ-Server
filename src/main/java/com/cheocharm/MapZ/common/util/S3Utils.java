@@ -3,6 +3,7 @@ package com.cheocharm.MapZ.common.util;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.cheocharm.MapZ.common.exception.common.InputStreamIOException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -59,7 +60,7 @@ public class S3Utils {
 
             amazonS3Client.putObject(new PutObjectRequest(bucket, key, inputStream, objectMetadata));
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new InputStreamIOException(e);
         }
     }
 
