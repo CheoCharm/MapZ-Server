@@ -8,6 +8,7 @@ import com.cheocharm.MapZ.diary.presentation.dto.request.WriteDiaryImageRequest;
 import com.cheocharm.MapZ.diary.presentation.dto.request.WriteDiaryRequest;
 import com.cheocharm.MapZ.diary.presentation.dto.response.MyDiaryResponse;
 import com.cheocharm.MapZ.diary.presentation.dto.response.WriteDiaryImageResponse;
+import com.cheocharm.MapZ.diary.presentation.dto.response.WriteDiaryResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
@@ -46,9 +47,8 @@ public class DiaryController {
     @Operation(description = "일기 본문까지 작성 완료 후 업데이트 (2차 요청)")
     @Parameter(name = "accessToken", in = ParameterIn.HEADER, required = true)
     @PostMapping("/write")
-    public CommonResponse<?> writeDiary(@Parameter @RequestBody @Valid WriteDiaryRequest writeDiaryRequest) {
-        diaryService.writeDiary(writeDiaryRequest);
-        return CommonResponse.success();
+    public CommonResponse<WriteDiaryResponse> writeDiary(@Parameter @RequestBody @Valid WriteDiaryRequest writeDiaryRequest) {
+        return CommonResponse.success(diaryService.writeDiary(writeDiaryRequest));
     }
 
     @Operation(description = "예외 사항으로 인해 일기 작성을 취소하면 일기, 이미지 데이터 삭제 (1차 요청 후 상황에 맞게 호출) ")
