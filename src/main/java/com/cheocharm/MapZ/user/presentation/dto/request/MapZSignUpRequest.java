@@ -6,7 +6,7 @@ import javax.validation.constraints.*;
 
 @Getter
 public class MapZSignUpRequest {
-    @NotNull
+    @NotNull @Email
     private String email;
 
     @NotNull @Pattern(regexp = "^(?=.*\\d)(?=.*[a-zA-Z])[0-9a-zA-Z]{8,20}",
