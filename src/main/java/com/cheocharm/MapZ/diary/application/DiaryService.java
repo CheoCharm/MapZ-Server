@@ -18,6 +18,7 @@ import com.cheocharm.MapZ.diary.presentation.dto.response.WriteDiaryImageRespons
 import com.cheocharm.MapZ.diary.domain.respository.DiaryImageRepository;
 import com.cheocharm.MapZ.diary.domain.respository.DiaryRepository;
 import com.cheocharm.MapZ.diary.domain.respository.vo.MyDiaryVO;
+import com.cheocharm.MapZ.diary.presentation.dto.response.WriteDiaryResponse;
 import com.cheocharm.MapZ.group.domain.GroupEntity;
 import com.cheocharm.MapZ.group.domain.repository.GroupRepository;
 import com.cheocharm.MapZ.user.domain.UserEntity;
@@ -53,11 +54,13 @@ public class DiaryService {
     private final S3Utils s3Utils;
 
     @Transactional
-    public void writeDiary(WriteDiaryRequest writeDiaryRequest) {
+    public WriteDiaryResponse writeDiary(WriteDiaryRequest writeDiaryRequest) {
         DiaryEntity diaryEntity = diaryRepository.findById(writeDiaryRequest.getDiaryId())
                 .orElseThrow(NotFoundDiaryException::new);
 
         diaryEntity.write(writeDiaryRequest.getTitle(), writeDiaryRequest.getContent());
+
+        return new WriteDiaryResponse(diaryEntity.getId());
     }
 
     public GetDiaryListResponse getDiary(Long groupId) {
