@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.validation.Valid;
 import java.util.List;
 
-@Tag(name = "DiaryController")
+@Tag(name = "LikeController")
 @RequiredArgsConstructor
 @RequestMapping("/api/like")
 @RestController
