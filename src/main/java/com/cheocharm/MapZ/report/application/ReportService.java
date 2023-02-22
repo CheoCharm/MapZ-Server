@@ -1,10 +1,11 @@
-package com.cheocharm.MapZ.report.domain;
+package com.cheocharm.MapZ.report.application;
 
 import com.cheocharm.MapZ.common.exception.diary.NotFoundDiaryException;
 import com.cheocharm.MapZ.common.exception.report.AlreadyReportedDiary;
 import com.cheocharm.MapZ.common.interceptor.UserThreadLocal;
 import com.cheocharm.MapZ.diary.domain.respository.DiaryRepository;
-import com.cheocharm.MapZ.report.domain.dto.ReportDto;
+import com.cheocharm.MapZ.report.domain.ReportEntity;
+import com.cheocharm.MapZ.report.presentation.dto.ReportRequest;
 import com.cheocharm.MapZ.report.domain.repository.ReportRepository;
 import com.cheocharm.MapZ.user.domain.UserEntity;
 import lombok.RequiredArgsConstructor;
@@ -20,11 +21,11 @@ public class ReportService {
     private final DiaryRepository diaryRepository;
 
     @Transactional
-    public void reportDiary(ReportDto reportDto) {
+    public void reportDiary(ReportRequest reportRequest) {
         final UserEntity userEntity = UserThreadLocal.get();
 
         Long userId = userEntity.getId();
-        Long diaryId = reportDto.getDiaryId();
+        Long diaryId = reportRequest.getDiaryId();
 
         diaryRepository.findById(diaryId).orElseThrow(() -> new NotFoundDiaryException());
 

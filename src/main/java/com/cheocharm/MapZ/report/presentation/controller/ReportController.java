@@ -1,7 +1,8 @@
-package com.cheocharm.MapZ.report.domain;
+package com.cheocharm.MapZ.report.presentation.controller;
 
 import com.cheocharm.MapZ.common.CommonResponse;
-import com.cheocharm.MapZ.report.domain.dto.ReportDto;
+import com.cheocharm.MapZ.report.application.ReportService;
+import com.cheocharm.MapZ.report.presentation.dto.ReportRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
@@ -25,8 +26,8 @@ public class ReportController {
     @Operation(description = "게시글 신고")
     @Parameter(name = "accessToken", in = ParameterIn.HEADER, required = true)
     @PostMapping
-    public CommonResponse<?> reportDiary(@RequestBody @Valid ReportDto reportDto) {
-        reportService.reportDiary(reportDto);
+    public CommonResponse<?> reportDiary(@RequestBody @Valid ReportRequest reportRequest) {
+        reportService.reportDiary(reportRequest);
         return CommonResponse.success();
     }
 }
