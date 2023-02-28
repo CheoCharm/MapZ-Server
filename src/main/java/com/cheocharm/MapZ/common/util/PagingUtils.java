@@ -15,6 +15,8 @@ public class PagingUtils {
     public static final Integer MY_LIKE_DIARY_SIZE = 20;
     public static final Integer MY_DIARY_SIZE = 20;
 
+    public static final Integer COMMENT_SIZE = 20;
+
     private static final Long DEFAULT_CURSOR_ID = Long.MAX_VALUE;
 
     public static Pageable applyAscPageConfigBy(int page, int size, String property) {
