@@ -2,7 +2,11 @@ package com.cheocharm.MapZ.comment.domain.repository;
 
 import com.cheocharm.MapZ.comment.domain.repository.vo.CommentVO;
 import com.cheocharm.MapZ.comment.domain.repository.vo.QCommentVO;
+import com.cheocharm.MapZ.common.interceptor.UserThreadLocal;
 import com.cheocharm.MapZ.diary.domain.DiaryEntity;
+import com.cheocharm.MapZ.user.domain.UserEntity;
+import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.NumberPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +33,7 @@ public class CommentRepositoryCustomImpl implements CommentRepositoryCustom{
 
     @Override
     public Slice<CommentVO> findByDiaryId(Long diaryId, Long cursorId, Pageable pageable) {
+        UserEntity userEntity = UserThreadLocal.get();
         JPAQuery<CommentVO> query = queryFactory
                 .select(new QCommentVO(
                         commentEntity.userEntity.userImageUrl,
@@ -37,7 +42,10 @@ public class CommentRepositoryCustomImpl implements CommentRepositoryCustom{
                         commentEntity.content,
                         commentEntity.userEntity.id,
                         commentEntity.id,
-                        commentEntity.parentId
+                        commentEntity.parentId,
+                        writerIdEq(commentEntity.diaryEntity.userEntity.id),
+                        commenterIdEq(userEntity.getId())
+
                 ))
                 .from(commentEntity)
                 .where(commentEntity.id.gt(cursorId));
@@ -45,7 +53,11 @@ public class CommentRepositoryCustomImpl implements CommentRepositoryCustom{
         return fetchSliceByCursor(commentEntity.getType(), commentEntity.getMetadata(), query, pageable);
     }
 
+    private BooleanExpression writerIdEq(NumberPath diaryUserId) {
+        return commentEntity.userEntity.id.eq(diaryUserId);
+    }
 
-
-
+    private BooleanExpression commenterIdEq(Long userId) {
+        return commentEntity.userEntity.id.eq(userId);
+    }
 }

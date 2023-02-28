@@ -59,11 +59,6 @@ public class CommentService {
     }
 
     public GetCommentResponse getComment(Long diaryId, Long cursorId, Integer page) {
-        UserEntity userEntity = UserThreadLocal.get();
-        DiaryEntity diaryEntity = diaryRepository.findById(diaryId)
-                .orElseThrow(NotFoundDiaryException::new);
-        Long diaryUserId = diaryEntity.getUserEntity().getId();
-
         Slice<CommentVO> content = commentRepository.findByDiaryId(
                 diaryId,
                 cursorId,
@@ -81,28 +76,14 @@ public class CommentService {
                                         .content(commentVO.getContent())
                                         .commentId(commentVO.getCommentId())
                                         .parentId(commentVO.getParentId())
-                                        .writer(isWriter(commentVO.getUserId(), diaryUserId))
-                                        .canDelete(canDelete(userEntity.getId(), commentVO.getUserId()))
+                                        .writer(commentVO.isWriter())
+                                        .canDelete(commentVO.isCanDelete())
                                         .build()
                         )
                 .collect(Collectors.toList());
 
         return new GetCommentResponse(content.hasNext(), commentList);
 
-    }
-
-    public boolean isWriter(Long commentUserId, Long diaryUesrId) {
-        if (commentUserId.equals(diaryUesrId)) {
-            return true;
-        }
-        return false;
-    }
-
-    public boolean canDelete(Long userId, Long commentUserId) {
-        if (userId.equals(commentUserId)) {
-            return true;
-        }
-        return false;
     }
 
 }

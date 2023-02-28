@@ -14,9 +14,11 @@ public class CommentVO {
     private Long userId;
     private Long commentId;
     private Long parentId;
+    private boolean isWriter;
+    private boolean canDelete;
 
     @QueryProjection
-    public CommentVO(String imageUrl, String username, LocalDateTime createdAt, String content, Long userId, Long commentId, Long parentId) {
+    public CommentVO(String imageUrl, String username, LocalDateTime createdAt, String content, Long userId, Long commentId, Long parentId, boolean isWriter, boolean canDelete) {
         this.imageUrl = imageUrl;
         this.username = username;
         this.createdAt = createdAt;
@@ -24,5 +26,7 @@ public class CommentVO {
         this.userId = userId;
         this.commentId = commentId;
         this.parentId = parentId;
+        this.isWriter = isWriter;
+        this.canDelete = canDelete;
     }
 }
