@@ -27,7 +27,7 @@ public class ReportService {
         Long userId = userEntity.getId();
         Long diaryId = reportRequest.getDiaryId();
 
-        diaryRepository.findById(diaryId).orElseThrow(() -> new NotFoundDiaryException());
+        diaryRepository.findById(diaryId).orElseThrow(NotFoundDiaryException::new);
 
         reportRepository.findReportById(userId, diaryId).ifPresent(ReportEntity -> {
             throw new AlreadyReportedDiary();
