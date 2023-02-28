@@ -23,8 +23,7 @@ public class GetCommentResponse {
         private String content;
         private Long commentId;
         private Long parentId;
-        @JsonProperty("isWriter")
-        private boolean writer;
+        private Boolean isWriter;
         private boolean canDelete;
     }
 }

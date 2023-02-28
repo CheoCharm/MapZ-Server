@@ -76,7 +76,7 @@ public class CommentService {
                                         .content(commentVO.getContent())
                                         .commentId(commentVO.getCommentId())
                                         .parentId(commentVO.getParentId())
-                                        .writer(commentVO.isWriter())
+                                        .isWriter(commentVO.isWriter())
                                         .canDelete(commentVO.isCanDelete())
                                         .build()
                         )
