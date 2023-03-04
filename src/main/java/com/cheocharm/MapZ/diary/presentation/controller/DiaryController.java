@@ -6,6 +6,8 @@ import com.cheocharm.MapZ.diary.presentation.dto.request.DeleteDiaryRequest;
 import com.cheocharm.MapZ.diary.presentation.dto.request.DeleteTempDiaryRequest;
 import com.cheocharm.MapZ.diary.presentation.dto.request.WriteDiaryImageRequest;
 import com.cheocharm.MapZ.diary.presentation.dto.request.WriteDiaryRequest;
+import com.cheocharm.MapZ.diary.presentation.dto.response.DiaryDetailResponse;
+import com.cheocharm.MapZ.diary.presentation.dto.response.GetDiaryListResponse;
 import com.cheocharm.MapZ.diary.presentation.dto.response.MyDiaryResponse;
 import com.cheocharm.MapZ.diary.presentation.dto.response.WriteDiaryImageResponse;
 import com.cheocharm.MapZ.diary.presentation.dto.response.WriteDiaryResponse;
@@ -62,8 +64,8 @@ public class DiaryController {
     @Operation(description = "일기 페이징 조회")
     @Parameter(name = "accessToken", in = ParameterIn.HEADER, required = true)
     @GetMapping
-    public CommonResponse<?> getDiary(@Parameter @RequestParam Long groupId) {
-        return CommonResponse.success(diaryService.getDiary(groupId));
+    public CommonResponse<GetDiaryListResponse> getDiary(@Parameter @RequestParam Long groupId, @RequestParam Long cursorId, @RequestParam Integer page) {
+        return CommonResponse.success(diaryService.getDiary(groupId, cursorId, page));
     }
 
     @Operation(description = "일기 삭제")
@@ -79,5 +81,12 @@ public class DiaryController {
     @GetMapping("/my")
     public CommonResponse<MyDiaryResponse> getMyDiary(@Parameter @RequestParam Long cursorId, @RequestParam Integer page) {
         return CommonResponse.success(diaryService.getMyDiary(cursorId, page));
+    }
+
+    @Operation(description = "일기 디테일 조회")
+    @Parameter(name = "accessToken", in = ParameterIn.HEADER, required = true)
+    @GetMapping("/detail")
+    public CommonResponse<DiaryDetailResponse> getDiaryDetail(@Parameter @RequestParam Long diaryId) {
+        return CommonResponse.success(diaryService.getDiaryDetail(diaryId));
     }
 }
