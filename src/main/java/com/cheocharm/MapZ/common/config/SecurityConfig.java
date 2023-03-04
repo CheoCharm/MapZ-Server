@@ -74,21 +74,24 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                     .antMatchers(HttpMethod.DELETE, "/api/group/user").authenticated()
 
                     //diary
-                    .antMatchers(HttpMethod.POST, "/api/diary/like").authenticated()
                     .antMatchers(HttpMethod.POST, "/api/diary").authenticated()
                     .antMatchers(HttpMethod.GET, "/api/diary").authenticated()
                     .antMatchers(HttpMethod.DELETE, "/api/diary").authenticated()
-                    .antMatchers(HttpMethod.GET, "/api/diary/like").authenticated()
-                    .antMatchers(HttpMethod.GET, "/api/diary/mylike").authenticated()
                     .antMatchers(HttpMethod.GET,"/api/diary/my").authenticated()
                     .antMatchers(HttpMethod.POST, "/api/diary/image").authenticated()
                     .antMatchers(HttpMethod.POST, "/api/diary/write").authenticated()
                     .antMatchers(HttpMethod.DELETE, "/api/diary/image").authenticated()
+                    .antMatchers(HttpMethod.GET, "/api/diary/detail").authenticated()
 
                     //commnet
                     .antMatchers(HttpMethod.POST, "/api/comment").authenticated()
                     .antMatchers(HttpMethod.DELETE, "/api/comment").authenticated()
                     .antMatchers(HttpMethod.GET, "/api/comment").authenticated()
+
+                    //like
+                    .antMatchers(HttpMethod.POST, "/api/like").authenticated()
+                    .antMatchers(HttpMethod.GET, "/api/like").authenticated()
+                    .antMatchers(HttpMethod.GET, "/api/like/mylike").authenticated()
 
                     //report
                     .antMatchers(HttpMethod.POST, "/api/report").authenticated()
