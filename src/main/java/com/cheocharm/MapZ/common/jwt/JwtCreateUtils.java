@@ -19,7 +19,7 @@ import java.util.Map;
 public class JwtCreateUtils {
 
     private final String USER_EMAIL = "email";
-    private final long EXPIRE = 1000 * 60 * 30;
+    private final long EXPIRE = 1000 * 60 * 60;
     private final long REFRESH_EXPIRE = EXPIRE * 2 * 24 * 14;
 
     private final JwtCommonUtils jwtCommonUtils;
