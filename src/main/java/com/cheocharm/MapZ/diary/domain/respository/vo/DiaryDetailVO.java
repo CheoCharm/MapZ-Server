@@ -15,10 +15,11 @@ public class DiaryDetailVO {
     private String userImageURL;
     private Integer likeCount;
     private boolean isLike;
-    private Integer commentCount;
+    private Long commentCount;
+    private boolean isWriter;
 
     @QueryProjection
-    public DiaryDetailVO(String title, String content, String address, LocalDateTime createdAt, String username, String userImageURL, Integer likeCount, boolean isLike, Integer commentCount) {
+    public DiaryDetailVO(String title, String content, String address, LocalDateTime createdAt, String username, String userImageURL, Integer likeCount, boolean isLike, Long commentCount, boolean isWriter) {
         this.title = title;
         this.content = content;
         this.address = address;
@@ -28,5 +29,6 @@ public class DiaryDetailVO {
         this.likeCount = likeCount;
         this.isLike = isLike;
         this.commentCount = commentCount;
+        this.isWriter = isWriter;
     }
 }
