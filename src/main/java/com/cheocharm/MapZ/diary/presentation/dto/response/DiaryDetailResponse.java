@@ -15,7 +15,8 @@ public class DiaryDetailResponse {
     private String username;
     private String userImageURL;
     private Integer likeCount;
-    private boolean isLike;
-    private Integer commentCount;
+    private Boolean isLike;
+    private Long commentCount;
+    private Boolean isWriter;
 
 }
