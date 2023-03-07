@@ -59,7 +59,9 @@ public class CommentService {
     }
 
     public GetCommentResponse getComment(Long diaryId, Long cursorId, Integer page) {
+        Long userId = UserThreadLocal.get().getId();
         Slice<CommentVO> content = commentRepository.findByDiaryId(
+                userId,
                 diaryId,
                 cursorId,
                 applyAscPageConfigBy(page, COMMENT_SIZE, FIELD_CREATED_AT)

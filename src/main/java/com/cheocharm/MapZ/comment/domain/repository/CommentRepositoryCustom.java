@@ -10,5 +10,5 @@ import java.util.List;
 public interface CommentRepositoryCustom {
     void deleteAllByDiaryEntityList(List<DiaryEntity> diaryEntityList);
 
-    Slice<CommentVO> findByDiaryId(Long diaryId, Long cursorId, Pageable pageable);
+    Slice<CommentVO> findByDiaryId(Long userId, Long diaryId, Long cursorId, Pageable pageable);
 }
