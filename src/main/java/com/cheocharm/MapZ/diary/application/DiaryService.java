@@ -8,10 +8,13 @@ import com.cheocharm.MapZ.common.interceptor.UserThreadLocal;
 import com.cheocharm.MapZ.common.util.S3Utils;
 import com.cheocharm.MapZ.diary.domain.DiaryEntity;
 import com.cheocharm.MapZ.diary.domain.DiaryImageEntity;
+import com.cheocharm.MapZ.diary.domain.respository.vo.DiaryDetailVO;
+import com.cheocharm.MapZ.diary.domain.respository.vo.DiarySliceVO;
 import com.cheocharm.MapZ.diary.presentation.dto.request.DeleteDiaryRequest;
 import com.cheocharm.MapZ.diary.presentation.dto.request.DeleteTempDiaryRequest;
 import com.cheocharm.MapZ.diary.presentation.dto.request.WriteDiaryImageRequest;
 import com.cheocharm.MapZ.diary.presentation.dto.request.WriteDiaryRequest;
+import com.cheocharm.MapZ.diary.presentation.dto.response.DiaryDetailResponse;
 import com.cheocharm.MapZ.diary.presentation.dto.response.GetDiaryListResponse;
 import com.cheocharm.MapZ.diary.presentation.dto.response.MyDiaryResponse;
 import com.cheocharm.MapZ.diary.presentation.dto.response.WriteDiaryImageResponse;
@@ -43,7 +46,6 @@ import static com.cheocharm.MapZ.common.util.PagingUtils.MY_DIARY_SIZE;
 import static com.cheocharm.MapZ.common.util.PagingUtils.FIELD_CREATED_AT;
 
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 @Service
 public class DiaryService {
 
@@ -63,23 +65,41 @@ public class DiaryService {
         return new WriteDiaryResponse(diaryEntity.getId());
     }
 
-    public GetDiaryListResponse getDiary(Long groupId) {
+    @Transactional(readOnly = true)
+    public GetDiaryListResponse getDiary(Long groupId, Long cursorId, Integer page) {
         UserEntity userEntity = UserThreadLocal.get();
-        List<DiaryEntity> diaryEntities = diaryRepository.findByUserIdAndGroupId(userEntity.getId(), groupId);
+        final Slice<DiarySliceVO> diarySlice = diaryRepository.getDiarySlice(
+                userEntity.getId(),
+                groupId,
+                applyCursorId(cursorId),
+                applyDescPageConfigBy(page, MY_DIARY_SIZE, FIELD_CREATED_AT)
+        );
+        final List<DiarySliceVO> diaries = diarySlice.getContent();
 
-
-        List<GetDiaryListResponse.DiaryList> list = diaryEntities.stream()
-                .map(diaryEntity -> GetDiaryListResponse.DiaryList.builder()
-                        .x(diaryEntity.getPoint().getX())
-                        .y(diaryEntity.getPoint().getY())
-                        .diaryId(diaryEntity.getId())
-                        .title(diaryEntity.getTitle())
-                        .content(diaryEntity.getContent())
-                        .build()
-                )
+        final List<GetDiaryListResponse.DiaryList> list = diaries.stream()
+                .map(diarySliceVO -> new GetDiaryListResponse.DiaryList(
+                        diarySliceVO.getDiaryId(),
+                        diarySliceVO.getTitle(),
+                        getTextFromContent(diarySliceVO.getContent()),
+                        diarySliceVO.getAddress(),
+                        diarySliceVO.getCreatedAt(),
+                        diarySliceVO.getUsername(),
+                        diarySliceVO.getUserImageURL(),
+                        diarySliceVO.getLikeCount(),
+                        diarySliceVO.isLike(),
+                        diarySliceVO.getCommentCount(),
+                        diarySliceVO.isWriter()
+                ))
                 .collect(Collectors.toList());
 
         return new GetDiaryListResponse(true, list);
+    }
+
+    private String getTextFromContent(String content) {
+        String brReplaceRegex = "<br\\s*/?>";
+        content = content.replaceAll(brReplaceRegex, " ");
+        String htmlReplaceRegex = "<.*?>";
+        return content.replaceAll(htmlReplaceRegex, "");
     }
 
     @Transactional
@@ -94,6 +114,7 @@ public class DiaryService {
 
     }
 
+    @Transactional(readOnly = true)
     public MyDiaryResponse getMyDiary(Long cursorId, Integer page) {
         UserEntity userEntity = UserThreadLocal.get();
 
@@ -170,5 +191,26 @@ public class DiaryService {
         s3Utils.deleteImages(diaryImageURLs);
         diaryImageRepository.deleteAllByDiaryId(diaryId);
         diaryRepository.deleteById(diaryId);
+    }
+
+    @Transactional(readOnly = true)
+    public DiaryDetailResponse getDiaryDetail(Long diaryId) {
+        final UserEntity userEntity = UserThreadLocal.get();
+
+        final DiaryDetailVO diaryDetail = diaryRepository.getDiaryDetail(diaryId, userEntity.getId());
+
+        return new DiaryDetailResponse(
+                diaryDetail.getTitle(),
+                diaryDetail.getContent(),
+                diaryDetail.getAddress(),
+                diaryDetail.getCreatedAt(),
+                diaryDetail.getUsername(),
+                diaryDetail.getUserImageURL(),
+                diaryDetail.getLikeCount(),
+                diaryDetail.isLike(),
+                diaryDetail.getCommentCount(),
+                diaryDetail.isWriter()
+        );
+
     }
 }

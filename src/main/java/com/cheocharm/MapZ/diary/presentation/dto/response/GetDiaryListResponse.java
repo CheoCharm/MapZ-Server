@@ -1,9 +1,9 @@
 package com.cheocharm.MapZ.diary.presentation.dto.response;
 
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @AllArgsConstructor
@@ -14,13 +14,19 @@ public class GetDiaryListResponse {
     private List<DiaryList> diaryList;
 
     @Getter
-    @Builder
+    @AllArgsConstructor
     public static class DiaryList {
-        private Double x;
-        private Double y;
         private Long diaryId;
         private String title;
-        private String content;
+        private String contentText;
+        private String address;
+        private LocalDateTime createdAt;
+        private String username;
+        private String userImageURL;
+        private Integer likeCount;
+        private Boolean isLike;
+        private Long commentCount;
+        private Boolean isWriter;
     }
 
 }
