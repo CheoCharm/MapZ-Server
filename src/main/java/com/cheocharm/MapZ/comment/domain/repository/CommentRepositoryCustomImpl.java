@@ -2,11 +2,7 @@ package com.cheocharm.MapZ.comment.domain.repository;
 
 import com.cheocharm.MapZ.comment.domain.repository.vo.CommentVO;
 import com.cheocharm.MapZ.comment.domain.repository.vo.QCommentVO;
-import com.cheocharm.MapZ.common.interceptor.UserThreadLocal;
 import com.cheocharm.MapZ.diary.domain.DiaryEntity;
-import com.cheocharm.MapZ.user.domain.UserEntity;
-import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.core.types.dsl.NumberPath;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +13,8 @@ import java.util.List;
 
 import static com.cheocharm.MapZ.comment.domain.QCommentEntity.*;
 import static com.cheocharm.MapZ.common.util.QuerydslSupport.fetchSliceByCursor;
+import static com.cheocharm.MapZ.diary.domain.QDiaryEntity.diaryEntity;
+import static com.cheocharm.MapZ.user.domain.QUserEntity.userEntity;
 
 @RequiredArgsConstructor
 public class CommentRepositoryCustomImpl implements CommentRepositoryCustom{
@@ -32,8 +30,7 @@ public class CommentRepositoryCustomImpl implements CommentRepositoryCustom{
     }
 
     @Override
-    public Slice<CommentVO> findByDiaryId(Long diaryId, Long cursorId, Pageable pageable) {
-        UserEntity userEntity = UserThreadLocal.get();
+    public Slice<CommentVO> findByDiaryId(Long userId, Long diaryId, Long cursorId, Pageable pageable) {
         JPAQuery<CommentVO> query = queryFactory
                 .select(new QCommentVO(
                         commentEntity.userEntity.userImageUrl,
@@ -43,21 +40,15 @@ public class CommentRepositoryCustomImpl implements CommentRepositoryCustom{
                         commentEntity.userEntity.id,
                         commentEntity.id,
                         commentEntity.parentId,
-                        writerIdEq(commentEntity.diaryEntity.userEntity.id),
-                        commenterIdEq(userEntity.getId())
-
+                        userEntity.id.eq(diaryEntity.userEntity.id),
+                        userEntity.id.eq(userId)
                 ))
                 .from(commentEntity)
+                .innerJoin(commentEntity.diaryEntity, diaryEntity)
+                .innerJoin(commentEntity.userEntity, userEntity)
                 .where(commentEntity.id.gt(cursorId));
 
         return fetchSliceByCursor(commentEntity.getType(), commentEntity.getMetadata(), query, pageable);
     }
 
-    private BooleanExpression writerIdEq(NumberPath diaryUserId) {
-        return commentEntity.userEntity.id.eq(diaryUserId);
-    }
-
-    private BooleanExpression commenterIdEq(Long userId) {
-        return commentEntity.userEntity.id.eq(userId);
-    }
 }
