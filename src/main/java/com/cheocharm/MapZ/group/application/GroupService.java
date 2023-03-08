@@ -6,12 +6,18 @@ import com.cheocharm.MapZ.common.exception.group.NotFoundGroupException;
 import com.cheocharm.MapZ.common.exception.user.ExitGroupChiefException;
 import com.cheocharm.MapZ.common.exception.user.NoPermissionUserException;
 import com.cheocharm.MapZ.common.exception.user.NotFoundUserException;
+import com.cheocharm.MapZ.common.exception.usergroup.GroupMemberSizeExceedException;
 import com.cheocharm.MapZ.common.exception.usergroup.NotAcceptedUserException;
 import com.cheocharm.MapZ.common.exception.usergroup.NotFoundUserGroupException;
 import com.cheocharm.MapZ.common.exception.usergroup.SelfKickException;
 import com.cheocharm.MapZ.common.interceptor.UserThreadLocal;
 import com.cheocharm.MapZ.common.util.S3Utils;
 import com.cheocharm.MapZ.diary.domain.DiaryEntity;
+import com.cheocharm.MapZ.diary.domain.respository.DiaryImageRepository;
+import com.cheocharm.MapZ.group.domain.GroupConst;
+import com.cheocharm.MapZ.group.presentation.dto.request.AcceptInvitationRequest;
+import com.cheocharm.MapZ.group.presentation.dto.request.RefuseInvitationRequest;
+import com.cheocharm.MapZ.group.presentation.dto.response.MyInvitationResponse;
 import com.cheocharm.MapZ.like.domain.repository.DiaryLikeRepository;
 import com.cheocharm.MapZ.diary.domain.respository.DiaryRepository;
 import com.cheocharm.MapZ.group.domain.GroupEntity;
@@ -36,6 +42,7 @@ import com.cheocharm.MapZ.usergroup.domain.UserRole;
 import com.cheocharm.MapZ.usergroup.domain.repository.UserGroupRepository;
 import com.cheocharm.MapZ.usergroup.domain.repository.vo.ChiefUserImageVO;
 import com.cheocharm.MapZ.usergroup.domain.repository.vo.CountUserGroupVO;
+import com.cheocharm.MapZ.usergroup.domain.repository.vo.MyInvitationVO;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.data.domain.Slice;
@@ -51,18 +58,19 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import static com.cheocharm.MapZ.common.util.PagingUtils.MY_INVITATION_SIZE;
 import static com.cheocharm.MapZ.common.util.PagingUtils.applyCursorId;
 import static com.cheocharm.MapZ.common.util.PagingUtils.applyDescPageConfigBy;
 import static com.cheocharm.MapZ.common.util.PagingUtils.FIELD_CREATED_AT;
 import static com.cheocharm.MapZ.common.util.PagingUtils.GROUP_SIZE;
 
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 @Service
 public class GroupService {
 
     private final DiaryRepository diaryRepository;
     private final DiaryLikeRepository diaryLikeRepository;
+    private final DiaryImageRepository diaryImageRepository;
     private final CommentRepository commentRepository;
     private final GroupRepository groupRepository;
     private final UserGroupRepository userGroupRepository;
@@ -102,6 +110,7 @@ public class GroupService {
         );
     }
 
+    @Transactional(readOnly = true)
     public PagingGroupListResponse getGroup(String groupName, Long cursorId, Integer page) {
         Slice<GroupEntity> content = groupRepository.findByGroupName(
                 groupName,
@@ -258,6 +267,7 @@ public class GroupService {
         }
     }
 
+    @Transactional(readOnly = true)
     public List<GetMyGroupResponse> searchMyGroup() {
         final UserEntity userEntity = UserThreadLocal.get();
 
@@ -279,6 +289,7 @@ public class GroupService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     public List<GroupMemberResponse> getMember(Long groupId) {
         UserEntity userEntity = UserThreadLocal.get();
 
@@ -325,11 +336,59 @@ public class GroupService {
 
     }
 
+    @Transactional
+    public void acceptInvitation(AcceptInvitationRequest acceptInvitationRequest) {
+        final UserEntity userEntity = UserThreadLocal.get();
+        final Long requestGroupId = acceptInvitationRequest.getGroupId();
+
+        final Long nowGroupMemberSize = userGroupRepository.countByGroupId(requestGroupId);
+        if (nowGroupMemberSize >= GroupConst.LIMIT_GROUP_PEOPLE.getLimitSize()) {
+            throw new GroupMemberSizeExceedException();
+        }
+
+        final UserGroupEntity userGroupEntity = userGroupRepository.findByGroupIdAndUserId(requestGroupId, userEntity.getId())
+                .orElseThrow(NotFoundUserGroupException::new);
+
+        userGroupEntity.acceptUser();
+    }
+
+    @Transactional
+    public void refuseInvitation(RefuseInvitationRequest refuseInvitationRequest) {
+        final UserEntity userEntity = UserThreadLocal.get();
+
+        final UserGroupEntity userGroupEntity = userGroupRepository.findByGroupIdAndUserId(refuseInvitationRequest.getGroupId(), userEntity.getId())
+                .orElseThrow(NotFoundUserGroupException::new);
+
+        userGroupRepository.delete(userGroupEntity);
+    }
+
+    @Transactional(readOnly = true)
+    public MyInvitationResponse getInvitation(Long cursorId, Integer page) {
+        final UserEntity userEntity = UserThreadLocal.get();
+        final Slice<MyInvitationVO> invitationSlice = userGroupRepository.getInvitationSlice(
+                userEntity.getId(),
+                applyCursorId(cursorId),
+                applyDescPageConfigBy(page, MY_INVITATION_SIZE, FIELD_CREATED_AT)
+        );
+        final List<MyInvitationVO> myInvitations = invitationSlice.getContent();
+
+        final List<MyInvitationResponse.Invitation> list = myInvitations.stream()
+                .map(myInvitationVO -> new MyInvitationResponse.Invitation(
+                        myInvitationVO.getDiaryId(),
+                        myInvitationVO.getGroupName(),
+                        myInvitationVO.getCreatedAt()
+                ))
+                .collect(Collectors.toList());
+
+        return new MyInvitationResponse(invitationSlice.hasNext(), list);
+    }
+
     private void deleteGroupActivityOfUser(Long deleteUserId, Long deleteUserGroupEntityId) {
         List<DiaryEntity> diaryEntities = diaryRepository.findAllByUserId(deleteUserId);
 
         diaryLikeRepository.deleteAllByDiaryEntityList(diaryEntities);
         commentRepository.deleteAllByDiaryEntityList(diaryEntities);
+        diaryImageRepository.deleteAllByDiaryEntityList(diaryEntities);
         diaryRepository.deleteAllByUserId(deleteUserId);
 
         userGroupRepository.deleteById(deleteUserGroupEntityId);
