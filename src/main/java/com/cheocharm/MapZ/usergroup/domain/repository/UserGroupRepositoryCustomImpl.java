@@ -7,17 +7,22 @@ import com.cheocharm.MapZ.usergroup.domain.UserGroupEntity;
 import com.cheocharm.MapZ.usergroup.domain.UserRole;
 import com.cheocharm.MapZ.usergroup.domain.repository.vo.ChiefUserImageVO;
 import com.cheocharm.MapZ.usergroup.domain.repository.vo.CountUserGroupVO;
+import com.cheocharm.MapZ.usergroup.domain.repository.vo.MyInvitationVO;
 import com.cheocharm.MapZ.usergroup.domain.repository.vo.QChiefUserImageVO;
 import com.cheocharm.MapZ.usergroup.domain.repository.vo.QCountUserGroupVO;
+import com.cheocharm.MapZ.usergroup.domain.repository.vo.QMyInvitationVO;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Optional;
 
+import static com.cheocharm.MapZ.common.util.QuerydslSupport.fetchSliceByCursor;
 import static com.cheocharm.MapZ.group.domain.QGroupEntity.groupEntity;
 import static com.cheocharm.MapZ.user.domain.QUserEntity.userEntity;
 import static com.cheocharm.MapZ.usergroup.domain.QUserGroupEntity.userGroupEntity;
@@ -88,6 +93,33 @@ public class UserGroupRepositoryCustomImpl implements UserGroupRepositoryCustom 
                 )
                 .groupBy(userGroupEntity.groupEntity.id)
                 .fetch();
+    }
+
+    @Override
+    public Long countByGroupId(Long groupId) {
+        return queryFactory
+                .select(userGroupEntity.count())
+                .from(userGroupEntity)
+                .where(groupIdEq(groupId))
+                .fetchOne();
+    }
+
+    @Override
+    public Slice<MyInvitationVO> getInvitationSlice(Long userId, Long cursorId, Pageable pageable) {
+        JPAQuery<MyInvitationVO> query = queryFactory
+                .select(new QMyInvitationVO(
+                        groupEntity.id,
+                        groupEntity.groupName,
+                        groupEntity.createdAt
+                ))
+                .from(userGroupEntity)
+                .innerJoin(userGroupEntity.groupEntity, groupEntity)
+                .where(userGroupEntity.id.lt(cursorId)
+                        .and(userIdEq(userId))
+                        .and(userGroupEntity.invitationStatus.eq(InvitationStatus.SEND))
+                );
+
+        return fetchSliceByCursor(userGroupEntity.getType(), userGroupEntity.getMetadata(), query, pageable);
     }
 
     private JPAQuery<UserGroupEntity> fetchJoinQuery() {

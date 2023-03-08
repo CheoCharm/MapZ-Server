@@ -5,6 +5,9 @@ import com.cheocharm.MapZ.user.domain.UserEntity;
 import com.cheocharm.MapZ.usergroup.domain.UserGroupEntity;
 import com.cheocharm.MapZ.usergroup.domain.repository.vo.ChiefUserImageVO;
 import com.cheocharm.MapZ.usergroup.domain.repository.vo.CountUserGroupVO;
+import com.cheocharm.MapZ.usergroup.domain.repository.vo.MyInvitationVO;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 
 import java.util.List;
 import java.util.Optional;
@@ -22,4 +25,8 @@ public interface UserGroupRepositoryCustom {
     List<UserGroupEntity> findByGroupId(Long groupId);
 
     List<CountUserGroupVO> countByGroupEntity(List<GroupEntity> groupEntityList);
+
+    Long countByGroupId(Long groupId);
+
+    Slice<MyInvitationVO> getInvitationSlice(Long userId, Long cursorId, Pageable pageable);
 }
