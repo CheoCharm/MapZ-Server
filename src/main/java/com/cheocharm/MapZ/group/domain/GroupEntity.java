@@ -12,7 +12,7 @@ import javax.persistence.Entity;
 import javax.persistence.Table;
 
 @Getter
-@Table(name = "Groups")
+@Table(name = "DiaryGroup")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
 public class GroupEntity extends BaseEntity {
