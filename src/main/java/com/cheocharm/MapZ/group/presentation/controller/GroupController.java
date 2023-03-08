@@ -2,6 +2,7 @@ package com.cheocharm.MapZ.group.presentation.controller;
 
 import com.cheocharm.MapZ.common.CommonResponse;
 import com.cheocharm.MapZ.group.application.GroupService;
+import com.cheocharm.MapZ.group.presentation.dto.request.AcceptInvitationRequest;
 import com.cheocharm.MapZ.group.presentation.dto.request.ChangeChiefRequest;
 import com.cheocharm.MapZ.group.presentation.dto.request.ChangeGroupInfoRequest;
 import com.cheocharm.MapZ.group.presentation.dto.request.ChangeInvitationStatusRequest;
@@ -10,9 +11,11 @@ import com.cheocharm.MapZ.group.presentation.dto.request.ExitGroupRequest;
 import com.cheocharm.MapZ.group.presentation.dto.request.InviteGroupRequest;
 import com.cheocharm.MapZ.group.presentation.dto.request.JoinGroupRequest;
 import com.cheocharm.MapZ.group.presentation.dto.request.KickUserRequest;
+import com.cheocharm.MapZ.group.presentation.dto.request.RefuseInvitationRequest;
 import com.cheocharm.MapZ.group.presentation.dto.response.GetMyGroupResponse;
 import com.cheocharm.MapZ.group.presentation.dto.response.GroupMemberResponse;
 import com.cheocharm.MapZ.group.presentation.dto.response.JoinGroupResultResponse;
+import com.cheocharm.MapZ.group.presentation.dto.response.MyInvitationResponse;
 import com.cheocharm.MapZ.group.presentation.dto.response.PagingGroupListResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -63,7 +66,7 @@ public class GroupController {
     @PatchMapping
     public CommonResponse<?> changeGroupInfo(
             @RequestPart(value = "dto") @Valid ChangeGroupInfoRequest changeGroupInfoRequest,
-            @RequestPart(value="file", required = false) MultipartFile multipartFile) {
+            @RequestPart(value = "file", required = false) MultipartFile multipartFile) {
         groupService.changeGroupInfo(changeGroupInfoRequest, multipartFile);
         return CommonResponse.success();
     }
@@ -127,5 +130,28 @@ public class GroupController {
     public CommonResponse<?> kickUser(@RequestBody @Valid KickUserRequest kickUserRequest) {
         groupService.kickUser(kickUserRequest);
         return CommonResponse.success();
+    }
+
+    @Operation(description = "초대 수락")
+    @Parameter(name = "accessToken", in = ParameterIn.HEADER, required = true)
+    @PatchMapping("/invite")
+    public CommonResponse<?> acceptInvitation(@RequestBody @Valid AcceptInvitationRequest acceptInvitationRequest) {
+        groupService.acceptInvitation(acceptInvitationRequest);
+        return CommonResponse.success();
+    }
+
+    @Operation(description = "초대 거절")
+    @Parameter(name = "accessToken", in = ParameterIn.HEADER, required = true)
+    @DeleteMapping("/invite")
+    public CommonResponse<?> refuseInvitation(@RequestBody @Valid RefuseInvitationRequest refuseInvitationRequest) {
+        groupService.refuseInvitation(refuseInvitationRequest);
+        return CommonResponse.success();
+    }
+
+    @Operation(description = "초대 내역 조회")
+    @Parameter(name = "accessToken", in = ParameterIn.HEADER, required = true)
+    @GetMapping("/invite")
+    public CommonResponse<MyInvitationResponse> getInvitation(@Parameter @RequestParam Long cursorId, @RequestParam Integer page) {
+        return CommonResponse.success(groupService.getInvitation(cursorId, page));
     }
 }
