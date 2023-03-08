@@ -39,6 +39,7 @@ public enum ExceptionDetails {
     NOT_FOUND_USERGROUP(HttpStatus.NOT_FOUND, "4001", "해당되는 유저그룹 테이블 데이터가 없습니다."),
     SELF_KICK(HttpStatus.BAD_REQUEST, "4002", "내보내려는 유저와 요청한 유저가 동일합니다."),
     NOT_ACCEPTED_USER(HttpStatus.BAD_REQUEST, "4003", "수락된 유저가 아닙니다."),
+    GROUP_MEMBER_SIZE_EXCEED(HttpStatus.BAD_REQUEST, "4004", "그룹 유저 제한 수를 초과했습니다"),
 
     //다이어리 예외
     NOT_FOUND_DIARY(HttpStatus.NOT_FOUND, "5001", "게시글을 찾을 수 없습니다."),
