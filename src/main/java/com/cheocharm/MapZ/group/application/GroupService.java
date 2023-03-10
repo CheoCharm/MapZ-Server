@@ -14,7 +14,7 @@ import com.cheocharm.MapZ.common.interceptor.UserThreadLocal;
 import com.cheocharm.MapZ.common.util.S3Utils;
 import com.cheocharm.MapZ.diary.domain.DiaryEntity;
 import com.cheocharm.MapZ.diary.domain.respository.DiaryImageRepository;
-import com.cheocharm.MapZ.group.domain.GroupConst;
+import com.cheocharm.MapZ.group.domain.GroupLimit;
 import com.cheocharm.MapZ.group.presentation.dto.request.AcceptInvitationRequest;
 import com.cheocharm.MapZ.group.presentation.dto.request.RefuseInvitationRequest;
 import com.cheocharm.MapZ.group.presentation.dto.response.MyInvitationResponse;
@@ -342,7 +342,7 @@ public class GroupService {
         final Long requestGroupId = acceptInvitationRequest.getGroupId();
 
         final Long nowGroupMemberSize = userGroupRepository.countByGroupId(requestGroupId);
-        if (nowGroupMemberSize >= GroupConst.LIMIT_GROUP_PEOPLE.getLimitSize()) {
+        if (nowGroupMemberSize >= GroupLimit.LIMIT_GROUP_PEOPLE.getLimitSize()) {
             throw new GroupMemberSizeExceedException();
         }
 
