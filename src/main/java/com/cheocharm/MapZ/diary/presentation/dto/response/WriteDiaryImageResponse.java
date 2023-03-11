@@ -10,4 +10,5 @@ import java.util.List;
 public class WriteDiaryImageResponse {
     private Long diaryId;
     private List<String> imageURLs;
+    private List<String> imageName;
 }

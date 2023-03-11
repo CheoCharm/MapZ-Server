@@ -180,7 +180,15 @@ public class DiaryService {
         }
         diaryImageRepository.saveAll(diaryImageEntities);
 
-        return new WriteDiaryImageResponse(diaryId, imageURLs);
+        return new WriteDiaryImageResponse(diaryId, imageURLs, getImageName(files));
+    }
+
+    private List<String> getImageName(List<MultipartFile> files) {
+        ArrayList<String> list = new ArrayList<>();
+        for (MultipartFile file : files) {
+            list.add(file.getOriginalFilename());
+        }
+        return list;
     }
 
     @Transactional

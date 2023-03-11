@@ -14,6 +14,7 @@ public class PagingUtils {
     public static final Integer USER_SIZE = 10;
     public static final Integer MY_LIKE_DIARY_SIZE = 20;
     public static final Integer MY_DIARY_SIZE = 20;
+    public static final Integer MY_INVITATION_SIZE = 10;
 
     public static final Integer COMMENT_SIZE = 20;
 

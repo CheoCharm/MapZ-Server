@@ -1,5 +1,6 @@
 package com.cheocharm.MapZ.diary.domain.respository;
 
+import com.cheocharm.MapZ.diary.domain.DiaryEntity;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +27,14 @@ public class DiaryImageRepositoryCustomImpl implements DiaryImageRepositoryCusto
         queryFactory
                 .delete(diaryImageEntity)
                 .where(diaryIdEq(diaryId))
+                .execute();
+    }
+
+    @Override
+    public void deleteAllByDiaryEntityList(List<DiaryEntity> diaryEntities) {
+        queryFactory
+                .delete(diaryImageEntity)
+                .where(diaryImageEntity.diaryEntity.in(diaryEntities))
                 .execute();
     }
 
