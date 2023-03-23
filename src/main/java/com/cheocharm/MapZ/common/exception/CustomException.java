@@ -22,4 +22,9 @@ public class CustomException extends RuntimeException {
         this.message = exceptionDetails.getMessage();
         this.cause = cause;
     }
+
+    @Override
+    public synchronized Throwable fillInStackTrace() {
+        return this;
+    }
 }
