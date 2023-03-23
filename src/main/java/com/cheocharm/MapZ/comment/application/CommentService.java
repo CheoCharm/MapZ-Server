@@ -9,7 +9,7 @@ import com.cheocharm.MapZ.comment.domain.repository.CommentRepository;
 import com.cheocharm.MapZ.common.exception.diary.NotFoundDiaryException;
 import com.cheocharm.MapZ.common.interceptor.UserThreadLocal;
 import com.cheocharm.MapZ.diary.domain.DiaryEntity;
-import com.cheocharm.MapZ.diary.domain.respository.DiaryRepository;
+import com.cheocharm.MapZ.diary.domain.repository.DiaryRepository;
 import com.cheocharm.MapZ.user.domain.UserEntity;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Slice;

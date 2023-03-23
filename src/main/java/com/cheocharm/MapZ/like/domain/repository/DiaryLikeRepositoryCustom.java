@@ -2,7 +2,7 @@ package com.cheocharm.MapZ.like.domain.repository;
 
 import com.cheocharm.MapZ.diary.domain.DiaryEntity;
 import com.cheocharm.MapZ.like.domain.DiaryLikeEntity;
-import com.cheocharm.MapZ.diary.domain.respository.vo.MyLikeDiaryVO;
+import com.cheocharm.MapZ.diary.domain.repository.vo.MyLikeDiaryVO;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 

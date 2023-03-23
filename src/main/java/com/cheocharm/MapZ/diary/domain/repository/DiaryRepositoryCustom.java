@@ -1,9 +1,9 @@
-package com.cheocharm.MapZ.diary.domain.respository;
+package com.cheocharm.MapZ.diary.domain.repository;
 
 import com.cheocharm.MapZ.diary.domain.DiaryEntity;
-import com.cheocharm.MapZ.diary.domain.respository.vo.DiaryDetailVO;
-import com.cheocharm.MapZ.diary.domain.respository.vo.DiarySliceVO;
-import com.cheocharm.MapZ.diary.domain.respository.vo.MyDiaryVO;
+import com.cheocharm.MapZ.diary.domain.repository.vo.DiaryDetailVO;
+import com.cheocharm.MapZ.diary.domain.repository.vo.DiarySliceVO;
+import com.cheocharm.MapZ.diary.domain.repository.vo.MyDiaryVO;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 
