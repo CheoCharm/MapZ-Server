@@ -82,6 +82,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                     .antMatchers(HttpMethod.POST, "/api/diary/write").authenticated()
                     .antMatchers(HttpMethod.DELETE, "/api/diary/image").authenticated()
                     .antMatchers(HttpMethod.GET, "/api/diary/detail").authenticated()
+                    .antMatchers(HttpMethod.GET, "/api/diary/low").authenticated()
+                    .antMatchers(HttpMethod.GET, "/api/diary/high").authenticated()
 
                     //commnet
                     .antMatchers(HttpMethod.POST, "/api/comment").authenticated()
