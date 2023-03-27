@@ -122,6 +122,15 @@ public class UserGroupRepositoryCustomImpl implements UserGroupRepositoryCustom 
         return fetchSliceByCursor(userGroupEntity.getType(), userGroupEntity.getMetadata(), query, pageable);
     }
 
+    @Override
+    public List<Long> getGroupIdByUserId(Long userId) {
+        return queryFactory
+                .select(userGroupEntity.groupEntity.id)
+                .from(userGroupEntity)
+                .where(userIdEq(userId))
+                .fetch();
+    }
+
     private JPAQuery<UserGroupEntity> fetchJoinQuery() {
         return queryFactory
                 .selectFrom(userGroupEntity)
