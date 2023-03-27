@@ -1,4 +1,4 @@
-package com.cheocharm.MapZ.diary.domain.respository.vo;
+package com.cheocharm.MapZ.diary.domain.repository.vo;
 
 import com.querydsl.core.annotations.QueryProjection;
 import lombok.Getter;
