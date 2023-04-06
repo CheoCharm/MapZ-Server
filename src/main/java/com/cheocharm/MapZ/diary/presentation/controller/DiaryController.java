@@ -8,6 +8,7 @@ import com.cheocharm.MapZ.diary.presentation.dto.request.WriteDiaryImageRequest;
 import com.cheocharm.MapZ.diary.presentation.dto.request.WriteDiaryRequest;
 import com.cheocharm.MapZ.diary.presentation.dto.response.DiaryCoordinateResponse;
 import com.cheocharm.MapZ.diary.presentation.dto.response.DiaryDetailResponse;
+import com.cheocharm.MapZ.diary.presentation.dto.response.DiaryPreviewDetailResponse;
 import com.cheocharm.MapZ.diary.presentation.dto.response.DiaryPreviewResponse;
 import com.cheocharm.MapZ.diary.presentation.dto.response.GetDiaryListResponse;
 import com.cheocharm.MapZ.diary.presentation.dto.response.MyDiaryResponse;
@@ -104,5 +105,12 @@ public class DiaryController {
     @GetMapping("/high")
     public CommonResponse<List<DiaryPreviewResponse>> getDiaryByMap(@Parameter @RequestParam Double longitude, @RequestParam Double latitude, @RequestParam Double zoomLevel) {
         return CommonResponse.success(diaryService.getDiaryByMap(longitude, latitude, zoomLevel));
+    }
+
+    @Operation(description = "지도에서 일기 클릭해서 조회")
+    @Parameter(name = "accessToken", in = ParameterIn.HEADER, required = true)
+    @GetMapping("/preview")
+    public CommonResponse<DiaryPreviewDetailResponse> getDiaryPreviewDetail(@Parameter @RequestParam Long diaryId) {
+        return CommonResponse.success(diaryService.getDiaryPreviewDetail(diaryId));
     }
 }
