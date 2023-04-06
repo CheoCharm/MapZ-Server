@@ -11,6 +11,7 @@ import com.cheocharm.MapZ.diary.domain.DiaryImageEntity;
 import com.cheocharm.MapZ.diary.domain.repository.vo.DiaryCoordinateVO;
 import com.cheocharm.MapZ.diary.domain.repository.vo.DiaryDetailVO;
 import com.cheocharm.MapZ.diary.domain.repository.vo.DiaryImagePreviewVO;
+import com.cheocharm.MapZ.diary.domain.repository.vo.DiaryPreviewVO;
 import com.cheocharm.MapZ.diary.domain.repository.vo.DiarySliceVO;
 import com.cheocharm.MapZ.diary.presentation.dto.request.DeleteDiaryRequest;
 import com.cheocharm.MapZ.diary.presentation.dto.request.DeleteTempDiaryRequest;
@@ -18,6 +19,7 @@ import com.cheocharm.MapZ.diary.presentation.dto.request.WriteDiaryImageRequest;
 import com.cheocharm.MapZ.diary.presentation.dto.request.WriteDiaryRequest;
 import com.cheocharm.MapZ.diary.presentation.dto.response.DiaryCoordinateResponse;
 import com.cheocharm.MapZ.diary.presentation.dto.response.DiaryDetailResponse;
+import com.cheocharm.MapZ.diary.presentation.dto.response.DiaryPreviewDetailResponse;
 import com.cheocharm.MapZ.diary.presentation.dto.response.DiaryPreviewResponse;
 import com.cheocharm.MapZ.diary.presentation.dto.response.GetDiaryListResponse;
 import com.cheocharm.MapZ.diary.presentation.dto.response.MyDiaryResponse;
@@ -30,6 +32,7 @@ import com.cheocharm.MapZ.group.domain.GroupEntity;
 import com.cheocharm.MapZ.group.domain.repository.GroupRepository;
 import com.cheocharm.MapZ.user.domain.UserEntity;
 import com.cheocharm.MapZ.usergroup.domain.repository.UserGroupRepository;
+import com.querydsl.core.Tuple;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.ObjectUtils;
 import org.locationtech.jts.geom.Coordinate;
@@ -280,6 +283,24 @@ public class DiaryService {
                     );
                 })
                 .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public DiaryPreviewDetailResponse getDiaryPreviewDetail(Long diaryId) {
+        final UserEntity userEntity = UserThreadLocal.get();
+
+        final List<DiaryPreviewVO> diaryPreviewVOS = diaryImageRepository.getDiaryPreview(diaryId, userEntity.getId());
+
+        final List<DiaryPreviewDetailResponse.ImageInfo> list = diaryPreviewVOS.stream()
+                .map(diaryPreviewVO -> new DiaryPreviewDetailResponse.ImageInfo(
+                        diaryPreviewVO.getDiaryImageURL(),
+                        diaryPreviewVO.getImageOrder()
+                ))
+                .collect(Collectors.toUnmodifiableList());
+
+        final DiaryPreviewVO diaryPreviewVO = diaryPreviewVOS.get(0);
+
+        return new DiaryPreviewDetailResponse(list, diaryPreviewVO.getAddress(), diaryPreviewVO.isLike());
     }
 
     private double getDistance(Double zoomLevel) {
