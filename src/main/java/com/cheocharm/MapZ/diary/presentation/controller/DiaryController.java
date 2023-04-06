@@ -6,7 +6,10 @@ import com.cheocharm.MapZ.diary.presentation.dto.request.DeleteDiaryRequest;
 import com.cheocharm.MapZ.diary.presentation.dto.request.DeleteTempDiaryRequest;
 import com.cheocharm.MapZ.diary.presentation.dto.request.WriteDiaryImageRequest;
 import com.cheocharm.MapZ.diary.presentation.dto.request.WriteDiaryRequest;
+import com.cheocharm.MapZ.diary.presentation.dto.response.DiaryCoordinateResponse;
 import com.cheocharm.MapZ.diary.presentation.dto.response.DiaryDetailResponse;
+import com.cheocharm.MapZ.diary.presentation.dto.response.DiaryPreviewDetailResponse;
+import com.cheocharm.MapZ.diary.presentation.dto.response.DiaryPreviewResponse;
 import com.cheocharm.MapZ.diary.presentation.dto.response.GetDiaryListResponse;
 import com.cheocharm.MapZ.diary.presentation.dto.response.MyDiaryResponse;
 import com.cheocharm.MapZ.diary.presentation.dto.response.WriteDiaryImageResponse;
@@ -88,5 +91,26 @@ public class DiaryController {
     @GetMapping("/detail")
     public CommonResponse<DiaryDetailResponse> getDiaryDetail(@Parameter @RequestParam Long diaryId) {
         return CommonResponse.success(diaryService.getDiaryDetail(diaryId));
+    }
+
+    @Operation(description = "일기 줌 레벨 낮은 경우(반경이 넓은 경우)")
+    @Parameter(name = "accessToken", in = ParameterIn.HEADER, required = true)
+    @GetMapping("/low")
+    public CommonResponse<List<DiaryCoordinateResponse>> getDiaryCoordinate(@Parameter @RequestParam Double longitude, @RequestParam Double latitude) {
+        return CommonResponse.success(diaryService.getDiaryCoordinate(longitude, latitude));
+    }
+
+    @Operation(description = "일기 중 레벨 높은 경우(반경이 좁은 경우)")
+    @Parameter(name = "accessToken", in = ParameterIn.HEADER, required = true)
+    @GetMapping("/high")
+    public CommonResponse<List<DiaryPreviewResponse>> getDiaryByMap(@Parameter @RequestParam Double longitude, @RequestParam Double latitude, @RequestParam Double zoomLevel) {
+        return CommonResponse.success(diaryService.getDiaryByMap(longitude, latitude, zoomLevel));
+    }
+
+    @Operation(description = "지도에서 일기 클릭해서 조회")
+    @Parameter(name = "accessToken", in = ParameterIn.HEADER, required = true)
+    @GetMapping("/preview")
+    public CommonResponse<DiaryPreviewDetailResponse> getDiaryPreviewDetail(@Parameter @RequestParam Long diaryId) {
+        return CommonResponse.success(diaryService.getDiaryPreviewDetail(diaryId));
     }
 }

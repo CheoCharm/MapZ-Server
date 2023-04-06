@@ -29,4 +29,6 @@ public interface UserGroupRepositoryCustom {
     Long countByGroupId(Long groupId);
 
     Slice<MyInvitationVO> getInvitationSlice(Long userId, Long cursorId, Pageable pageable);
+
+    List<Long> getGroupIdByUserId(Long userId);
 }

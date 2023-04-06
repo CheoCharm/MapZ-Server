@@ -2,8 +2,8 @@ package com.cheocharm.MapZ.like.domain.repository;
 
 import com.cheocharm.MapZ.diary.domain.DiaryEntity;
 import com.cheocharm.MapZ.like.domain.DiaryLikeEntity;
-import com.cheocharm.MapZ.diary.domain.respository.vo.MyLikeDiaryVO;
-import com.cheocharm.MapZ.diary.domain.respository.vo.QMyLikeDiaryVO;
+import com.cheocharm.MapZ.diary.domain.repository.vo.MyLikeDiaryVO;
+import com.cheocharm.MapZ.diary.domain.repository.vo.QMyLikeDiaryVO;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;

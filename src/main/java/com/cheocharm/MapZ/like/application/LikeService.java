@@ -8,8 +8,8 @@ import com.cheocharm.MapZ.like.presentation.dto.response.DiaryLikePeopleResponse
 import com.cheocharm.MapZ.like.presentation.dto.request.LikeDiaryRequest;
 import com.cheocharm.MapZ.like.presentation.dto.response.MyLikeDiaryResponse;
 import com.cheocharm.MapZ.like.domain.repository.DiaryLikeRepository;
-import com.cheocharm.MapZ.diary.domain.respository.DiaryRepository;
-import com.cheocharm.MapZ.diary.domain.respository.vo.MyLikeDiaryVO;
+import com.cheocharm.MapZ.diary.domain.repository.DiaryRepository;
+import com.cheocharm.MapZ.diary.domain.repository.vo.MyLikeDiaryVO;
 import com.cheocharm.MapZ.like.domain.DiaryLikeEntity;
 import com.cheocharm.MapZ.user.domain.UserEntity;
 import lombok.RequiredArgsConstructor;

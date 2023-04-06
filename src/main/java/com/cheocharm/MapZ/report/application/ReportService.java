@@ -3,7 +3,7 @@ package com.cheocharm.MapZ.report.application;
 import com.cheocharm.MapZ.common.exception.diary.NotFoundDiaryException;
 import com.cheocharm.MapZ.common.exception.report.AlreadyReportedDiary;
 import com.cheocharm.MapZ.common.interceptor.UserThreadLocal;
-import com.cheocharm.MapZ.diary.domain.respository.DiaryRepository;
+import com.cheocharm.MapZ.diary.domain.repository.DiaryRepository;
 import com.cheocharm.MapZ.report.domain.ReportEntity;
 import com.cheocharm.MapZ.report.presentation.dto.ReportRequest;
 import com.cheocharm.MapZ.report.domain.repository.ReportRepository;
