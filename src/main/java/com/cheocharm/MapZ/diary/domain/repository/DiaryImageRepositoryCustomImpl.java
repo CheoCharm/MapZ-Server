@@ -2,14 +2,18 @@ package com.cheocharm.MapZ.diary.domain.repository;
 
 import com.cheocharm.MapZ.diary.domain.DiaryEntity;
 import com.cheocharm.MapZ.diary.domain.repository.vo.DiaryImagePreviewVO;
+import com.cheocharm.MapZ.diary.domain.repository.vo.DiaryPreviewVO;
 import com.cheocharm.MapZ.diary.domain.repository.vo.QDiaryImagePreviewVO;
+import com.cheocharm.MapZ.diary.domain.repository.vo.QDiaryPreviewVO;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
 
+import static com.cheocharm.MapZ.diary.domain.QDiaryEntity.diaryEntity;
 import static com.cheocharm.MapZ.diary.domain.QDiaryImageEntity.diaryImageEntity;
+import static com.cheocharm.MapZ.like.domain.QDiaryLikeEntity.diaryLikeEntity;
 
 @RequiredArgsConstructor
 public class DiaryImageRepositoryCustomImpl implements DiaryImageRepositoryCustom{
@@ -52,7 +56,27 @@ public class DiaryImageRepositoryCustomImpl implements DiaryImageRepositoryCusto
                 .fetch();
     }
 
+    public List<DiaryPreviewVO> getDiaryPreview(Long diaryId, Long userId) {
+        return queryFactory
+                .select(new QDiaryPreviewVO(
+                        diaryImageEntity.diaryImageUrl,
+                        diaryImageEntity.imageOrder,
+                        diaryEntity.address,
+                        diaryLikeEntity.isNotNull()
+                ))
+                .from(diaryImageEntity)
+                .innerJoin(diaryImageEntity.diaryEntity, diaryEntity)
+                .leftJoin(diaryEntity.diaryLikeEntities, diaryLikeEntity)
+                .on(likeUserIdEq(userId))
+                .where(diaryIdEq(diaryId))
+                .fetch();
+    }
+
     private BooleanExpression diaryIdEq(Long diaryId) {
         return diaryImageEntity.diaryEntity.id.eq(diaryId);
+    }
+
+    private BooleanExpression likeUserIdEq(Long userId) {
+        return diaryLikeEntity.userEntity.id.eq(userId);
     }
 }
