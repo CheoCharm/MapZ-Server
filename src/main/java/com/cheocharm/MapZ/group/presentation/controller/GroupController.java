@@ -4,8 +4,8 @@ import com.cheocharm.MapZ.common.CommonResponse;
 import com.cheocharm.MapZ.group.application.GroupService;
 import com.cheocharm.MapZ.group.presentation.dto.request.AcceptInvitationRequest;
 import com.cheocharm.MapZ.group.presentation.dto.request.ChangeChiefRequest;
-import com.cheocharm.MapZ.group.presentation.dto.request.ChangeGroupInfoRequest;
-import com.cheocharm.MapZ.group.presentation.dto.request.ChangeInvitationStatusRequest;
+import com.cheocharm.MapZ.group.presentation.dto.request.UpdateGroupRequest;
+import com.cheocharm.MapZ.group.presentation.dto.request.UpdateInvitationStatusRequest;
 import com.cheocharm.MapZ.group.presentation.dto.request.CreateGroupRequest;
 import com.cheocharm.MapZ.group.presentation.dto.request.ExitGroupRequest;
 import com.cheocharm.MapZ.group.presentation.dto.request.InviteGroupRequest;
@@ -64,10 +64,10 @@ public class GroupController {
     @Operation(description = "그룹 정보 변경")
     @Parameter(name = "accessToken", in = ParameterIn.HEADER, required = true)
     @PatchMapping
-    public CommonResponse<?> changeGroupInfo(
-            @RequestPart(value = "dto") @Valid ChangeGroupInfoRequest changeGroupInfoRequest,
+    public CommonResponse<?> updateGroup(
+            @RequestPart(value = "dto") @Valid UpdateGroupRequest updateGroupRequest,
             @RequestPart(value = "file", required = false) MultipartFile multipartFile) {
-        groupService.changeGroupInfo(changeGroupInfoRequest, multipartFile);
+        groupService.updateGroup(updateGroupRequest, multipartFile);
         return CommonResponse.success();
     }
 
@@ -81,8 +81,8 @@ public class GroupController {
     @Operation(description = "그룹 참가 신청 변경")
     @Parameter(name = "accessToken", in = ParameterIn.HEADER, required = true)
     @PatchMapping("/join")
-    public CommonResponse<?> changeInvitationStatus(@RequestBody @Valid ChangeInvitationStatusRequest changeInvitationStatusRequest) {
-        groupService.changeInvitationStatus(changeInvitationStatusRequest);
+    public CommonResponse<?> updateInvitationStatus(@RequestBody @Valid UpdateInvitationStatusRequest updateInvitationStatusRequest) {
+        groupService.updateInvitationStatus(updateInvitationStatusRequest);
         return CommonResponse.success();
     }
 
@@ -98,7 +98,7 @@ public class GroupController {
     @Parameter(name = "accessToken", in = ParameterIn.HEADER, required = true)
     @PatchMapping("/chief")
     public CommonResponse<?> changeChief(@RequestBody @Valid ChangeChiefRequest changeChiefRequest) {
-        groupService.changeChief(changeChiefRequest);
+        groupService.updateChief(changeChiefRequest);
         return CommonResponse.success();
     }
 
