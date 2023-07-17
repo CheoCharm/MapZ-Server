@@ -57,6 +57,12 @@ dependencies {
 	implementation group: 'org.hibernate', name: 'hibernate-spatial', version: '5.6.9.Final'
 
 	compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.9'
+
+	//jeasy
+	testImplementation group: 'org.jeasy', name: 'easy-random-core', version: '5.0.0'
+
+	//mockito inline
+	testImplementation group: 'org.mockito', name: 'mockito-inline', version: '5.2.0'
 }
 
 tasks.named('test') {
