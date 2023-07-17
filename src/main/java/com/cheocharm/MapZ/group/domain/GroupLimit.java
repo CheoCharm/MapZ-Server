@@ -4,11 +4,11 @@ import lombok.Getter;
 
 @Getter
 public enum GroupLimit {
-    LIMIT_GROUP_PEOPLE(10),
+    LIMIT_GROUP_PEOPLE(10L),
     ;
-    private final int limitSize;
+    private final Long limitSize;
 
-    GroupLimit(int limitSize) {
+    GroupLimit(Long limitSize) {
         this.limitSize = limitSize;
     }
 }
