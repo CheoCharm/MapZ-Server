@@ -7,4 +7,6 @@ import java.util.Optional;
 
 public interface GroupRepository extends JpaRepository<GroupEntity, Long>, GroupRepositoryCustom {
     Optional<GroupEntity> findByGroupName(String groupName);
+
+    boolean existsByGroupName(String groupName);
 }
