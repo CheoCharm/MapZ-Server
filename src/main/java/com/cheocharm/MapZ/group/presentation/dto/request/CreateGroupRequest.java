@@ -1,5 +1,6 @@
 package com.cheocharm.MapZ.group.presentation.dto.request;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import javax.validation.constraints.NotBlank;
@@ -7,6 +8,7 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 
+@AllArgsConstructor
 @Getter
 public class CreateGroupRequest {
 

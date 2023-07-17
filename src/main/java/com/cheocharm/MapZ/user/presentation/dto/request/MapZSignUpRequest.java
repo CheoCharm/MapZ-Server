@@ -1,9 +1,11 @@
 package com.cheocharm.MapZ.user.presentation.dto.request;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import javax.validation.constraints.*;
 
+@AllArgsConstructor
 @Getter
 public class MapZSignUpRequest {
     @NotNull @Email
