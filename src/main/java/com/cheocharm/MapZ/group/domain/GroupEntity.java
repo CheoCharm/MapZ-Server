@@ -1,7 +1,7 @@
 package com.cheocharm.MapZ.group.domain;
 
 import com.cheocharm.MapZ.common.domain.BaseEntity;
-import com.cheocharm.MapZ.group.presentation.dto.request.ChangeGroupInfoRequest;
+import com.cheocharm.MapZ.group.presentation.dto.request.UpdateGroupRequest;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -38,10 +38,10 @@ public class GroupEntity extends BaseEntity {
         this.openStatus = openStatus;
     }
 
-    public void changeGroupInfo(ChangeGroupInfoRequest changeGroupInfoRequest) {
-        this.groupName = changeGroupInfoRequest.getGroupName();
-        this.bio = changeGroupInfoRequest.getBio();
-        this.openStatus = changeGroupInfoRequest.getChangeStatus();
+    public void updateGroupInfo(UpdateGroupRequest updateGroupRequest) {
+        this.groupName = updateGroupRequest.getGroupName();
+        this.bio = updateGroupRequest.getBio();
+        this.openStatus = updateGroupRequest.getIsOpenGroup();
     }
 
     public void updateGroupImageUrl(String groupImageUrl) {

@@ -14,11 +14,11 @@ public class UserThreadLocal {
         return threadLocal.get();
     }
 
-    protected static void set(UserEntity userEntity) {
+    public static void set(UserEntity userEntity) {
         threadLocal.set(userEntity);
     }
 
-    protected static void remove() {
+    public static void remove() {
         threadLocal.remove();
     }
 

@@ -41,11 +41,19 @@ public class UserGroupEntity extends BaseEntity {
         this.userRole = userRole;
     }
 
+    public static UserGroupEntity of(GroupEntity groupEntity, UserEntity userEntity, InvitationStatus invitationStatus, UserRole userRole) {
+        return UserGroupEntity.builder()
+                .groupEntity(groupEntity)
+                .userEntity(userEntity)
+                .invitationStatus(invitationStatus)
+                .userRole(userRole)
+                .build();
+    }
     public void acceptUser() {
         this.invitationStatus = InvitationStatus.ACCEPT;
     }
 
-    public void changeChief(UserGroupEntity chiefUser, UserGroupEntity targetUser) {
+    public void updateChief(UserGroupEntity chiefUser, UserGroupEntity targetUser) {
         chiefUser.userRole = UserRole.MEMBER;
         targetUser.userRole = UserRole.CHIEF;
     }

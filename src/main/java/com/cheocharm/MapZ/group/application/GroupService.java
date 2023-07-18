@@ -23,8 +23,8 @@ import com.cheocharm.MapZ.diary.domain.repository.DiaryRepository;
 import com.cheocharm.MapZ.group.domain.GroupEntity;
 import com.cheocharm.MapZ.group.domain.repository.GroupRepository;
 import com.cheocharm.MapZ.group.presentation.dto.request.ChangeChiefRequest;
-import com.cheocharm.MapZ.group.presentation.dto.request.ChangeGroupInfoRequest;
-import com.cheocharm.MapZ.group.presentation.dto.request.ChangeInvitationStatusRequest;
+import com.cheocharm.MapZ.group.presentation.dto.request.UpdateGroupRequest;
+import com.cheocharm.MapZ.group.presentation.dto.request.UpdateInvitationStatusRequest;
 import com.cheocharm.MapZ.group.presentation.dto.request.CreateGroupRequest;
 import com.cheocharm.MapZ.group.presentation.dto.request.ExitGroupRequest;
 import com.cheocharm.MapZ.group.presentation.dto.request.InviteGroupRequest;
@@ -54,7 +54,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -83,7 +82,7 @@ public class GroupService {
         final UserEntity userEntity = UserThreadLocal.get();
 
         String groupName = createGroupRequest.getGroupName().trim();
-        if (groupRepository.findByGroupName(groupName).isPresent()) {
+        if (groupRepository.existsByGroupName(groupName)) {
             throw new DuplicatedGroupException();
         }
 
@@ -141,10 +140,10 @@ public class GroupService {
     }
 
     @Transactional
-    public void changeGroupInfo(ChangeGroupInfoRequest changeGroupInfoRequest, MultipartFile multipartFile) {
+    public void updateGroup(UpdateGroupRequest updateGroupRequest, MultipartFile multipartFile) {
         final UserEntity userEntity = UserThreadLocal.get();
 
-        final UserGroupEntity userGroupEntity = userGroupRepository.findByGroupIdAndUserId(changeGroupInfoRequest.getGroupId(), userEntity.getId())
+        final UserGroupEntity userGroupEntity = userGroupRepository.findByGroupIdAndUserId(updateGroupRequest.getGroupId(), userEntity.getId())
                 .orElseThrow(NotFoundUserGroupException::new);
 
         if (Objects.equals(userGroupEntity.getUserRole(), UserRole.MEMBER)) {
@@ -152,14 +151,14 @@ public class GroupService {
         }
 
         GroupEntity groupEntity = userGroupEntity.getGroupEntity();
-        if (groupEntity.getGroupName().equals(changeGroupInfoRequest.getGroupName())) {
+        if (groupEntity.getGroupName().equals(updateGroupRequest.getGroupName())) {
             throw new DuplicatedGroupException();
         }
         if (!multipartFile.isEmpty()) {
             groupEntity.updateGroupImageUrl(s3Utils.uploadGroupImage(multipartFile, groupEntity.getGroupUUID()));
         }
 
-        groupEntity.changeGroupInfo(changeGroupInfoRequest);
+        groupEntity.updateGroupInfo(updateGroupRequest);
     }
 
     @Transactional
@@ -168,47 +167,54 @@ public class GroupService {
         final GroupEntity groupEntity = groupRepository.findById(joinGroupRequest.getGroupId())
                 .orElseThrow(NotFoundGroupException::new);
 
-        Optional<UserGroupEntity> userGroupEntity = userGroupRepository.findByUserEntityAndGroupEntity(userEntity, groupEntity);
+        return userGroupRepository.findByGroupIdAndUserId(groupEntity.getId(), userEntity.getId())
+                .map(this::buildResponseFromExistingUserGroup)
+                .orElseGet(()-> buildResponseFromNewUserGroup(userEntity, groupEntity));
+    }
 
-        if (userGroupEntity.isPresent()) {
-            return JoinGroupResultResponse.builder()
-                    .alreadyJoin(true)
-                    .status(userGroupEntity.get().getInvitationStatus().getStatus())
-                    .build();
-        }
-
-        userGroupRepository.save(
-                UserGroupEntity.builder()
-                        .groupEntity(groupEntity)
-                        .userEntity(userEntity)
-                        .invitationStatus(InvitationStatus.PENDING)
-                        .userRole(UserRole.MEMBER)
-                        .build()
+    private JoinGroupResultResponse buildResponseFromNewUserGroup(UserEntity userEntity, GroupEntity groupEntity) {
+        final UserGroupEntity userGroup = userGroupRepository.save(
+                UserGroupEntity.of(groupEntity, userEntity, InvitationStatus.PENDING, UserRole.MEMBER)
         );
         return JoinGroupResultResponse.builder()
                 .alreadyJoin(false)
-                .status(InvitationStatus.PENDING.getStatus())
+                .status(userGroup.getInvitationStatus().getStatus())
+                .build();
+    }
+
+    private JoinGroupResultResponse buildResponseFromExistingUserGroup(UserGroupEntity userGroupEntity) {
+        return JoinGroupResultResponse.builder()
+                .alreadyJoin(true)
+                .status(userGroupEntity.getInvitationStatus().getStatus())
                 .build();
     }
 
     @Transactional
-    public void changeInvitationStatus(ChangeInvitationStatusRequest changeInvitationStatusRequest) {
+    public void updateInvitationStatus(UpdateInvitationStatusRequest request) {
         final UserEntity userEntity = UserThreadLocal.get();
 
-        final UserGroupEntity userGroupEntity = userGroupRepository.findByGroupIdAndUserId(changeInvitationStatusRequest.getGroupId(), userEntity.getId())
+        validateUserRole(request.getGroupId(), userEntity.getId());
+
+        final UserGroupEntity targetUserGroup = userGroupRepository.findByGroupIdAndUserId(request.getGroupId(), request.getUserId())
+                .orElseThrow(NotFoundUserGroupException::new);
+
+        processInvitationStatus(request.getStatus(), targetUserGroup);
+    }
+
+    private void processInvitationStatus(boolean status, UserGroupEntity targetUserGroup) {
+        if (status) {
+            targetUserGroup.acceptUser();
+            return;
+        }
+        userGroupRepository.deleteById(targetUserGroup.getId());
+    }
+
+    private void validateUserRole(Long groupId, Long userId) {
+        final UserGroupEntity userGroupEntity = userGroupRepository.findByGroupIdAndUserId(groupId, userId)
                 .orElseThrow(NotFoundUserException::new);
 
         if (Objects.equals(userGroupEntity.getUserRole(), UserRole.MEMBER)) {
             throw new NoPermissionUserException();
-        }
-
-        final UserGroupEntity findUserGroupEntity = userGroupRepository.findByGroupIdAndUserId(changeInvitationStatusRequest.getGroupId(), changeInvitationStatusRequest.getUserId())
-                .orElseThrow(NotFoundUserGroupException::new);
-
-        if (changeInvitationStatusRequest.getStatus()) {
-            findUserGroupEntity.acceptUser();
-        } else if (!changeInvitationStatusRequest.getStatus()) {
-            userGroupRepository.deleteById(findUserGroupEntity.getId());
         }
     }
 
@@ -226,7 +232,7 @@ public class GroupService {
     }
 
     @Transactional
-    public void changeChief(ChangeChiefRequest changeChiefRequest) {
+    public void updateChief(ChangeChiefRequest changeChiefRequest) {
         final UserEntity userEntity = UserThreadLocal.get();
 
         final UserGroupEntity userGroupEntity = userGroupRepository.findByGroupIdAndUserId(changeChiefRequest.getGroupId(), userEntity.getId())
@@ -241,7 +247,7 @@ public class GroupService {
         if (ObjectUtils.notEqual(targetUserGroupEntity.getInvitationStatus(), InvitationStatus.ACCEPT)) {
             throw new NotAcceptedUserException();
         }
-        targetUserGroupEntity.changeChief(userGroupEntity, targetUserGroupEntity);
+        targetUserGroupEntity.updateChief(userGroupEntity, targetUserGroupEntity);
     }
 
     @Transactional
