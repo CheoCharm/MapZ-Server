@@ -54,7 +54,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -168,22 +167,14 @@ public class GroupService {
         final GroupEntity groupEntity = groupRepository.findById(joinGroupRequest.getGroupId())
                 .orElseThrow(NotFoundGroupException::new);
 
-        Optional<UserGroupEntity> userGroupEntity = userGroupRepository.findByGroupIdAndUserId(groupEntity.getId(), userEntity.getId());
+        return userGroupRepository.findByGroupIdAndUserId(groupEntity.getId(), userEntity.getId())
+                .map(this::buildResponseFromExistingUserGroup)
+                .orElseGet(()-> buildResponseFromNewUserGroup(userEntity, groupEntity));
+    }
 
-        if (userGroupEntity.isPresent()) {
-            return JoinGroupResultResponse.builder()
-                    .alreadyJoin(true)
-                    .status(userGroupEntity.get().getInvitationStatus().getStatus())
-                    .build();
-        }
-
+    private JoinGroupResultResponse buildResponseFromNewUserGroup(UserEntity userEntity, GroupEntity groupEntity) {
         final UserGroupEntity userGroup = userGroupRepository.save(
-                UserGroupEntity.builder()
-                        .groupEntity(groupEntity)
-                        .userEntity(userEntity)
-                        .invitationStatus(InvitationStatus.PENDING)
-                        .userRole(UserRole.MEMBER)
-                        .build()
+                UserGroupEntity.of(groupEntity, userEntity, InvitationStatus.PENDING, UserRole.MEMBER)
         );
         return JoinGroupResultResponse.builder()
                 .alreadyJoin(false)
@@ -191,24 +182,39 @@ public class GroupService {
                 .build();
     }
 
+    private JoinGroupResultResponse buildResponseFromExistingUserGroup(UserGroupEntity userGroupEntity) {
+        return JoinGroupResultResponse.builder()
+                .alreadyJoin(true)
+                .status(userGroupEntity.getInvitationStatus().getStatus())
+                .build();
+    }
+
     @Transactional
-    public void updateInvitationStatus(UpdateInvitationStatusRequest updateInvitationStatusRequest) {
+    public void updateInvitationStatus(UpdateInvitationStatusRequest request) {
         final UserEntity userEntity = UserThreadLocal.get();
 
-        final UserGroupEntity userGroupEntity = userGroupRepository.findByGroupIdAndUserId(updateInvitationStatusRequest.getGroupId(), userEntity.getId())
+        validateUserRole(request.getGroupId(), userEntity.getId());
+
+        final UserGroupEntity targetUserGroup = userGroupRepository.findByGroupIdAndUserId(request.getGroupId(), request.getUserId())
+                .orElseThrow(NotFoundUserGroupException::new);
+
+        processInvitationStatus(request.getStatus(), targetUserGroup);
+    }
+
+    private void processInvitationStatus(boolean status, UserGroupEntity targetUserGroup) {
+        if (status) {
+            targetUserGroup.acceptUser();
+            return;
+        }
+        userGroupRepository.deleteById(targetUserGroup.getId());
+    }
+
+    private void validateUserRole(Long groupId, Long userId) {
+        final UserGroupEntity userGroupEntity = userGroupRepository.findByGroupIdAndUserId(groupId, userId)
                 .orElseThrow(NotFoundUserException::new);
 
         if (Objects.equals(userGroupEntity.getUserRole(), UserRole.MEMBER)) {
             throw new NoPermissionUserException();
-        }
-
-        final UserGroupEntity findUserGroupEntity = userGroupRepository.findByGroupIdAndUserId(updateInvitationStatusRequest.getGroupId(), updateInvitationStatusRequest.getUserId())
-                .orElseThrow(NotFoundUserGroupException::new);
-
-        if (updateInvitationStatusRequest.getStatus()) {
-            findUserGroupEntity.acceptUser();
-        } else if (!updateInvitationStatusRequest.getStatus()) {
-            userGroupRepository.deleteById(findUserGroupEntity.getId());
         }
     }
 
