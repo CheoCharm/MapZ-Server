@@ -31,17 +31,14 @@ class UserServiceTest extends ServiceTest {
     void signUpGoogle() {
 
         //given
-        final GoogleSignUpRequest googleSignUpRequest = new GoogleSignUpRequest("구글로그인", "idToken", true);
-
+        final GoogleSignUpRequest googleSignUpRequest = new GoogleSignUpRequest(
+                "구글로그인", "idToken", true);
         given(userRepository.findByUsername(googleSignUpRequest.getUsername()))
                 .willReturn(Optional.empty());
+        final TokenPairResponse tokenPairResponse = createdExpectedTokenPairResponse(
+                "test@gmail.com", googleSignUpRequest.getUsername(), UserProvider.GOOGLE);
 
-        //when
-        final TokenPairResponse tokenPairResponse = new TokenPairResponse("accessToken", "refreshToken");
-        given(jwtCreateUtils.createTokenPair("test@gmail.com", googleSignUpRequest.getUsername(), UserProvider.GOOGLE))
-                .willReturn(tokenPairResponse);
-
-        //then
+        //when, then
         final TokenPairResponse tokenPairResponse1 = userService.signUpGoogle(googleSignUpRequest, null);
         assertThat(userService.signUpGoogle(googleSignUpRequest, null)).usingRecursiveComparison()
                 .isEqualTo(tokenPairResponse);
@@ -52,22 +49,25 @@ class UserServiceTest extends ServiceTest {
     void signUpMapZ() {
 
         //given
-        final MapZSignUpRequest mapZSignUpRequest = new MapZSignUpRequest("mapz@gmail.com", "mapz1234",
-                "최강맵지", true);
+        final MapZSignUpRequest mapZSignUpRequest = new MapZSignUpRequest(
+                "mapz@gmail.com", "mapz1234", "최강맵지", true);
         given(userRepository.findByUsername(mapZSignUpRequest.getUsername()))
                 .willReturn(Optional.empty());
-
-        //when
-        final TokenPairResponse tokenPairResponse = new TokenPairResponse("accessToken", "refreshToken");
-        given(jwtCreateUtils.createTokenPair("mapz@gmail.com", mapZSignUpRequest.getUsername(), UserProvider.MAPZ))
-                .willReturn(tokenPairResponse);
-
-        //then
         final MockMultipartFile mockMultipartFile = getMockMultipartFile("profile");
+        final TokenPairResponse expectedResponse = createdExpectedTokenPairResponse(
+                "mapz@gmail.com", mapZSignUpRequest.getUsername(), UserProvider.MAPZ);
 
+        //when, then
         assertThat(userService.signUpMapZ(mapZSignUpRequest, Objects.requireNonNull(mockMultipartFile)))
                 .usingRecursiveComparison()
-                .isEqualTo(tokenPairResponse);
+                .isEqualTo(expectedResponse);
+    }
+
+    private TokenPairResponse createdExpectedTokenPairResponse(String email, String username, UserProvider provider) {
+        final TokenPairResponse tokenPairResponse = new TokenPairResponse(
+                "accessToken", "refreshToken");
+        given(jwtCreateUtils.createTokenPair(email, username, provider)).willReturn(tokenPairResponse);
+        return tokenPairResponse;
     }
 
     @Test
