@@ -41,7 +41,7 @@ public class GroupEntity extends BaseEntity {
     public void updateGroupInfo(UpdateGroupRequest updateGroupRequest) {
         this.groupName = updateGroupRequest.getGroupName();
         this.bio = updateGroupRequest.getBio();
-        this.openStatus = updateGroupRequest.getChangeStatus();
+        this.openStatus = updateGroupRequest.getIsOpenGroup();
     }
 
     public void updateGroupImageUrl(String groupImageUrl) {

@@ -18,5 +18,5 @@ public class UpdateGroupRequest {
     private String bio;
 
     @NotNull
-    private Boolean changeStatus;
+    private Boolean isOpenGroup;
 }
