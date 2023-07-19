@@ -29,4 +29,11 @@ public class DiaryLikeEntity extends BaseEntity {
         this.diaryEntity = diaryEntity;
         this.userEntity = userEntity;
     }
+
+    public static DiaryLikeEntity of(DiaryEntity diaryEntity, UserEntity userEntity) {
+        return DiaryLikeEntity.builder()
+                .diaryEntity(diaryEntity)
+                .userEntity(userEntity)
+                .build();
+    }
 }

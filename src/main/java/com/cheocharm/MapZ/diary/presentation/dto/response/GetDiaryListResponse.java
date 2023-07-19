@@ -1,10 +1,13 @@
 package com.cheocharm.MapZ.diary.presentation.dto.response;
 
+import com.cheocharm.MapZ.common.util.ParserUtils;
+import com.cheocharm.MapZ.diary.domain.repository.vo.DiarySliceVO;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @AllArgsConstructor
 @Getter
@@ -29,4 +32,22 @@ public class GetDiaryListResponse {
         private Boolean isWriter;
     }
 
+    public static GetDiaryListResponse of(boolean hasNext, List<DiarySliceVO> diaries) {
+        final List<GetDiaryListResponse.DiaryList> list = diaries.stream()
+                .map(diarySliceVO -> new GetDiaryListResponse.DiaryList(
+                        diarySliceVO.getDiaryId(),
+                        diarySliceVO.getTitle(),
+                        ParserUtils.getTextFromContent(diarySliceVO.getContent()),
+                        diarySliceVO.getAddress(),
+                        diarySliceVO.getCreatedAt(),
+                        diarySliceVO.getUsername(),
+                        diarySliceVO.getUserImageURL(),
+                        diarySliceVO.getLikeCount(),
+                        diarySliceVO.isLike(),
+                        diarySliceVO.getCommentCount(),
+                        diarySliceVO.isWriter()
+                ))
+                .collect(Collectors.toList());
+        return new GetDiaryListResponse(hasNext, list);
+    }
 }

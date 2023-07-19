@@ -46,6 +46,27 @@ public class UserEntity extends BaseEntity {
         this.userProvider = userProvider;
     }
 
+    public static UserEntity createUserNoPassword(String email, String username, String refreshToken, UserProvider userProvider) {
+        return UserEntity.builder()
+                .email(email)
+                .username(username)
+                .bio("자기소개를 입력해주세요")
+                .refreshToken(refreshToken)
+                .userProvider(userProvider)
+                .build();
+    }
+
+    public static UserEntity createUser(String email, String username, String password, String refreshToken, UserProvider userProvider) {
+        return UserEntity.builder()
+                .email(email)
+                .username(username)
+                .password(password)
+                .bio("자기소개를 입력해주세요")
+                .refreshToken(refreshToken)
+                .userProvider(userProvider)
+                .build();
+    }
+
     public void updateRefreshToken(String refreshToken) {
         this.refreshToken = refreshToken;
     }

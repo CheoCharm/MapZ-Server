@@ -1,5 +1,6 @@
 package com.cheocharm.MapZ.diary.presentation.dto.response;
 
+import com.cheocharm.MapZ.diary.domain.repository.vo.DiaryDetailVO;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -18,5 +19,19 @@ public class DiaryDetailResponse {
     private Boolean isLike;
     private Long commentCount;
     private Boolean isWriter;
+
+    public static DiaryDetailResponse of(DiaryDetailVO diaryDetail) {
+        return new DiaryDetailResponse(diaryDetail.getTitle(),
+                diaryDetail.getContent(),
+                diaryDetail.getAddress(),
+                diaryDetail.getCreatedAt(),
+                diaryDetail.getUsername(),
+                diaryDetail.getUserImageURL(),
+                diaryDetail.getLikeCount(),
+                diaryDetail.isLike(),
+                diaryDetail.getCommentCount(),
+                diaryDetail.isWriter()
+        );
+    }
 
 }

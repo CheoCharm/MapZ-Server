@@ -34,4 +34,12 @@ public class DiaryImageEntity extends BaseEntity {
         this.diaryImageUrl = diaryImageUrl;
         this.imageOrder = imageOrder;
     }
+
+    public static DiaryImageEntity of(DiaryEntity diaryEntity, String imageURL, int imageOrder) {
+        return DiaryImageEntity.builder()
+                .diaryEntity(diaryEntity)
+                .diaryImageUrl(imageURL)
+                .imageOrder(imageOrder)
+                .build();
+    }
 }

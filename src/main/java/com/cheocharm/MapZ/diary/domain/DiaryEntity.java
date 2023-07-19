@@ -13,6 +13,7 @@ import lombok.NoArgsConstructor;
 import org.locationtech.jts.geom.Point;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -56,6 +57,15 @@ public class DiaryEntity extends BaseEntity {
         this.address = address;
         this.userEntity = userEntity;
         this.groupEntity = groupEntity;
+    }
+
+    public static DiaryEntity of(UserEntity userEntity, GroupEntity groupEntity, @NotNull String address, Point point) {
+        return DiaryEntity.builder()
+                .userEntity(userEntity)
+                .groupEntity(groupEntity)
+                .address(address)
+                .point(point)
+                .build();
     }
 
     public void write(String title, String content) {

@@ -1,9 +1,11 @@
 package com.cheocharm.MapZ.diary.presentation.dto.response;
 
+import com.cheocharm.MapZ.diary.domain.repository.vo.DiaryPreviewVO;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @AllArgsConstructor
 @Getter
@@ -19,4 +21,15 @@ public class DiaryPreviewDetailResponse {
         private Integer imageOrder;
     }
 
+    public static DiaryPreviewDetailResponse of(List<DiaryPreviewVO> diaryPreviewVOS) {
+        final List<DiaryPreviewDetailResponse.ImageInfo> list = diaryPreviewVOS.stream()
+                .map(diaryPreviewVO -> new DiaryPreviewDetailResponse.ImageInfo(
+                        diaryPreviewVO.getDiaryImageURL(),
+                        diaryPreviewVO.getImageOrder()
+                ))
+                .collect(Collectors.toUnmodifiableList());
+
+        final DiaryPreviewVO diaryPreviewVO = diaryPreviewVOS.get(0);
+        return new DiaryPreviewDetailResponse(list, diaryPreviewVO.getAddress(), diaryPreviewVO.isLike());
+    }
 }
