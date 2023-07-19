@@ -45,7 +45,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static com.cheocharm.MapZ.common.util.PagingUtils.applyCursorId;
 import static com.cheocharm.MapZ.common.util.PagingUtils.applyDescPageConfigBy;
@@ -85,22 +84,20 @@ public class UserService {
 
         if (findUser.isPresent()) {
             final UserEntity userEntity = findUser.get();
-            final TokenPairResponse tokenPair = jwtCreateUtils.createTokenPair(idToken.getEmail(), userSignUpDto.getUsername(), UserProvider.GOOGLE);
+            final TokenPairResponse tokenPair = jwtCreateUtils.createTokenPair(idToken.getEmail(),
+                    userSignUpDto.getUsername(), UserProvider.GOOGLE);
             userEntity.updateRefreshToken(tokenPair.getRefreshToken());
             return tokenPair;
         }
 
-        final TokenPairResponse tokenPair = jwtCreateUtils.createTokenPair(idToken.getEmail(), userSignUpDto.getUsername(), UserProvider.GOOGLE);
+        final TokenPairResponse tokenPair = jwtCreateUtils.createTokenPair(idToken.getEmail(),
+                userSignUpDto.getUsername(), UserProvider.GOOGLE);
 
         final UserEntity user = userRepository.save(
-                UserEntity.builder()
-                        .email(idToken.getEmail())
-                        .username(userSignUpDto.getUsername())
-                        .bio("자기소개를 입력해주세요")
-                        .refreshToken(tokenPair.getRefreshToken())
-                        .userProvider(UserProvider.GOOGLE)
-                        .build()
+                UserEntity.createUserNoPassword(idToken.getEmail(), userSignUpDto.getUsername(),
+                        tokenPair.getRefreshToken(), UserProvider.GOOGLE)
         );
+
         if (!multipartFile.isEmpty()) {
             user.updateUserImageUrl(s3Service.uploadUserImage(multipartFile, user.getUsername()));
         }
@@ -136,31 +133,25 @@ public class UserService {
     }
 
     @Transactional
-    public TokenPairResponse signUpMapZ(MapZSignUpRequest mapZSignUpRequest, MultipartFile multipartFile) {
+    public TokenPairResponse signUpMapZ(MapZSignUpRequest request, MultipartFile multipartFile) {
         //닉네임 중복 확인
-        userRepository.findByUsername(mapZSignUpRequest.getUsername()).ifPresent(userEntity -> {
+        userRepository.findByUsername(request.getUsername()).ifPresent(userEntity -> {
             throw new DuplicatedUsernameException();
         });
 
-        TokenPairResponse tokenPair = jwtCreateUtils.createTokenPair(mapZSignUpRequest.getEmail(), mapZSignUpRequest.getUsername(), UserProvider.MAPZ);
-        UserEntity userEntity = UserEntity.builder()
-                .email(mapZSignUpRequest.getEmail())
-                .username(mapZSignUpRequest.getUsername())
-                .password(passwordEncoder.encode(mapZSignUpRequest.getPassword()))
-                .bio("자기소개를 입력해주세요")
-                .refreshToken(tokenPair.getRefreshToken())
-                .userProvider(UserProvider.MAPZ)
-                .build();
+        TokenPairResponse tokenPair = jwtCreateUtils.createTokenPair(request.getEmail(), request.getUsername(), UserProvider.MAPZ);
+        UserEntity userEntity = UserEntity.createUser(request.getEmail(), request.getUsername(),
+                passwordEncoder.encode(request.getPassword()), tokenPair.getRefreshToken(), UserProvider.MAPZ);
 
         if (!multipartFile.isEmpty()) {
-            userEntity.updateUserImageUrl(s3Service.uploadUserImage(multipartFile, mapZSignUpRequest.getUsername()));
+            userEntity.updateUserImageUrl(s3Service.uploadUserImage(multipartFile, request.getUsername()));
         }
 
         UserEntity user = userRepository.save(userEntity);
         agreementRepository.save(
                 AgreementEntity.builder()
                     .userEntity(user)
-                    .pushAgreement(mapZSignUpRequest.getPushAgreement())
+                    .pushAgreement(request.getPushAgreement())
                     .build()
         );
 
@@ -180,7 +171,6 @@ public class UserService {
         final TokenPairResponse tokenPair = jwtCreateUtils.createTokenPair(userEntity.getEmail(), userEntity.getUsername(), UserProvider.MAPZ);
         userEntity.updateRefreshToken(tokenPair.getRefreshToken());
         return tokenPair;
-
     }
 
     public String authEmail(String email) {
@@ -235,31 +225,16 @@ public class UserService {
                 applyDescPageConfigBy(page, USER_SIZE, FIELD_CREATED_AT)
         );
 
-        final List<UserEntity> userEntityList = content.getContent();
+        final List<UserEntity> userEntities = content.getContent();
+        final List<UserGroupEntity> groupMembers = userGroupRepository.findBySearchNameAndGroupId(searchName, groupId);
 
-        final List<UserGroupEntity> groupMemberList = userGroupRepository.findBySearchNameAndGroupId(searchName, groupId);
-
-        final List<GetUserListResponse.UserList> userList = userEntityList.stream()
-                .map(userEntity ->
-                        GetUserListResponse.UserList.builder()
-                                .username(userEntity.getUsername())
-                                .userImageUrl(userEntity.getUserImageUrl())
-                                .userId(userEntity.getId())
-                                .member(isMember(userEntity, groupMemberList))
-                                .build()
-                )
-                .collect(Collectors.toList());
-
-        return new GetUserListResponse(content.hasNext(), userList);
+        return GetUserListResponse.of(userEntities, groupMembers, content.hasNext());
     }
 
     public MyPageInfoResponse getMyPageInfo() {
         final UserEntity userEntity = UserThreadLocal.get();
 
-        return MyPageInfoResponse.builder()
-                .username(userEntity.getUsername())
-                .userImageUrl(userEntity.getUserImageUrl())
-                .build();
+        return MyPageInfoResponse.from(userEntity);
     }
 
     private GoogleIdTokenResponse checkAudAndGetTokenDto(ResponseEntity<String> response) {
@@ -275,12 +250,4 @@ public class UserService {
         }
     }
 
-    private Boolean isMember(UserEntity userEntity, List<UserGroupEntity> groupMemberList) {
-        for (UserGroupEntity userGroupEntity : groupMemberList) {
-            if (userEntity.equals(userGroupEntity.getUserEntity())) {
-                return true;
-            }
-        }
-        return false;
-    }
 }

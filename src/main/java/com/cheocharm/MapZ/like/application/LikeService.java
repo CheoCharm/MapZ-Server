@@ -17,9 +17,7 @@ import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static com.cheocharm.MapZ.common.util.PagingUtils.FIELD_CREATED_AT;
 import static com.cheocharm.MapZ.common.util.PagingUtils.MY_LIKE_DIARY_SIZE;
@@ -44,28 +42,14 @@ public class LikeService {
                     throw new AlreadyLikedDiaryException();
                 });
 
-        DiaryLikeEntity diaryLikeEntity = DiaryLikeEntity.builder()
-                .diaryEntity(diaryEntity)
-                .userEntity(userEntity)
-                .build();
-
+        DiaryLikeEntity diaryLikeEntity = DiaryLikeEntity.of(diaryEntity, userEntity);
         diaryLikeRepository.save(diaryLikeEntity);
     }
 
     @Transactional(readOnly = true)
     public List<DiaryLikePeopleResponse> getDiaryLikePeople(Long diaryId) {
         List<DiaryLikeEntity> diaryLikeEntities = diaryLikeRepository.findByDiaryId(diaryId);
-
-        return diaryLikeEntities.stream()
-                .map(diaryLikeEntity -> {
-                            UserEntity userEntity = diaryLikeEntity.getUserEntity();
-                            return DiaryLikePeopleResponse.builder()
-                                    .userImageUrl(userEntity.getUserImageUrl())
-                                    .username(userEntity.getUsername())
-                                    .build();
-                        }
-                )
-                .collect(Collectors.toList());
+        return DiaryLikePeopleResponse.of(diaryLikeEntities);
     }
 
     @Transactional(readOnly = true)
@@ -80,19 +64,6 @@ public class LikeService {
 
         List<MyLikeDiaryVO> myLikeDiaryVOS = content.getContent();
 
-        List<MyLikeDiaryResponse.Diary> diaries = myLikeDiaryVOS.stream()
-                .map(myLikeDiary ->
-                        MyLikeDiaryResponse.Diary.builder()
-                                .title(myLikeDiary.getTitle())
-                                .createdAt(myLikeDiary.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy.MM.dd")))
-                                .diaryId(myLikeDiary.getDiaryId())
-                                .groupId(myLikeDiary.getGroupId())
-                                .commentCount(myLikeDiary.getCommentCount())
-                                //일기 대표 이미지 빌더에 추가
-                                .build()
-                )
-                .collect(Collectors.toList());
-
-        return new MyLikeDiaryResponse(content.hasNext(), diaries);
+        return MyLikeDiaryResponse.of(content.hasNext(), myLikeDiaryVOS);
     }
 }
