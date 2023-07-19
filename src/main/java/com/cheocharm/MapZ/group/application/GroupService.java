@@ -50,12 +50,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.UUID;
-import java.util.stream.Collectors;
 
 import static com.cheocharm.MapZ.common.util.PagingUtils.MY_INVITATION_SIZE;
 import static com.cheocharm.MapZ.common.util.PagingUtils.applyCursorId;
@@ -78,20 +75,15 @@ public class GroupService {
     private final S3Utils s3Utils;
 
     @Transactional
-    public void createGroup(CreateGroupRequest createGroupRequest, MultipartFile multipartFile) {
+    public void createGroup(CreateGroupRequest request, MultipartFile multipartFile) {
         final UserEntity userEntity = UserThreadLocal.get();
 
-        String groupName = createGroupRequest.getGroupName().trim();
+        String groupName = request.getGroupName().trim();
         if (groupRepository.existsByGroupName(groupName)) {
             throw new DuplicatedGroupException();
         }
 
-        final GroupEntity groupEntity = GroupEntity.builder()
-                .groupName(groupName)
-                .bio(createGroupRequest.getBio())
-                .groupUUID(UUID.randomUUID().toString())
-                .openStatus(createGroupRequest.getChangeStatus())
-                .build();
+        final GroupEntity groupEntity = GroupEntity.of(groupName, request.getBio(), request.getChangeStatus());
 
         if (!multipartFile.isEmpty()) {
             groupEntity.updateGroupImageUrl(s3Utils.uploadGroupImage(multipartFile, groupEntity.getGroupUUID()));
@@ -100,12 +92,7 @@ public class GroupService {
         groupRepository.save(groupEntity);
 
         userGroupRepository.save(
-                UserGroupEntity.builder()
-                        .userEntity(userEntity)
-                        .groupEntity(groupEntity)
-                        .invitationStatus(InvitationStatus.ACCEPT)
-                        .userRole(UserRole.CHIEF)
-                        .build()
+                UserGroupEntity.of(groupEntity, userEntity, InvitationStatus.ACCEPT, UserRole.CHIEF)
         );
     }
 
@@ -117,38 +104,18 @@ public class GroupService {
                 applyDescPageConfigBy(page, GROUP_SIZE, FIELD_CREATED_AT)
         );
 
-        List<GroupEntity> groupEntityList = content.getContent();
+        List<GroupEntity> groupEntities = content.getContent();
 
-        List<CountUserGroupVO> countUserGroupVOS = userGroupRepository.countByGroupEntity(groupEntityList);
-        List<ChiefUserImageVO> chiefUserImageVOS = userGroupRepository.findChiefUserImage(groupEntityList);
+        List<CountUserGroupVO> countUserGroupVOS = userGroupRepository.countByGroupEntity(groupEntities);
+        List<ChiefUserImageVO> chiefUserImageVOS = userGroupRepository.findChiefUserImage(groupEntities);
 
-        List<PagingGroupListResponse.GroupList> groupList = groupEntityList.stream()
-                .map(groupEntity ->
-                        PagingGroupListResponse.GroupList.builder()
-                                .groupName(groupEntity.getGroupName())
-                                .groupImageUrl(groupEntity.getGroupImageUrl())
-                                .bio(groupEntity.getBio())
-                                .createdAt(groupEntity.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy.MM.dd")))
-                                .chiefUserImage(getChiefUserImage(groupEntity, chiefUserImageVOS))
-                                .count(getCount(groupEntity, countUserGroupVOS))
-                                .groupId(groupEntity.getId())
-                                .build()
-                )
-                .collect(Collectors.toList());
-
-        return new PagingGroupListResponse(content.hasNext(), groupList);
+        return PagingGroupListResponse.of(groupEntities, content.hasNext(), countUserGroupVOS, chiefUserImageVOS);
     }
 
     @Transactional
     public void updateGroup(UpdateGroupRequest updateGroupRequest, MultipartFile multipartFile) {
         final UserEntity userEntity = UserThreadLocal.get();
-
-        final UserGroupEntity userGroupEntity = userGroupRepository.findByGroupIdAndUserId(updateGroupRequest.getGroupId(), userEntity.getId())
-                .orElseThrow(NotFoundUserGroupException::new);
-
-        if (Objects.equals(userGroupEntity.getUserRole(), UserRole.MEMBER)) {
-            throw new NoPermissionUserException();
-        }
+        final UserGroupEntity userGroupEntity = validateUserRoleIsChief(updateGroupRequest.getGroupId(), userEntity.getId());
 
         GroupEntity groupEntity = userGroupEntity.getGroupEntity();
         if (groupEntity.getGroupName().equals(updateGroupRequest.getGroupName())) {
@@ -192,8 +159,7 @@ public class GroupService {
     @Transactional
     public void updateInvitationStatus(UpdateInvitationStatusRequest request) {
         final UserEntity userEntity = UserThreadLocal.get();
-
-        validateUserRole(request.getGroupId(), userEntity.getId());
+        validateUserRoleIsChief(request.getGroupId(), userEntity.getId());
 
         final UserGroupEntity targetUserGroup = userGroupRepository.findByGroupIdAndUserId(request.getGroupId(), request.getUserId())
                 .orElseThrow(NotFoundUserGroupException::new);
@@ -207,15 +173,6 @@ public class GroupService {
             return;
         }
         userGroupRepository.deleteById(targetUserGroup.getId());
-    }
-
-    private void validateUserRole(Long groupId, Long userId) {
-        final UserGroupEntity userGroupEntity = userGroupRepository.findByGroupIdAndUserId(groupId, userId)
-                .orElseThrow(NotFoundUserException::new);
-
-        if (Objects.equals(userGroupEntity.getUserRole(), UserRole.MEMBER)) {
-            throw new NoPermissionUserException();
-        }
     }
 
     @Transactional
@@ -234,13 +191,7 @@ public class GroupService {
     @Transactional
     public void updateChief(ChangeChiefRequest changeChiefRequest) {
         final UserEntity userEntity = UserThreadLocal.get();
-
-        final UserGroupEntity userGroupEntity = userGroupRepository.findByGroupIdAndUserId(changeChiefRequest.getGroupId(), userEntity.getId())
-                .orElseThrow(NotFoundUserGroupException::new);
-
-        if (Objects.equals(userGroupEntity.getUserRole(), UserRole.MEMBER)) {
-            throw new NoPermissionUserException();
-        }
+        final UserGroupEntity userGroupEntity = validateUserRoleIsChief(changeChiefRequest.getGroupId(), userEntity.getId());
 
         final UserGroupEntity targetUserGroupEntity = userGroupRepository.findByGroupIdAndUserId(changeChiefRequest.getGroupId(), changeChiefRequest.getUserId())
                 .orElseThrow(NotFoundUserException::new);
@@ -263,12 +214,7 @@ public class GroupService {
         List<UserEntity> userEntityList = userRepository.getUserEntityListByUserIdList(inviteGroupRequest.getUserIdList());
         for (UserEntity user : userEntityList) {
             userGroupRepository.save(
-                    UserGroupEntity.builder()
-                            .userEntity(user)
-                            .groupEntity(userGroupEntity.getGroupEntity())
-                            .invitationStatus(InvitationStatus.PENDING)
-                            .userRole(UserRole.MEMBER)
-                            .build()
+                    UserGroupEntity.of(userGroupEntity.getGroupEntity(), user, InvitationStatus.PENDING, UserRole.MEMBER)
             );
         }
     }
@@ -282,17 +228,7 @@ public class GroupService {
         List<CountUserGroupVO> countUserGroupVOS = userGroupRepository.countByGroupEntity(groupEntities);
         List<ChiefUserImageVO> chiefUserImageVOS = userGroupRepository.findChiefUserImage(groupEntities);
 
-        return groupEntities.stream()
-                .map(groupEntity ->
-                        GetMyGroupResponse.builder()
-                                .groupName(groupEntity.getGroupName())
-                                .groupImageUrl(groupEntity.getGroupImageUrl())
-                                .groupId(groupEntity.getId())
-                                .count(getCount(groupEntity,countUserGroupVOS))
-                                .chiefUserImage(getChiefUserImage(groupEntity, chiefUserImageVOS))
-                                .build()
-                )
-                .collect(Collectors.toList());
+        return GetMyGroupResponse.of(groupEntities, countUserGroupVOS, chiefUserImageVOS);
     }
 
     @Transactional(readOnly = true)
@@ -304,19 +240,7 @@ public class GroupService {
             throw new NoPermissionUserException();
         }
 
-        return userGroupEntities.stream()
-                .map(userGroupEntity ->
-                        {
-                            UserEntity user = userGroupEntity.getUserEntity();
-                            return GroupMemberResponse.builder()
-                                    .username(user.getUsername())
-                                    .userImageUrl(user.getUserImageUrl())
-                                    .userId(user.getId())
-                                    .invitationStatus(userGroupEntity.getInvitationStatus())
-                                    .build();
-                        }
-                )
-                .collect(Collectors.toList());
+        return GroupMemberResponse.of(userGroupEntities);
     }
 
     @Transactional
@@ -327,19 +251,13 @@ public class GroupService {
         if (userEntity.getId().equals(kickUserRequest.getUserId())) {
             throw new SelfKickException();
         }
-        UserGroupEntity userGroupEntity = userGroupRepository.findByGroupIdAndUserId(kickUserRequest.getGroupId(), userEntity.getId())
-                .orElseThrow(NotFoundUserGroupException::new);
-
-        if (Objects.equals(userGroupEntity.getUserRole(), UserRole.MEMBER)) {
-            throw new NoPermissionUserException();
-        }
+        validateUserRoleIsChief(kickUserRequest.getGroupId(), userEntity.getId());
 
         UserGroupEntity targetUserGroupEntity = userGroupRepository.findByGroupIdAndUserId(kickUserRequest.getGroupId(), kickUserRequest.getUserId())
                 .orElseThrow(NotFoundUserGroupException::new);
 
         Long targetUserId = targetUserGroupEntity.getUserEntity().getId();
         deleteGroupActivityOfUser(targetUserId, targetUserGroupEntity.getId());
-
     }
 
     @Transactional
@@ -378,15 +296,17 @@ public class GroupService {
         );
         final List<MyInvitationVO> myInvitations = invitationSlice.getContent();
 
-        final List<MyInvitationResponse.Invitation> list = myInvitations.stream()
-                .map(myInvitationVO -> new MyInvitationResponse.Invitation(
-                        myInvitationVO.getDiaryId(),
-                        myInvitationVO.getGroupName(),
-                        myInvitationVO.getCreatedAt()
-                ))
-                .collect(Collectors.toList());
+        return MyInvitationResponse.of(myInvitations, invitationSlice.hasNext());
+    }
 
-        return new MyInvitationResponse(invitationSlice.hasNext(), list);
+    private UserGroupEntity validateUserRoleIsChief(Long groupId, Long userId) {
+        final UserGroupEntity userGroupEntity = userGroupRepository.findByGroupIdAndUserId(groupId, userId)
+                .orElseThrow(NotFoundUserException::new);
+
+        if (Objects.equals(userGroupEntity.getUserRole(), UserRole.MEMBER)) {
+            throw new NoPermissionUserException();
+        }
+        return userGroupEntity;
     }
 
     private void deleteGroupActivityOfUser(Long deleteUserId, Long deleteUserGroupEntityId) {
@@ -406,25 +326,5 @@ public class GroupService {
             list.add(userGroupEntity.getUserEntity().getId());
         }
         return list.contains(userId);
-    }
-
-    private Long getCount(GroupEntity groupEntity, List<CountUserGroupVO> countUserGroupVOS) {
-        Long count = 1L;
-        for (CountUserGroupVO countUserGroupVO : countUserGroupVOS) {
-            if (groupEntity.getId().equals(countUserGroupVO.getId())) {
-                count = countUserGroupVO.getCnt();
-                break;
-            }
-        }
-        return count - 1;
-    }
-
-    private String getChiefUserImage(GroupEntity groupEntity, List<ChiefUserImageVO> chiefUserImageVOS) {
-        for (ChiefUserImageVO chiefUserImageVO : chiefUserImageVOS) {
-            if (groupEntity.getId().equals(chiefUserImageVO.getId())) {
-                return chiefUserImageVO.getChiefUserImage();
-            }
-        }
-        return null;
     }
 }
