@@ -28,12 +28,12 @@ jobs:
         env: 
           jwt.secret: ${{ secrets.JWT_KEY }}
           springdoc.swagger-ui.path: ${{ secrets.DOCS_PATH }}
-          cloud.aws.s3.bucket: ${{ S3_BUCKET }}
-          cloud.aws.credentials.access-key: ${{ S3_ACCESS_KEY }}
-          cloud.aws.credentials.secret-key: ${{ S3_SECRET_KEY }}
-          spring.mail.username: ${{ MAIL_USERNAME }}
-          spring.mail.password: ${{ MAIL_PASSWORD }}
-          google.client-id: ${{ GOOGLE_CLIENT_ID }}
+          cloud.aws.s3.bucket: ${{ secrets.S3_BUCKET }}
+          cloud.aws.credentials.access-key: ${{ secrets.S3_ACCESS_KEY }}
+          cloud.aws.credentials.secret-key: ${{ secrets.S3_SECRET_KEY }}
+          spring.mail.username: ${{ secrets.MAIL_USERNAME }}
+          spring.mail.password: ${{ secrets.MAIL_PASSWORD }}
+          google.client-id: ${{ secrets.GOOGLE_CLIENT_ID }}
           
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
