@@ -1,13 +1,10 @@
 package com.cheocharm.MapZ.common.util;
 
-import org.springframework.stereotype.Component;
-
 import java.util.Random;
 
-@Component
 public class RandomUtils {
 
-    public String makeRandomNumber() {
+    public static String makeRandomNumber() {
         Random random = new Random();
         StringBuilder sb = new StringBuilder();
 
