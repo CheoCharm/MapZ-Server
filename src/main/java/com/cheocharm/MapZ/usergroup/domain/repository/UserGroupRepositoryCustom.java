@@ -1,8 +1,8 @@
 package com.cheocharm.MapZ.usergroup.domain.repository;
 
-import com.cheocharm.MapZ.group.domain.GroupEntity;
-import com.cheocharm.MapZ.user.domain.UserEntity;
-import com.cheocharm.MapZ.usergroup.domain.UserGroupEntity;
+import com.cheocharm.MapZ.group.domain.Group;
+import com.cheocharm.MapZ.user.domain.User;
+import com.cheocharm.MapZ.usergroup.domain.UserGroup;
 import com.cheocharm.MapZ.usergroup.domain.repository.vo.ChiefUserImageVO;
 import com.cheocharm.MapZ.usergroup.domain.repository.vo.CountUserGroupVO;
 import com.cheocharm.MapZ.usergroup.domain.repository.vo.MyInvitationVO;
@@ -14,17 +14,17 @@ import java.util.Optional;
 
 public interface UserGroupRepositoryCustom {
 
-    List<GroupEntity> getGroupEntityList(UserEntity userEntity);
+    List<Group> getGroups(User user);
 
-    List<ChiefUserImageVO> findChiefUserImage(List<GroupEntity> groupEntityList);
+    List<ChiefUserImageVO> findChiefUserImage(List<Group> groupList);
 
-    List<UserGroupEntity> findBySearchNameAndGroupId(String searchName, Long groupId);
+    List<UserGroup> findBySearchNameAndGroupId(String searchName, Long groupId);
 
-    Optional<UserGroupEntity> findByGroupIdAndUserId(Long groupId, Long userId);
+    Optional<UserGroup> findByGroupIdAndUserId(Long groupId, Long userId);
 
-    List<UserGroupEntity> findByGroupId(Long groupId);
+    List<UserGroup> findByGroupId(Long groupId);
 
-    List<CountUserGroupVO> countByGroupEntity(List<GroupEntity> groupEntityList);
+    List<CountUserGroupVO> countByGroup(List<Group> groupList);
 
     Long countByGroupId(Long groupId);
 

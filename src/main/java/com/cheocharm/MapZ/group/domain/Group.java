@@ -16,7 +16,7 @@ import java.util.UUID;
 @Table(name = "DiaryGroup")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
-public class GroupEntity extends BaseEntity {
+public class Group extends BaseEntity {
 
     @Column(name = "group_name", unique = true)
     private String groupName;
@@ -31,7 +31,7 @@ public class GroupEntity extends BaseEntity {
     private boolean openStatus;
 
     @Builder
-    public GroupEntity(String groupName, String bio, String groupImageUrl, String groupUUID, boolean openStatus) {
+    public Group(String groupName, String bio, String groupImageUrl, String groupUUID, boolean openStatus) {
         this.groupName = groupName;
         this.bio = bio;
         this.groupImageUrl = groupImageUrl;
@@ -39,8 +39,8 @@ public class GroupEntity extends BaseEntity {
         this.openStatus = openStatus;
     }
 
-    public static GroupEntity of(String groupName, String bio, boolean openStatus) {
-        return GroupEntity.builder()
+    public static Group of(String groupName, String bio, boolean openStatus) {
+        return Group.builder()
                 .groupName(groupName)
                 .bio(bio)
                 .groupUUID(UUID.randomUUID().toString())

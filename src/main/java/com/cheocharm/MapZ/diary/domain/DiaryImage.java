@@ -17,11 +17,11 @@ import javax.persistence.Table;
 @Table(name = "Diary_Image")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
-public class DiaryImageEntity extends BaseEntity {
+public class DiaryImage extends BaseEntity {
 
     @JoinColumn(name = "diary_id")
     @ManyToOne(fetch = FetchType.LAZY)
-    private DiaryEntity diaryEntity;
+    private Diary diary;
 
     @Column(name = "diary_image_url")
     private String diaryImageUrl;
@@ -29,15 +29,15 @@ public class DiaryImageEntity extends BaseEntity {
     private Integer imageOrder;
 
     @Builder
-    public DiaryImageEntity(DiaryEntity diaryEntity, String diaryImageUrl, Integer imageOrder) {
-        this.diaryEntity = diaryEntity;
+    public DiaryImage(Diary diary, String diaryImageUrl, Integer imageOrder) {
+        this.diary = diary;
         this.diaryImageUrl = diaryImageUrl;
         this.imageOrder = imageOrder;
     }
 
-    public static DiaryImageEntity of(DiaryEntity diaryEntity, String imageURL, int imageOrder) {
-        return DiaryImageEntity.builder()
-                .diaryEntity(diaryEntity)
+    public static DiaryImage of(Diary diary, String imageURL, int imageOrder) {
+        return DiaryImage.builder()
+                .diary(diary)
                 .diaryImageUrl(imageURL)
                 .imageOrder(imageOrder)
                 .build();

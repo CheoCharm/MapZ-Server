@@ -1,6 +1,6 @@
 package com.cheocharm.MapZ.common.jwt;
 
-import com.cheocharm.MapZ.user.domain.UserEntity;
+import com.cheocharm.MapZ.user.domain.User;
 import com.cheocharm.MapZ.user.domain.UserProvider;
 import com.cheocharm.MapZ.user.presentation.dto.response.TokenPairResponse;
 import io.jsonwebtoken.Jwts;
@@ -40,12 +40,12 @@ public class JwtCreateUtils {
 
     @Transactional
     public TokenPairResponse createAccessToken(String refreshToken) {
-        final UserEntity userEntity = jwtCommonUtils.findUserByToken(refreshToken);
-        if(!userEntity.getRefreshToken().equals(refreshToken)){
+        final User user = jwtCommonUtils.findUserByToken(refreshToken);
+        if(!user.getRefreshToken().equals(refreshToken)){
             throw new RuntimeException("토큰 정보 불일치");
         }
-        final TokenPairResponse tokenPair = createTokenPair(userEntity.getEmail(), userEntity.getUsername(), userEntity.getUserProvider());
-        userEntity.updateRefreshToken(tokenPair.getRefreshToken());
+        final TokenPairResponse tokenPair = createTokenPair(user.getEmail(), user.getUsername(), user.getUserProvider());
+        user.updateRefreshToken(tokenPair.getRefreshToken());
         return tokenPair;
     }
 

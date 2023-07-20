@@ -12,7 +12,7 @@ import javax.persistence.*;
 @Table(name = "User")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
-public class UserEntity extends BaseEntity {
+public class User extends BaseEntity {
 
     @Column(unique = true)
     private String email;
@@ -35,7 +35,7 @@ public class UserEntity extends BaseEntity {
     private UserProvider userProvider;
 
     @Builder
-    public UserEntity(String email, String username, String password, String userImageUrl, String bio, String fcmToken, String refreshToken, UserProvider userProvider) {
+    public User(String email, String username, String password, String userImageUrl, String bio, String fcmToken, String refreshToken, UserProvider userProvider) {
         this.email = email;
         this.username = username;
         this.password = password;
@@ -46,9 +46,9 @@ public class UserEntity extends BaseEntity {
         this.userProvider = userProvider;
     }
 
-    public static UserEntity createUserNoPassword(String email, String username,
-                                                  String bio, String refreshToken, UserProvider userProvider) {
-        return UserEntity.builder()
+    public static User createUserNoPassword(String email, String username,
+                                            String bio, String refreshToken, UserProvider userProvider) {
+        return User.builder()
                 .email(email)
                 .username(username)
                 .bio(bio)
@@ -57,9 +57,9 @@ public class UserEntity extends BaseEntity {
                 .build();
     }
 
-    public static UserEntity createUser(String email, String username, String password,
-                                        String bio, String refreshToken, UserProvider userProvider) {
-        return UserEntity.builder()
+    public static User createUser(String email, String username, String password,
+                                  String bio, String refreshToken, UserProvider userProvider) {
+        return User.builder()
                 .email(email)
                 .username(username)
                 .password(password)

@@ -1,6 +1,6 @@
 package com.cheocharm.MapZ.comment.application;
 
-import com.cheocharm.MapZ.comment.domain.CommentEntity;
+import com.cheocharm.MapZ.comment.domain.Comment;
 import com.cheocharm.MapZ.comment.domain.repository.vo.CommentVO;
 import com.cheocharm.MapZ.comment.presentation.dto.request.CreateCommentRequest;
 import com.cheocharm.MapZ.comment.presentation.dto.request.DeleteCommentRequest;
@@ -8,9 +8,9 @@ import com.cheocharm.MapZ.comment.presentation.dto.response.GetCommentResponse;
 import com.cheocharm.MapZ.comment.domain.repository.CommentRepository;
 import com.cheocharm.MapZ.common.exception.diary.NotFoundDiaryException;
 import com.cheocharm.MapZ.common.interceptor.UserThreadLocal;
-import com.cheocharm.MapZ.diary.domain.DiaryEntity;
+import com.cheocharm.MapZ.diary.domain.Diary;
 import com.cheocharm.MapZ.diary.domain.repository.DiaryRepository;
-import com.cheocharm.MapZ.user.domain.UserEntity;
+import com.cheocharm.MapZ.user.domain.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
@@ -34,14 +34,14 @@ public class CommentService {
 
     @Transactional
     public void createComment(CreateCommentRequest createCommentDto) {
-        final UserEntity userEntity = UserThreadLocal.get();
-        DiaryEntity diaryEntity = diaryRepository.findById(createCommentDto.getDiaryId()).orElseThrow(() -> new NotFoundDiaryException());
+        final User user = UserThreadLocal.get();
+        Diary diary = diaryRepository.findById(createCommentDto.getDiaryId()).orElseThrow(() -> new NotFoundDiaryException());
         commentRepository.save(
-                CommentEntity.builder()
+                Comment.builder()
                         .content(createCommentDto.getContent())
                         .parentId(createCommentDto.getParentId())
-                        .userEntity(userEntity)
-                        .diaryEntity(diaryEntity)
+                        .user(user)
+                        .diary(diary)
                         .build()
         );
     }

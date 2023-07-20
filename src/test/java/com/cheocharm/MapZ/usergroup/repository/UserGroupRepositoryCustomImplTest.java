@@ -1,13 +1,13 @@
 package com.cheocharm.MapZ.usergroup.repository;
 
 import com.cheocharm.MapZ.RepositoryTest;
-import com.cheocharm.MapZ.group.domain.GroupEntity;
+import com.cheocharm.MapZ.group.domain.Group;
 import com.cheocharm.MapZ.group.domain.repository.GroupRepository;
-import com.cheocharm.MapZ.user.domain.UserEntity;
+import com.cheocharm.MapZ.user.domain.User;
 import com.cheocharm.MapZ.user.domain.UserProvider;
 import com.cheocharm.MapZ.user.domain.repository.UserRepository;
 import com.cheocharm.MapZ.usergroup.domain.InvitationStatus;
-import com.cheocharm.MapZ.usergroup.domain.UserGroupEntity;
+import com.cheocharm.MapZ.usergroup.domain.UserGroup;
 import com.cheocharm.MapZ.usergroup.domain.UserRole;
 import com.cheocharm.MapZ.usergroup.domain.repository.UserGroupRepository;
 import com.cheocharm.MapZ.usergroup.domain.repository.vo.ChiefUserImageVO;
@@ -33,12 +33,12 @@ class UserGroupRepositoryCustomImplTest {
     @Autowired
     private GroupRepository groupRepository;
 
-    private List<GroupEntity> groupEntityList;
-    private UserEntity userEntity;
+    private List<Group> groupList;
+    private User user;
 
     @BeforeEach
     void beforeEach() {
-        userEntity = UserEntity.builder()
+        user = User.builder()
                 .email("test10@naver.com")
                 .username("최강")
                 .password("password")
@@ -47,29 +47,29 @@ class UserGroupRepositoryCustomImplTest {
                 .fcmToken("1237")
                 .userProvider(UserProvider.MAPZ)
                 .build();
-        userRepository.save(userEntity);
+        userRepository.save(user);
 
-        groupEntityList = new ArrayList<>();
+        groupList = new ArrayList<>();
         for (int i = 0; i < 5; i++) {
-            GroupEntity groupEntity = GroupEntity.builder()
+            Group group = Group.builder()
                     .groupName(String.valueOf(i).concat("테스트"))
                     .bio("bio")
                     .groupImageUrl("imageUrl")
                     .openStatus(true)
                     .groupUUID(String.valueOf(i))
                     .build();
-            groupEntityList.add(groupEntity);
+            groupList.add(group);
 
             userGroupRepository.save(
-                    UserGroupEntity.builder()
-                            .groupEntity(groupEntity)
-                            .userEntity(userEntity)
+                    UserGroup.builder()
+                            .group(group)
+                            .user(user)
                             .userRole(UserRole.CHIEF)
                             .invitationStatus(InvitationStatus.ACCEPT)
                             .build()
             );
         }
-        groupRepository.saveAll(groupEntityList);
+        groupRepository.saveAll(groupList);
     }
 
     @DisplayName("UserEntity 로 내가 속한 그룹 조회")
@@ -77,7 +77,7 @@ class UserGroupRepositoryCustomImplTest {
     void getGroupEntityList() {
 
         //given
-        UserEntity anotherUser = UserEntity.builder()
+        User anotherUser = User.builder()
                 .email("mapz10@naver.com")
                 .username("최강맵지")
                 .password("password")
@@ -89,11 +89,11 @@ class UserGroupRepositoryCustomImplTest {
         userRepository.save(anotherUser);
 
         //when
-        List<GroupEntity> list = userGroupRepository.getGroupEntityList(userEntity);
-        List<GroupEntity> groupListOfAnotherUser = userGroupRepository.getGroupEntityList(anotherUser);
+        List<Group> list = userGroupRepository.getGroups(user);
+        List<Group> groupListOfAnotherUser = userGroupRepository.getGroups(anotherUser);
 
         //then
-        assertThat(list.size()).isEqualTo(groupEntityList.size());
+        assertThat(list.size()).isEqualTo(groupList.size());
         assertThat(groupListOfAnotherUser.size()).isEqualTo(0);
     }
 
@@ -102,10 +102,10 @@ class UserGroupRepositoryCustomImplTest {
     void findChiefUserImage() {
 
         //given, when
-        List<ChiefUserImageVO> chiefUserImageList = userGroupRepository.findChiefUserImage(groupEntityList);
+        List<ChiefUserImageVO> chiefUserImageList = userGroupRepository.findChiefUserImage(groupList);
 
         //then
-        assertThat(chiefUserImageList.size()).isEqualTo(groupEntityList.size());
+        assertThat(chiefUserImageList.size()).isEqualTo(groupList.size());
 
     }
 
@@ -115,13 +115,13 @@ class UserGroupRepositoryCustomImplTest {
 
         //given
         Random rand = new Random();
-        long groupId = groupEntityList.get(rand.nextInt(groupEntityList.size() - 1)).getId();
-        GroupEntity groupEntity = groupRepository.findById(groupId)
+        long groupId = groupList.get(rand.nextInt(groupList.size() - 1)).getId();
+        Group group = groupRepository.findById(groupId)
                 .orElseThrow(NoSuchElementException::new);
 
-        ArrayList<UserEntity> list = new ArrayList<>();
+        ArrayList<User> list = new ArrayList<>();
         for (int i = 0; i < 5; i++) {
-            list.add(UserEntity.builder()
+            list.add(User.builder()
                     .email(String.valueOf(i).concat("test10@naver.com"))
                     .username(String.valueOf(i).concat("테스트"))
                     .password("password")
@@ -135,9 +135,9 @@ class UserGroupRepositoryCustomImplTest {
         userRepository.saveAll(list);
         for (int i = 0; i < 5; i++) {
             userGroupRepository.save(
-                    UserGroupEntity.builder()
-                            .userEntity(list.get(i))
-                            .groupEntity(groupEntity)
+                    UserGroup.builder()
+                            .user(list.get(i))
+                            .group(group)
                             .userRole(UserRole.MEMBER)
                             .invitationStatus(InvitationStatus.ACCEPT)
                             .build()
@@ -145,11 +145,11 @@ class UserGroupRepositoryCustomImplTest {
         }
 
         //when
-        List<UserGroupEntity> userGroupEntityList = userGroupRepository
+        List<UserGroup> userGroups = userGroupRepository
                 .findBySearchNameAndGroupId("테스트", groupId);
 
         //then
-        assertThat(userGroupEntityList.size()).isEqualTo(list.size());
+        assertThat(userGroups.size()).isEqualTo(list.size());
 
     }
 
@@ -160,10 +160,10 @@ class UserGroupRepositoryCustomImplTest {
         //given
         Random rand = new Random();
         HashMap<Long, Long> map = new HashMap<>();
-        for (GroupEntity groupEntity : groupEntityList) {
-            ArrayList<UserEntity> userEntityList = new ArrayList<>();
+        for (Group group : groupList) {
+            ArrayList<User> userList = new ArrayList<>();
             for (int i = 0; i < rand.nextInt(5) + 1; i++) {
-                userEntityList.add(UserEntity.builder()
+                userList.add(User.builder()
                         .email(UUID.randomUUID().toString())
                         .username(UUID.randomUUID().toString())
                         .password("password")
@@ -174,22 +174,22 @@ class UserGroupRepositoryCustomImplTest {
                         .build()
                 );
             }
-            userRepository.saveAll(userEntityList);
+            userRepository.saveAll(userList);
 
-            for (UserEntity user : userEntityList) {
+            for (User user : userList) {
                 userGroupRepository.save(
-                        UserGroupEntity.builder()
-                                .userEntity(user)
-                                .groupEntity(groupEntity)
+                        UserGroup.builder()
+                                .user(user)
+                                .group(group)
                                 .invitationStatus(InvitationStatus.ACCEPT)
                                 .userRole(UserRole.MEMBER)
                                 .build()
                 );
             }
-            map.put(groupEntity.getId(), (long) userEntityList.size() + 1);
+            map.put(group.getId(), (long) userList.size() + 1);
         }
         //when
-        List<CountUserGroupVO> countUserGroupVOS = userGroupRepository.countByGroupEntity(groupEntityList);
+        List<CountUserGroupVO> countUserGroupVOS = userGroupRepository.countByGroup(groupList);
 
         //then
         for (CountUserGroupVO countUserGroupVO : countUserGroupVOS) {

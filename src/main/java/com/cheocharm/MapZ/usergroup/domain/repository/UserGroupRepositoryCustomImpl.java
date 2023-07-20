@@ -1,9 +1,9 @@
 package com.cheocharm.MapZ.usergroup.domain.repository;
 
-import com.cheocharm.MapZ.group.domain.GroupEntity;
-import com.cheocharm.MapZ.user.domain.UserEntity;
+import com.cheocharm.MapZ.group.domain.Group;
+import com.cheocharm.MapZ.user.domain.User;
 import com.cheocharm.MapZ.usergroup.domain.InvitationStatus;
-import com.cheocharm.MapZ.usergroup.domain.UserGroupEntity;
+import com.cheocharm.MapZ.usergroup.domain.UserGroup;
 import com.cheocharm.MapZ.usergroup.domain.UserRole;
 import com.cheocharm.MapZ.usergroup.domain.repository.vo.ChiefUserImageVO;
 import com.cheocharm.MapZ.usergroup.domain.repository.vo.CountUserGroupVO;
@@ -23,9 +23,9 @@ import java.util.List;
 import java.util.Optional;
 
 import static com.cheocharm.MapZ.common.util.QuerydslSupport.fetchSliceByCursor;
-import static com.cheocharm.MapZ.group.domain.QGroupEntity.groupEntity;
-import static com.cheocharm.MapZ.user.domain.QUserEntity.userEntity;
-import static com.cheocharm.MapZ.usergroup.domain.QUserGroupEntity.userGroupEntity;
+import static com.cheocharm.MapZ.group.domain.QGroup.group;
+import static com.cheocharm.MapZ.user.domain.QUser.user;
+import static com.cheocharm.MapZ.usergroup.domain.QUserGroup.userGroup;
 
 @RequiredArgsConstructor
 @Component
@@ -34,37 +34,37 @@ public class UserGroupRepositoryCustomImpl implements UserGroupRepositoryCustom 
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public List<GroupEntity> getGroupEntityList(UserEntity userEntity) {
+    public List<Group> getGroups(User user) {
         return queryFactory
-                .select(userGroupEntity.groupEntity)
-                .from(userGroupEntity)
-                .where(userEq(userEntity))
+                .select(userGroup.group)
+                .from(userGroup)
+                .where(userEq(user))
                 .fetch();
     }
 
     @Override
-    public List<ChiefUserImageVO> findChiefUserImage(List<GroupEntity> groupEntityList) {
+    public List<ChiefUserImageVO> findChiefUserImage(List<Group> groupList) {
         return queryFactory
                 .select(new QChiefUserImageVO(
-                        userGroupEntity.userEntity.userImageUrl, userGroupEntity.id
+                        userGroup.user.userImageUrl, userGroup.id
                 ))
-                .from(userGroupEntity)
-                .where(userGroupEntity.groupEntity.in(groupEntityList)
-                        .and(userGroupEntity.userRole.eq(UserRole.CHIEF)))
+                .from(userGroup)
+                .where(userGroup.group.in(groupList)
+                        .and(userGroup.userRole.eq(UserRole.CHIEF)))
                 .fetch();
     }
 
     @Override
-    public List<UserGroupEntity> findBySearchNameAndGroupId(String searchName, Long groupId) {
+    public List<UserGroup> findBySearchNameAndGroupId(String searchName, Long groupId) {
         return fetchJoinUserEntity()
-                .where(userGroupEntity.userEntity.username.contains(searchName)
+                .where(userGroup.user.username.contains(searchName)
                         .and(groupIdEq(groupId))
                 )
                 .fetch();
     }
 
     @Override
-    public Optional<UserGroupEntity> findByGroupIdAndUserId(Long groupId, Long userId) {
+    public Optional<UserGroup> findByGroupIdAndUserId(Long groupId, Long userId) {
         return Optional.ofNullable(
                 fetchJoinQuery()
                         .where(groupIdEq(groupId)
@@ -75,31 +75,31 @@ public class UserGroupRepositoryCustomImpl implements UserGroupRepositoryCustom 
     }
 
     @Override
-    public List<UserGroupEntity> findByGroupId(Long groupId) {
+    public List<UserGroup> findByGroupId(Long groupId) {
         return fetchJoinUserEntity()
                 .where(groupIdEq(groupId))
                 .fetch();
     }
 
     @Override
-    public List<CountUserGroupVO> countByGroupEntity(List<GroupEntity> groupEntityList) {
+    public List<CountUserGroupVO> countByGroup(List<Group> groupList) {
         return queryFactory
                 .select(new QCountUserGroupVO(
-                        userGroupEntity.count(), userGroupEntity.groupEntity.id
+                        userGroup.count(), userGroup.group.id
                 ))
-                .from(userGroupEntity)
-                .where(userGroupEntity.groupEntity.in(groupEntityList)
-                        .and(userGroupEntity.invitationStatus.eq(InvitationStatus.ACCEPT))
+                .from(userGroup)
+                .where(userGroup.group.in(groupList)
+                        .and(userGroup.invitationStatus.eq(InvitationStatus.ACCEPT))
                 )
-                .groupBy(userGroupEntity.groupEntity.id)
+                .groupBy(userGroup.group.id)
                 .fetch();
     }
 
     @Override
     public Long countByGroupId(Long groupId) {
         return queryFactory
-                .select(userGroupEntity.count())
-                .from(userGroupEntity)
+                .select(userGroup.count())
+                .from(userGroup)
                 .where(groupIdEq(groupId))
                 .fetchOne();
     }
@@ -108,63 +108,63 @@ public class UserGroupRepositoryCustomImpl implements UserGroupRepositoryCustom 
     public Slice<MyInvitationVO> getInvitationSlice(Long userId, Long cursorId, Pageable pageable) {
         JPAQuery<MyInvitationVO> query = queryFactory
                 .select(new QMyInvitationVO(
-                        groupEntity.id,
-                        groupEntity.groupName,
-                        groupEntity.createdAt
+                        group.id,
+                        group.groupName,
+                        group.createdAt
                 ))
-                .from(userGroupEntity)
-                .innerJoin(userGroupEntity.groupEntity, groupEntity)
-                .where(userGroupEntity.id.lt(cursorId)
+                .from(userGroup)
+                .innerJoin(userGroup.group, group)
+                .where(userGroup.id.lt(cursorId)
                         .and(userIdEq(userId))
-                        .and(userGroupEntity.invitationStatus.eq(InvitationStatus.SEND))
+                        .and(userGroup.invitationStatus.eq(InvitationStatus.SEND))
                 );
 
-        return fetchSliceByCursor(userGroupEntity.getType(), userGroupEntity.getMetadata(), query, pageable);
+        return fetchSliceByCursor(userGroup.getType(), userGroup.getMetadata(), query, pageable);
     }
 
     @Override
     public List<Long> getGroupIdByUserId(Long userId) {
         return queryFactory
-                .select(userGroupEntity.groupEntity.id)
-                .from(userGroupEntity)
+                .select(userGroup.group.id)
+                .from(userGroup)
                 .where(userIdEq(userId))
                 .fetch();
     }
 
-    private JPAQuery<UserGroupEntity> fetchJoinQuery() {
+    private JPAQuery<UserGroup> fetchJoinQuery() {
         return queryFactory
-                .selectFrom(userGroupEntity)
-                .innerJoin(userGroupEntity.groupEntity, groupEntity).fetchJoin()
-                .innerJoin(userGroupEntity.userEntity, userEntity).fetchJoin();
+                .selectFrom(userGroup)
+                .innerJoin(userGroup.group, group).fetchJoin()
+                .innerJoin(userGroup.user, user).fetchJoin();
     }
 
-    private JPAQuery<UserGroupEntity> fetchJoinUserEntity() {
+    private JPAQuery<UserGroup> fetchJoinUserEntity() {
         return queryFactory
-                .selectFrom(userGroupEntity)
-                .innerJoin(userGroupEntity.userEntity, userEntity)
+                .selectFrom(userGroup)
+                .innerJoin(userGroup.user, user)
                 .fetchJoin();
     }
 
-    private JPAQuery<UserGroupEntity> fetchJoinGroupEntity() {
+    private JPAQuery<UserGroup> fetchJoinGroupEntity() {
         return queryFactory
-                .selectFrom(userGroupEntity)
-                .innerJoin(userGroupEntity.groupEntity, groupEntity)
+                .selectFrom(userGroup)
+                .innerJoin(userGroup.group, group)
                 .fetchJoin();
     }
 
-    private BooleanExpression userEq(UserEntity userCond) {
-        return userGroupEntity.userEntity.eq(userCond);
+    private BooleanExpression userEq(User userCond) {
+        return userGroup.user.eq(userCond);
     }
 
-    private BooleanExpression groupEq(GroupEntity groupCond) {
-        return userGroupEntity.groupEntity.eq(groupCond);
+    private BooleanExpression groupEq(Group groupCond) {
+        return userGroup.group.eq(groupCond);
     }
 
     private BooleanExpression userIdEq(Long userId) {
-        return userGroupEntity.userEntity.id.eq(userId);
+        return userGroup.user.id.eq(userId);
     }
 
     private BooleanExpression groupIdEq(Long groupId) {
-        return userGroupEntity.groupEntity.id.eq(groupId);
+        return userGroup.group.id.eq(groupId);
     }
 }

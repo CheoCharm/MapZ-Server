@@ -1,7 +1,7 @@
 package com.cheocharm.MapZ.like.presentation.dto.response;
 
-import com.cheocharm.MapZ.like.domain.DiaryLikeEntity;
-import com.cheocharm.MapZ.user.domain.UserEntity;
+import com.cheocharm.MapZ.like.domain.DiaryLike;
+import com.cheocharm.MapZ.user.domain.User;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -14,13 +14,13 @@ public class DiaryLikePeopleResponse {
     private String userImageUrl;
     private String username;
 
-    public static List<DiaryLikePeopleResponse> of(List<DiaryLikeEntity> diaryLikeEntities) {
+    public static List<DiaryLikePeopleResponse> of(List<DiaryLike> diaryLikeEntities) {
         return diaryLikeEntities.stream()
                 .map(diaryLikeEntity -> {
-                            UserEntity userEntity = diaryLikeEntity.getUserEntity();
+                            User user = diaryLikeEntity.getUser();
                             return DiaryLikePeopleResponse.builder()
-                                    .userImageUrl(userEntity.getUserImageUrl())
-                                    .username(userEntity.getUsername())
+                                    .userImageUrl(user.getUserImageUrl())
+                                    .username(user.getUsername())
                                     .build();
                         }
                 )

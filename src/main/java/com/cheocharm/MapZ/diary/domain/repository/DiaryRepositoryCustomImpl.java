@@ -1,6 +1,6 @@
 package com.cheocharm.MapZ.diary.domain.repository;
 
-import com.cheocharm.MapZ.diary.domain.DiaryEntity;
+import com.cheocharm.MapZ.diary.domain.Diary;
 import com.cheocharm.MapZ.diary.domain.repository.vo.DiaryDetailVO;
 import com.cheocharm.MapZ.diary.domain.repository.vo.DiarySliceVO;
 import com.cheocharm.MapZ.diary.domain.repository.vo.MyDiaryVO;
@@ -16,12 +16,12 @@ import org.springframework.data.domain.Slice;
 
 import java.util.List;
 
-import static com.cheocharm.MapZ.comment.domain.QCommentEntity.commentEntity;
+import static com.cheocharm.MapZ.comment.domain.QComment.comment;
 import static com.cheocharm.MapZ.common.util.QuerydslSupport.fetchSliceByCursor;
-import static com.cheocharm.MapZ.diary.domain.QDiaryEntity.diaryEntity;
-import static com.cheocharm.MapZ.group.domain.QGroupEntity.groupEntity;
-import static com.cheocharm.MapZ.like.domain.QDiaryLikeEntity.diaryLikeEntity;
-import static com.cheocharm.MapZ.user.domain.QUserEntity.userEntity;
+import static com.cheocharm.MapZ.diary.domain.QDiary.diary;
+import static com.cheocharm.MapZ.group.domain.QGroup.group;
+import static com.cheocharm.MapZ.like.domain.QDiaryLike.diaryLike;
+import static com.cheocharm.MapZ.user.domain.QUser.user;
 
 @RequiredArgsConstructor
 public class DiaryRepositoryCustomImpl implements DiaryRepositoryCustom {
@@ -32,69 +32,69 @@ public class DiaryRepositoryCustomImpl implements DiaryRepositoryCustom {
     public Slice<DiarySliceVO> getDiarySlice(Long userId, Long groupId, Long cursorId, Pageable pageable) {
         final JPAQuery<DiarySliceVO> query = queryFactory
                 .select(new QDiarySliceVO(
-                        diaryEntity.id,
-                        diaryEntity.title,
-                        diaryEntity.content,
-                        diaryEntity.address,
-                        diaryEntity.createdAt,
-                        userEntity.username,
-                        userEntity.userImageUrl,
-                        diaryEntity.diaryLikeEntities.size(),
-                        diaryLikeEntity.isNotNull(),
-                        commentEntity.count(),
-                        userEntity.id.eq(userId)
+                        diary.id,
+                        diary.title,
+                        diary.content,
+                        diary.address,
+                        diary.createdAt,
+                        user.username,
+                        user.userImageUrl,
+                        diary.diaryLikes.size(),
+                        diaryLike.isNotNull(),
+                        comment.count(),
+                        user.id.eq(userId)
                 ))
-                .from(diaryEntity)
-                .leftJoin(diaryEntity.diaryLikeEntities, diaryLikeEntity)
+                .from(diary)
+                .leftJoin(diary.diaryLikes, diaryLike)
                 .on(likeUserIdEq(userId))
-                .innerJoin(diaryEntity.userEntity, userEntity)
-                .leftJoin(diaryEntity.commentEntities, commentEntity)
+                .innerJoin(diary.user, user)
+                .leftJoin(diary.comments, comment)
                 .where(groupIdEq(groupId)
                         .and(diaryIdLt(cursorId))
                 )
-                .groupBy(diaryEntity.id, diaryLikeEntity.id); //dairyLikeEntity는 nonaggregated column때문에 작성
+                .groupBy(diary.id, diaryLike.id); //dairyLikeEntity는 nonaggregated column때문에 작성
 
-        return fetchSliceByCursor(diaryEntity.getType(), diaryEntity.getMetadata(), query, pageable);
+        return fetchSliceByCursor(diary.getType(), diary.getMetadata(), query, pageable);
     }
 
     @Override
     public Slice<MyDiaryVO> findByUserId(Long userId, Long cursorId, Pageable pageable) {
         JPAQuery<MyDiaryVO> query = queryFactory
                 .select(new QMyDiaryVO(
-                        diaryEntity.title,
-                        diaryEntity.createdAt,
-                        diaryEntity.content, //일기 대표이미지로 바꿔야 할 부분(임시로 사용)
-                        groupEntity.id,
-                        diaryEntity.id,
-                        commentEntity.count()
+                        diary.title,
+                        diary.createdAt,
+                        diary.content, //일기 대표이미지로 바꿔야 할 부분(임시로 사용)
+                        group.id,
+                        diary.id,
+                        comment.count()
                 ))
-                .from(diaryEntity)
-                .innerJoin(diaryEntity.groupEntity, groupEntity)
-                .leftJoin(diaryEntity.commentEntities, commentEntity)
+                .from(diary)
+                .innerJoin(diary.group, group)
+                .leftJoin(diary.comments, comment)
                 .where(userIdEq(userId)
                         .and(diaryIdLt(cursorId))
                 )
-                .groupBy(diaryEntity.id);
+                .groupBy(diary.id);
 
-        return fetchSliceByCursor(diaryEntity.getType(), diaryEntity.getMetadata(), query, pageable);
+        return fetchSliceByCursor(diary.getType(), diary.getMetadata(), query, pageable);
     }
 
     private BooleanExpression diaryIdLt(Long cursorId) {
-        return diaryEntity.id.lt(cursorId);
+        return diary.id.lt(cursorId);
     }
 
     @Override
     public void deleteAllByUserId(Long userId) {
         queryFactory
-                .delete(diaryEntity)
+                .delete(diary)
                 .where(userIdEq(userId))
                 .execute();
     }
 
     @Override
-    public List<DiaryEntity> findAllByUserId(Long userId) {
+    public List<Diary> findAllByUserId(Long userId) {
         return queryFactory
-                .selectFrom(diaryEntity)
+                .selectFrom(diary)
                 .where(userIdEq(userId))
                 .fetch();
     }
@@ -103,40 +103,40 @@ public class DiaryRepositoryCustomImpl implements DiaryRepositoryCustom {
     public DiaryDetailVO getDiaryDetail(Long diaryId, Long userId) {
         return queryFactory
                 .select(new QDiaryDetailVO(
-                        diaryEntity.title,
-                        diaryEntity.content,
-                        diaryEntity.address,
-                        diaryEntity.createdAt,
-                        userEntity.username,
-                        userEntity.userImageUrl,
-                        diaryEntity.diaryLikeEntities.size(),
-                        diaryLikeEntity.isNotNull(),
-                        commentEntity.count(),
-                        userEntity.id.eq(userId)
+                        diary.title,
+                        diary.content,
+                        diary.address,
+                        diary.createdAt,
+                        user.username,
+                        user.userImageUrl,
+                        diary.diaryLikes.size(),
+                        diaryLike.isNotNull(),
+                        comment.count(),
+                        user.id.eq(userId)
                 ))
-                .from(diaryEntity)
-                .leftJoin(diaryEntity.diaryLikeEntities, diaryLikeEntity)
+                .from(diary)
+                .leftJoin(diary.diaryLikes, diaryLike)
                 .on(likeUserIdEq(userId))
-                .innerJoin(diaryEntity.userEntity, userEntity)
-                .leftJoin(diaryEntity.commentEntities, commentEntity)
+                .innerJoin(diary.user, user)
+                .leftJoin(diary.comments, comment)
                 .where(diaryIdEq(diaryId))
-                .groupBy(diaryLikeEntity.id) // nonaggregated Column 때문에 작성
+                .groupBy(diaryLike.id) // nonaggregated Column 때문에 작성
                 .fetchOne();
     }
 
     private BooleanExpression likeUserIdEq(Long userId) {
-        return diaryLikeEntity.userEntity.id.eq(userId);
+        return diaryLike.user.id.eq(userId);
     }
 
     private BooleanExpression userIdEq(Long userId) {
-        return diaryEntity.userEntity.id.eq(userId);
+        return diary.user.id.eq(userId);
     }
 
     private BooleanExpression groupIdEq(Long groupId) {
-        return diaryEntity.groupEntity.id.eq(groupId);
+        return diary.group.id.eq(groupId);
     }
 
     private BooleanExpression diaryIdEq(Long diaryId) {
-        return diaryEntity.id.eq(diaryId);
+        return diary.id.eq(diaryId);
     }
 }

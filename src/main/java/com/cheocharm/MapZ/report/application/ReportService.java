@@ -7,7 +7,7 @@ import com.cheocharm.MapZ.diary.domain.repository.DiaryRepository;
 import com.cheocharm.MapZ.report.domain.ReportEntity;
 import com.cheocharm.MapZ.report.presentation.dto.ReportRequest;
 import com.cheocharm.MapZ.report.domain.repository.ReportRepository;
-import com.cheocharm.MapZ.user.domain.UserEntity;
+import com.cheocharm.MapZ.user.domain.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,9 +22,9 @@ public class ReportService {
 
     @Transactional
     public void reportDiary(ReportRequest reportRequest) {
-        final UserEntity userEntity = UserThreadLocal.get();
+        final User user = UserThreadLocal.get();
 
-        Long userId = userEntity.getId();
+        Long userId = user.getId();
         Long diaryId = reportRequest.getDiaryId();
 
         diaryRepository.findById(diaryId).orElseThrow(NotFoundDiaryException::new);

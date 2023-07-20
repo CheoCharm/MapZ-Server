@@ -1,6 +1,6 @@
 package com.cheocharm.MapZ.diary.domain.repository;
 
-import com.cheocharm.MapZ.diary.domain.DiaryEntity;
+import com.cheocharm.MapZ.diary.domain.Diary;
 import com.cheocharm.MapZ.diary.domain.repository.vo.DiaryDetailVO;
 import com.cheocharm.MapZ.diary.domain.repository.vo.DiarySliceVO;
 import com.cheocharm.MapZ.diary.domain.repository.vo.MyDiaryVO;
@@ -16,7 +16,7 @@ public interface DiaryRepositoryCustom {
 
     void deleteAllByUserId(Long userId);
 
-    List<DiaryEntity> findAllByUserId(Long userId);
+    List<Diary> findAllByUserId(Long userId);
 
     DiaryDetailVO getDiaryDetail(Long diaryId, Long userId);
 }

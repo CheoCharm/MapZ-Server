@@ -1,8 +1,8 @@
 package com.cheocharm.MapZ.comment.domain;
 
 import com.cheocharm.MapZ.common.domain.BaseEntity;
-import com.cheocharm.MapZ.diary.domain.DiaryEntity;
-import com.cheocharm.MapZ.user.domain.UserEntity;
+import com.cheocharm.MapZ.diary.domain.Diary;
+import com.cheocharm.MapZ.user.domain.User;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -17,7 +17,7 @@ import javax.persistence.*;
 @Where(clause = "deleted=0")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
-public class CommentEntity extends BaseEntity {
+public class Comment extends BaseEntity {
 
     private String content;
 
@@ -26,18 +26,18 @@ public class CommentEntity extends BaseEntity {
 
     @JoinColumn(name = "user_id")
     @ManyToOne(fetch = FetchType.LAZY)
-    private UserEntity userEntity;
+    private User user;
 
     @JoinColumn(name = "diary_id")
     @ManyToOne(fetch = FetchType.LAZY)
-    private DiaryEntity diaryEntity;
+    private Diary diary;
 
     @Builder
-    public CommentEntity(String content, Long parentId, UserEntity userEntity, DiaryEntity diaryEntity) {
+    public Comment(String content, Long parentId, User user, Diary diary) {
         this.content = content;
         this.parentId = parentId;
-        this.userEntity = userEntity;
-        this.diaryEntity = diaryEntity;
+        this.user = user;
+        this.diary = diary;
     }
 
 }

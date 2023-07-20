@@ -1,6 +1,6 @@
 package com.cheocharm.MapZ.user.domain.repository;
 
-import com.cheocharm.MapZ.user.domain.UserEntity;
+import com.cheocharm.MapZ.user.domain.User;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 import static com.cheocharm.MapZ.common.util.QuerydslSupport.fetchSliceByCursor;
-import static com.cheocharm.MapZ.user.domain.QUserEntity.userEntity;
+import static com.cheocharm.MapZ.user.domain.QUser.user;
 
 @RequiredArgsConstructor
 @Component
@@ -21,25 +21,25 @@ public class UserRepositoryCustomImpl implements UserRepositoryCustom {
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public Slice<UserEntity> fetchByUserEntityAndSearchName(UserEntity userCond, String searchName, Long cursorId, Pageable pageable) {
-        JPAQuery<UserEntity> query = queryFactory
-                .selectFrom(userEntity)
-                .where(userEntity.username.contains(searchName)
+    public Slice<User> fetchByUserAndSearchName(User userCond, String searchName, Long cursorId, Pageable pageable) {
+        JPAQuery<User> query = queryFactory
+                .selectFrom(user)
+                .where(user.username.contains(searchName)
                         .and(userNe(userCond))
-                        .and(userEntity.id.lt(cursorId))
+                        .and(user.id.lt(cursorId))
                 );
-        return fetchSliceByCursor(userEntity.getType(), userEntity.getMetadata(), query, pageable);
+        return fetchSliceByCursor(user.getType(), user.getMetadata(), query, pageable);
     }
 
     @Override
-    public List<UserEntity> getUserEntityListByUserIdList(List<Long> userIdList) {
+    public List<User> getUserListByUserIdList(List<Long> userIdList) {
         return queryFactory
-                .selectFrom(userEntity)
-                .where(userEntity.id.in(userIdList))
+                .selectFrom(user)
+                .where(user.id.in(userIdList))
                 .fetch();
     }
 
-    private BooleanExpression userNe(UserEntity userCond) {
-        return userEntity.ne(userCond);
+    private BooleanExpression userNe(User userCond) {
+        return user.ne(userCond);
     }
 }
