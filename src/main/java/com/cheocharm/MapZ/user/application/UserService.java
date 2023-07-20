@@ -34,7 +34,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.data.domain.Slice;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -44,7 +43,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
-import java.util.Optional;
 
 import static com.cheocharm.MapZ.common.util.PagingUtils.applyCursorId;
 import static com.cheocharm.MapZ.common.util.PagingUtils.applyDescPageConfigBy;
@@ -65,122 +63,137 @@ public class UserService {
     private final OauthApi oauthApi;
     private final PasswordEncoder passwordEncoder;
     private final S3Utils s3Service;
-    private final RandomUtils randomUtils;
     private final JavaMailSender mailSender;
-    private final String GMAIL_ADDRESS ="mapz.official@gmail.com";
+
+    private static final String GMAIL_ADDRESS = "mapz.official@gmail.com";
+    private static final String DEFAULT_BIO = "자기소개를 입력해주세요";
+
 
     @Transactional
     public TokenPairResponse signUpGoogle(GoogleSignUpRequest userSignUpDto, MultipartFile multipartFile) {
+        final GoogleIdTokenResponse idToken = fetchAndValidateIdToken(userSignUpDto.getIdToken());
 
-        final ResponseEntity<String> response = oauthApi.callGoogle(OauthUrl.GOOGLE, userSignUpDto.getIdToken());
+        final TokenPairResponse tokenPair = jwtCreateUtils.createTokenPair(
+                idToken.getEmail(),
+                userSignUpDto.getUsername(),
+                UserProvider.GOOGLE
+        );
 
-        if (ObjectUtils.notEqual(response.getStatusCode(), HttpStatus.OK)) {
-            throw new InvalidJwtException();
-        }
+        final UserEntity user = userRepository.findByEmailAndUserProvider(idToken.getEmail(), UserProvider.GOOGLE)
+                .map(userEntity -> {
+                    userEntity.updateRefreshToken(tokenPair.getRefreshToken());
+                    return userEntity;
+                })
+                .orElseGet(() -> createAndReturnUser(userSignUpDto, multipartFile, idToken, tokenPair.getRefreshToken()));
 
-        final GoogleIdTokenResponse idToken = checkAudAndGetTokenDto(response);
+        saveUserAndAgreement(userSignUpDto.getPushAgreement(), user);
 
-        Optional<UserEntity> findUser = userRepository.findByEmailAndUserProvider(idToken.getEmail(), UserProvider.GOOGLE);
+        return tokenPair;
+    }
 
-        if (findUser.isPresent()) {
-            final UserEntity userEntity = findUser.get();
-            final TokenPairResponse tokenPair = jwtCreateUtils.createTokenPair(idToken.getEmail(),
-                    userSignUpDto.getUsername(), UserProvider.GOOGLE);
-            userEntity.updateRefreshToken(tokenPair.getRefreshToken());
-            return tokenPair;
-        }
+    private UserEntity createAndReturnUser(GoogleSignUpRequest userSignUpDto, MultipartFile multipartFile,
+                                           GoogleIdTokenResponse idToken, String refreshToken) {
+        final UserEntity user = createGoogleUser(userSignUpDto, multipartFile, idToken, refreshToken);
+        userRepository.save(user);
+        return user;
+    }
 
-        final TokenPairResponse tokenPair = jwtCreateUtils.createTokenPair(idToken.getEmail(),
-                userSignUpDto.getUsername(), UserProvider.GOOGLE);
-
+    private UserEntity createGoogleUser(GoogleSignUpRequest userSignUpDto, MultipartFile multipartFile,
+                                        GoogleIdTokenResponse idToken, String refreshToken) {
         final UserEntity user = userRepository.save(
-                UserEntity.createUserNoPassword(idToken.getEmail(), userSignUpDto.getUsername(),
-                        tokenPair.getRefreshToken(), UserProvider.GOOGLE)
+                UserEntity.createUserNoPassword(idToken.getEmail(), userSignUpDto.getUsername(), DEFAULT_BIO,
+                        refreshToken, UserProvider.GOOGLE)
         );
 
         if (!multipartFile.isEmpty()) {
             user.updateUserImageUrl(s3Service.uploadUserImage(multipartFile, user.getUsername()));
         }
-        agreementRepository.save(
-                AgreementEntity.builder()
-                    .userEntity(user)
-                    .pushAgreement(userSignUpDto.getPushAgreement())
-                    .build()
-        );
-
-        return tokenPair;
+        return user;
     }
 
     @Transactional
-    public TokenPairResponse loginGoogle(GoogleSignInRequest userLoginDto) {
-        ResponseEntity<String> response = oauthApi.callGoogle(OauthUrl.GOOGLE, userLoginDto.getIdToken());
+    public TokenPairResponse loginGoogle(GoogleSignInRequest request) {
+        final GoogleIdTokenResponse idToken = fetchAndValidateIdToken(request.getIdToken());
 
-        if (ObjectUtils.notEqual(response.getStatusCode(), HttpStatus.OK)) {
-            throw new InvalidJwtException();
-        }
-        GoogleIdTokenResponse idToken = checkAudAndGetTokenDto(response);
-
-        Optional<UserEntity> findUser = userRepository.findByEmailAndUserProvider(idToken.getEmail(), UserProvider.GOOGLE);
-
-        if (findUser.isPresent()) {
-            final UserEntity userEntity = findUser.get();
-            final TokenPairResponse tokenPair = jwtCreateUtils.createTokenPair(idToken.getEmail(), userEntity.getUsername(), userEntity.getUserProvider());
-            userEntity.updateRefreshToken(tokenPair.getRefreshToken());
-            return tokenPair;
-        }
-
-        return jwtCreateUtils.createNullToken();
+        return userRepository.findByEmailAndUserProvider(idToken.getEmail(), UserProvider.GOOGLE)
+                .map(userEntity -> {
+                    final TokenPairResponse tokenPair = jwtCreateUtils.createTokenPair(
+                            idToken.getEmail(), userEntity.getUsername(), userEntity.getUserProvider()
+                    );
+                    userEntity.updateRefreshToken(tokenPair.getRefreshToken());
+                    return tokenPair;
+                })
+                .orElseGet(jwtCreateUtils::createNullToken);
     }
 
     @Transactional
     public TokenPairResponse signUpMapZ(MapZSignUpRequest request, MultipartFile multipartFile) {
-        //닉네임 중복 확인
-        userRepository.findByUsername(request.getUsername()).ifPresent(userEntity -> {
+        checkDuplicateUserName(request.getUsername());
+
+        TokenPairResponse tokenPair = jwtCreateUtils.createTokenPair(
+                request.getEmail(), request.getUsername(), UserProvider.MAPZ
+        );
+        final UserEntity user = createMapZUser(request, multipartFile, tokenPair.getRefreshToken());
+        saveUserAndAgreement(request.getPushAgreement(), user);
+
+        return tokenPair;
+    }
+
+    private void checkDuplicateUserName(String username) {
+        userRepository.findByUsername(username).ifPresent(userEntity -> {
             throw new DuplicatedUsernameException();
         });
+    }
 
-        TokenPairResponse tokenPair = jwtCreateUtils.createTokenPair(request.getEmail(), request.getUsername(), UserProvider.MAPZ);
+    private UserEntity createMapZUser(MapZSignUpRequest request, MultipartFile multipartFile, String refreshToken) {
         UserEntity userEntity = UserEntity.createUser(request.getEmail(), request.getUsername(),
-                passwordEncoder.encode(request.getPassword()), tokenPair.getRefreshToken(), UserProvider.MAPZ);
+                passwordEncoder.encode(request.getPassword()), DEFAULT_BIO, refreshToken, UserProvider.MAPZ);
 
         if (!multipartFile.isEmpty()) {
             userEntity.updateUserImageUrl(s3Service.uploadUserImage(multipartFile, request.getUsername()));
         }
+        return userEntity;
+    }
 
-        UserEntity user = userRepository.save(userEntity);
+    private void saveUserAndAgreement(boolean pushAgreement, UserEntity user) {
+        userRepository.save(user);
         agreementRepository.save(
                 AgreementEntity.builder()
-                    .userEntity(user)
-                    .pushAgreement(request.getPushAgreement())
-                    .build()
+                        .userEntity(user)
+                        .pushAgreement(pushAgreement)
+                        .build()
         );
-
-        return tokenPair;
     }
 
     @Transactional
-    public TokenPairResponse signInMapZ(MapZSignInRequest mapZSignInRequest) {
-        final UserEntity userEntity = userRepository.findByEmailAndUserProvider(mapZSignInRequest.getEmail(), UserProvider.MAPZ)
-                .orElseThrow(NotFoundUserException::new);
+    public TokenPairResponse signInMapZ(MapZSignInRequest request) {
+        final UserEntity userEntity = validatePresentUserAndReturn(request.getEmail(), UserProvider.MAPZ);
 
-        //비밀번호 일치 여부 확인
-        if (!passwordEncoder.matches(mapZSignInRequest.getPassword(), userEntity.getPassword())) {
-            throw new WrongPasswordException();
-        }
+        checkPassword(request.getPassword(), userEntity);
 
-        final TokenPairResponse tokenPair = jwtCreateUtils.createTokenPair(userEntity.getEmail(), userEntity.getUsername(), UserProvider.MAPZ);
+        final TokenPairResponse tokenPair = jwtCreateUtils.createTokenPair(
+                userEntity.getEmail(), userEntity.getUsername(), UserProvider.MAPZ
+        );
         userEntity.updateRefreshToken(tokenPair.getRefreshToken());
         return tokenPair;
     }
 
+    private void checkPassword(String requestPassword, UserEntity userEntity) {
+        if (!passwordEncoder.matches(requestPassword, userEntity.getPassword())) {
+            throw new WrongPasswordException();
+        }
+    }
+
     public String authEmail(String email) {
-        //이메일 중복 확인
+        checkDuplicateEmail(email);
+        return sendEmail(email);
+    }
+
+    private void checkDuplicateEmail(String email) {
         userRepository.findByEmailAndUserProvider(email, UserProvider.MAPZ)
                 .ifPresent(userEntity -> {
                     throw new DuplicatedEmailException();
                 });
-
-        return sendEmail(email);
     }
 
     public String findPassword(String email) {
@@ -193,27 +206,31 @@ public class UserService {
     }
 
     public String sendEmail(String email) {
-        final String randomNumber = randomUtils.makeRandomNumber();
+        final String randomNumber = RandomUtils.makeRandomNumber();
         final String MAIL_TITLE = String.format("[MapZ] 이메일 인증을 진행해주세요. <%s>", randomNumber);
         final String MAIL_CONTEXT = String.format("안녕하세요. MapZ입니다.\n\n이메일 인증을 위해 아래 숫자를 MapZ에 입력해주세요.\n인증번호: %s\n\n궁금한 사항이 있으시면 mapz.official@gmail.com으로 문의주시길 바랍니다.\n감사합니다:)", randomNumber);
 
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setTo(email);
-        message.setFrom(GMAIL_ADDRESS);
-        message.setSubject(MAIL_TITLE);
-        message.setText(MAIL_CONTEXT);
+        SimpleMailMessage message = setMassage(email, MAIL_TITLE, MAIL_CONTEXT);
 
         mailSender.send(message);
 
         return randomNumber;
     }
 
-    @Transactional
-    public void setNewPassword(PasswordChangeRequest passWordChangeRequest) {
-        UserEntity userEntity = userRepository.findByEmailAndUserProvider(passWordChangeRequest.getEmail(), UserProvider.MAPZ)
-                .orElseThrow(NotFoundUserException::new);
+    private SimpleMailMessage setMassage(String email, String MAIL_TITLE, String MAIL_CONTEXT) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(email);
+        message.setFrom(GMAIL_ADDRESS);
+        message.setSubject(MAIL_TITLE);
+        message.setText(MAIL_CONTEXT);
+        return message;
+    }
 
-        String password = passwordEncoder.encode(passWordChangeRequest.getPassword());
+    @Transactional
+    public void setNewPassword(PasswordChangeRequest request) {
+        final UserEntity userEntity = validatePresentUserAndReturn(request.getEmail(), UserProvider.MAPZ);
+
+        String password = passwordEncoder.encode(request.getPassword());
         userEntity.updatePassword(password);
     }
 
@@ -233,20 +250,32 @@ public class UserService {
 
     public MyPageInfoResponse getMyPageInfo() {
         final UserEntity userEntity = UserThreadLocal.get();
-
         return MyPageInfoResponse.from(userEntity);
     }
 
-    private GoogleIdTokenResponse checkAudAndGetTokenDto(ResponseEntity<String> response) {
-        try {
-            GoogleIdTokenResponse idToken = ObjectMapperUtils.getObjectMapper().readValue(response.getBody(), GoogleIdTokenResponse.class);
+    private UserEntity validatePresentUserAndReturn(String email, UserProvider provider) {
+        return userRepository.findByEmailAndUserProvider(email, provider)
+                .orElseThrow(NotFoundUserException::new);
+    }
 
-            if (ObjectUtils.notEqual(idToken.getAud(), googleYml.getClient_id())) {
-                throw new InvalidJwtException();
-            }
-            return idToken;
+    private GoogleIdTokenResponse fetchAndValidateIdToken(String idToken) {
+        final ResponseEntity<String> response = oauthApi.callGoogle(OauthUrl.GOOGLE, idToken);
+        final GoogleIdTokenResponse googleIdToken = getIdToken(response);
+        checkAudValue(googleIdToken);
+        return googleIdToken;
+    }
+
+    private GoogleIdTokenResponse getIdToken(ResponseEntity<String> response) {
+        try {
+            return ObjectMapperUtils.getObjectMapper().readValue(response.getBody(), GoogleIdTokenResponse.class);
         } catch (JsonProcessingException e) {
             throw new FailJsonProcessException(e);
+        }
+    }
+
+    private void checkAudValue(GoogleIdTokenResponse idToken) {
+        if (ObjectUtils.notEqual(idToken.getAud(), googleYml.getClient_id())) {
+            throw new InvalidJwtException();
         }
     }
 

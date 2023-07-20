@@ -46,6 +46,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.stream.Collectors;
 
 import static com.cheocharm.MapZ.common.util.PagingUtils.applyCursorId;
 import static com.cheocharm.MapZ.common.util.PagingUtils.applyDescPageConfigBy;
@@ -62,17 +63,21 @@ public class DiaryService {
     private final UserGroupRepository userGroupRepository;
 
     private final S3Utils s3Utils;
+
     private static final int SEARCH_RADIUS_DISTANCE = 1_500;
     private static final int ZOOM_LEVEL_ONE_DISTANCE = 24_576_000;
+    private static final int WGS84_STANDARD_SRID = 4_326;
+    private static final int MAX_GROUP_COUNT = 2;
+    private static final int MIN_ZOOM_LEVEL = 15;
 
     @Transactional
-    public WriteDiaryResponse writeDiary(WriteDiaryRequest writeDiaryRequest) {
-        DiaryEntity diaryEntity = diaryRepository.findById(writeDiaryRequest.getDiaryId())
+    public WriteDiaryResponse writeDiary(WriteDiaryRequest request) {
+        DiaryEntity diaryEntity = diaryRepository.findById(request.getDiaryId())
                 .orElseThrow(NotFoundDiaryException::new);
 
-        diaryEntity.write(writeDiaryRequest.getTitle(), writeDiaryRequest.getContent());
+        diaryEntity.write(request.getTitle(), request.getContent());
 
-        return new WriteDiaryResponse(diaryEntity.getId());
+        return WriteDiaryResponse.from(diaryEntity.getId());
     }
 
     @Transactional(readOnly = true)
@@ -90,14 +95,18 @@ public class DiaryService {
     }
 
     @Transactional
-    public void deleteDiary(DeleteDiaryRequest deleteDiaryRequest) {
+    public void deleteDiary(DeleteDiaryRequest request) {
         UserEntity userEntity = UserThreadLocal.get();
+        validateSameUser(request.getDiaryId(), userEntity.getId());
+        diaryRepository.deleteById(request.getDiaryId());
+    }
 
-        if (ObjectUtils.notEqual(deleteDiaryRequest.getUserId(), userEntity.getId())) {
+    private void validateSameUser(Long diaryId, Long userId) {
+        final DiaryEntity diary = diaryRepository.findById(diaryId)
+                .orElseThrow(NotFoundDiaryException::new);
+        if (ObjectUtils.notEqual(diary.getUserEntity().getId(), userId)) {
             throw new NoPermissionUserException();
         }
-
-        diaryRepository.deleteById(deleteDiaryRequest.getDiaryId());
     }
 
     @Transactional(readOnly = true)
@@ -117,21 +126,22 @@ public class DiaryService {
     @Transactional
     public WriteDiaryImageResponse writeDiaryImage(WriteDiaryImageRequest request, List<MultipartFile> files) {
         UserEntity userEntity = UserThreadLocal.get();
-
         GroupEntity groupEntity = groupRepository.findById(request.getGroupId())
                 .orElseThrow(NotFoundGroupException::new);
 
-        Point point = getPoint(request.getLongitude(), request.getLatitude());
         DiaryEntity diaryEntity = diaryRepository.save(
-                DiaryEntity.of(userEntity, groupEntity, request.getAddress(), point)
+                DiaryEntity.of(
+                        userEntity,
+                        groupEntity,
+                        request.getAddress(),
+                        getPoint(request.getLongitude(), request.getLatitude())
+                )
         );
 
-        Long diaryId = diaryEntity.getId();
-
-        List<String> imageURLs = s3Utils.uploadDiaryImage(files, diaryId);
+        List<String> imageURLs = s3Utils.uploadDiaryImage(files, diaryEntity.getId());
         saveDiaryImages(diaryEntity, imageURLs);
 
-        return new WriteDiaryImageResponse(diaryId, imageURLs, getImageName(files));
+        return new WriteDiaryImageResponse(diaryEntity.getId(), imageURLs, getImageName(files));
     }
 
     private void saveDiaryImages(DiaryEntity diaryEntity, List<String> imageURLs) {
@@ -147,16 +157,14 @@ public class DiaryService {
     }
 
     private List<String> getImageName(List<MultipartFile> files) {
-        ArrayList<String> list = new ArrayList<>();
-        for (MultipartFile file : files) {
-            list.add(file.getOriginalFilename());
-        }
-        return list;
+        return files.stream()
+                .map(MultipartFile::getOriginalFilename)
+                .collect(Collectors.toList());
     }
 
     @Transactional
-    public void deleteTempDiary(DeleteTempDiaryRequest deleteTempDiaryRequest) {
-        Long diaryId = deleteTempDiaryRequest.getDiaryId();
+    public void deleteTempDiary(DeleteTempDiaryRequest request) {
+        Long diaryId = request.getDiaryId();
         List<String> diaryImageURLs = diaryImageRepository.findAllByDiaryId(diaryId);
 
         s3Utils.deleteImages(diaryImageURLs);
@@ -176,24 +184,35 @@ public class DiaryService {
     @Transactional(readOnly = true)
     public List<DiaryCoordinateResponse> getDiaryCoordinate(Double longitude, Double latitude) {
         final UserEntity userEntity = UserThreadLocal.get();
-        List<Long> groupIds = getGroupIds(userEntity.getId());
-        final Point point = getPoint(longitude, latitude);
 
-        final List<DiaryCoordinateVO> diaryCoordinateVOS = diaryRepository.findByDiaryCoordinate(point, groupIds, SEARCH_RADIUS_DISTANCE);
-        return DiaryCoordinateResponse.of(diaryCoordinateVOS);
+        final List<DiaryCoordinateVO> diaryCoordinateVOS = diaryRepository.findByDiaryCoordinate(
+                getPoint(longitude, latitude),
+                getGroupIds(userEntity.getId()),
+                SEARCH_RADIUS_DISTANCE
+        );
+        return DiaryCoordinateResponse.from(diaryCoordinateVOS);
     }
 
     @Transactional(readOnly = true)
     public List<DiaryPreviewResponse> getDiaryByMap(Double longitude, Double latitude, Double zoomLevel) {
         final UserEntity userEntity = UserThreadLocal.get();
-        List<Long> groupIds = getGroupIds(userEntity.getId());
-        final Point point = getPoint(longitude, latitude);
-        final double distance = getDistance(zoomLevel);
-        final List<DiaryCoordinateVO> diaryCoordinateVOS = diaryRepository.findByDiaryCoordinate(point, groupIds, distance);
+
+        final List<DiaryCoordinateVO> diaryCoordinateVOS = diaryRepository.findByDiaryCoordinate(
+                getPoint(longitude, latitude),
+                getGroupIds(userEntity.getId()),
+                getDistance(zoomLevel)
+        );
 
         final List<DiaryImagePreviewVO> previewImageVOS = getDiaryImagePreview(diaryCoordinateVOS);
 
         return DiaryPreviewResponse.of(previewImageVOS, diaryCoordinateVOS);
+    }
+
+    private double getDistance(Double zoomLevel) {
+        if (zoomLevel <= MIN_ZOOM_LEVEL) { // 줌 레벨 1~15는 반경 1500을 넘어서 1500으로 고정
+            return SEARCH_RADIUS_DISTANCE;
+        }
+        return ZOOM_LEVEL_ONE_DISTANCE / Math.pow(2, zoomLevel - 1);
     }
 
     private List<DiaryImagePreviewVO> getDiaryImagePreview(List<DiaryCoordinateVO> diaryCoordinateVOS) {
@@ -214,23 +233,16 @@ public class DiaryService {
 
     private List<Long> getGroupIds(Long userId) {
         List<Long> groupIds = userGroupRepository.getGroupIdByUserId(userId);
-        if (groupIds.size() > 2) {
+        if (groupIds.size() > MAX_GROUP_COUNT) {
             groupIds = getRandomGroupIds(groupIds);
         }
         return groupIds;
     }
 
-    private double getDistance(Double zoomLevel) {
-        if (zoomLevel <= 15) { // 줌 레벨 1~15는 반경 1500을 넘어서 1500으로 고정
-            return SEARCH_RADIUS_DISTANCE;
-        }
-        return ZOOM_LEVEL_ONE_DISTANCE / Math.pow(2, zoomLevel - 1);
-    }
-
     private List<Long> getRandomGroupIds(List<Long> groupIds) {
         final HashSet<Long> set = new HashSet<>();
         final ThreadLocalRandom current = ThreadLocalRandom.current();
-        while (set.size() <= 2) {
+        while (set.size() <= MAX_GROUP_COUNT) {
             set.add(current.nextLong(groupIds.size()));
         }
         return new ArrayList<>(set);
@@ -240,7 +252,7 @@ public class DiaryService {
         final String pointWKT = String.format("POINT(%s %s)", longitude, latitude);
         try {
             Point point = (Point) new WKTReader().read(pointWKT);
-            point.setSRID(4326);
+            point.setSRID(WGS84_STANDARD_SRID);
             return point;
         } catch (ParseException e) {
             throw new FailParseException(e);
