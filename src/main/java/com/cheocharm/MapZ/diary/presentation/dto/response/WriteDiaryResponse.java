@@ -9,4 +9,8 @@ public class WriteDiaryResponse {
     public WriteDiaryResponse(Long diaryId) {
         this.diaryId = diaryId;
     }
+
+    public static WriteDiaryResponse from(Long diaryId) {
+        return new WriteDiaryResponse(diaryId);
+    }
 }

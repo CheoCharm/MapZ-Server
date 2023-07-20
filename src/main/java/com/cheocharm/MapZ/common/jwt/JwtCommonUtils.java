@@ -20,7 +20,7 @@ public class JwtCommonUtils {
     @Value("${jwt.secret}")
     private String SECRET_KEY;
 
-    private final String USER_EMAIL = "email";
+    private static final String USER_EMAIL = "email";
 
     private final UserRepository userRepository;
 

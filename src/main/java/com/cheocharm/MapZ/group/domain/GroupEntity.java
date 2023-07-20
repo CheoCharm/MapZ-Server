@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
+import java.util.UUID;
 
 @Getter
 @Table(name = "DiaryGroup")
@@ -36,6 +37,15 @@ public class GroupEntity extends BaseEntity {
         this.groupImageUrl = groupImageUrl;
         this.groupUUID = groupUUID;
         this.openStatus = openStatus;
+    }
+
+    public static GroupEntity of(String groupName, String bio, boolean openStatus) {
+        return GroupEntity.builder()
+                .groupName(groupName)
+                .bio(bio)
+                .groupUUID(UUID.randomUUID().toString())
+                .openStatus(openStatus)
+                .build();
     }
 
     public void updateGroupInfo(UpdateGroupRequest updateGroupRequest) {

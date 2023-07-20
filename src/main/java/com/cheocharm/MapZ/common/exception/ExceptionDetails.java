@@ -44,6 +44,7 @@ public enum ExceptionDetails {
     //다이어리 예외
     NOT_FOUND_DIARY(HttpStatus.NOT_FOUND, "5001", "게시글을 찾을 수 없습니다."),
     ALREADY_LIKED_DIARY(HttpStatus.BAD_REQUEST, "5002", "이미 좋아요한 게시글입니다."),
+    NO_MATCH_DIARY_ID(HttpStatus.NOT_FOUND, "5003", "매칭되는 다이어리 아이디가 없습니다."),
 
     //신고 예외
     ALREADY_REPORTED_DIARY(HttpStatus.BAD_REQUEST, "6001", "이미 신고한 게시글입니다.");

@@ -18,9 +18,9 @@ import java.util.Map;
 @Component
 public class JwtCreateUtils {
 
-    private final String USER_EMAIL = "email";
-    private final long EXPIRE = 1000 * 60 * 60;
-    private final long REFRESH_EXPIRE = EXPIRE * 2 * 24 * 14;
+    private static final String USER_EMAIL = "email";
+    private static final long EXPIRE = 1000 * 60 * 60;
+    private static final long REFRESH_EXPIRE = EXPIRE * 2 * 24 * 14;
 
     private final JwtCommonUtils jwtCommonUtils;
 
@@ -71,9 +71,7 @@ public class JwtCreateUtils {
     }
 
     private Map<String, Object> createHeader() {
-        HashMap<String, Object> headerMap = new HashMap<>();
-        headerMap.put("typ", "JWT");
-        return headerMap;
+        return Map.of("typ", "JWT");
     }
 
     private Map<String, Object> createClaims(String email, String username, UserProvider userProvider) {

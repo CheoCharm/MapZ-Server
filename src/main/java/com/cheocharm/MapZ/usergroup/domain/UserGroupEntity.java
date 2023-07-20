@@ -49,7 +49,7 @@ public class UserGroupEntity extends BaseEntity {
                 .userRole(userRole)
                 .build();
     }
-    public void acceptUser() {
+    public void updateInvitationStatus() {
         this.invitationStatus = InvitationStatus.ACCEPT;
     }
 
