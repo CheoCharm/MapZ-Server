@@ -1,8 +1,8 @@
 package com.cheocharm.MapZ.usergroup.domain;
 
 import com.cheocharm.MapZ.common.domain.BaseEntity;
-import com.cheocharm.MapZ.group.domain.GroupEntity;
-import com.cheocharm.MapZ.user.domain.UserEntity;
+import com.cheocharm.MapZ.group.domain.Group;
+import com.cheocharm.MapZ.user.domain.User;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -16,15 +16,15 @@ import javax.persistence.*;
 @Where(clause = "deleted=0")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
-public class UserGroupEntity extends BaseEntity {
+public class UserGroup extends BaseEntity {
 
     @JoinColumn(name = "group_id")
     @ManyToOne(fetch = FetchType.LAZY)
-    private GroupEntity groupEntity;
+    private Group group;
 
     @JoinColumn(name = "user_id")
     @ManyToOne(fetch = FetchType.LAZY)
-    private UserEntity userEntity;
+    private User user;
 
     @Column(name = "invitation_status")
     @Enumerated(value = EnumType.STRING)
@@ -34,17 +34,17 @@ public class UserGroupEntity extends BaseEntity {
     private UserRole userRole;
 
     @Builder
-    public UserGroupEntity(GroupEntity groupEntity, UserEntity userEntity, InvitationStatus invitationStatus, UserRole userRole) {
-        this.groupEntity = groupEntity;
-        this.userEntity = userEntity;
+    public UserGroup(Group group, User user, InvitationStatus invitationStatus, UserRole userRole) {
+        this.group = group;
+        this.user = user;
         this.invitationStatus = invitationStatus;
         this.userRole = userRole;
     }
 
-    public static UserGroupEntity of(GroupEntity groupEntity, UserEntity userEntity, InvitationStatus invitationStatus, UserRole userRole) {
-        return UserGroupEntity.builder()
-                .groupEntity(groupEntity)
-                .userEntity(userEntity)
+    public static UserGroup of(Group group, User user, InvitationStatus invitationStatus, UserRole userRole) {
+        return UserGroup.builder()
+                .group(group)
+                .user(user)
                 .invitationStatus(invitationStatus)
                 .userRole(userRole)
                 .build();
@@ -53,7 +53,7 @@ public class UserGroupEntity extends BaseEntity {
         this.invitationStatus = InvitationStatus.ACCEPT;
     }
 
-    public void updateChief(UserGroupEntity chiefUser, UserGroupEntity targetUser) {
+    public void updateChief(UserGroup chiefUser, UserGroup targetUser) {
         chiefUser.userRole = UserRole.MEMBER;
         targetUser.userRole = UserRole.CHIEF;
     }
