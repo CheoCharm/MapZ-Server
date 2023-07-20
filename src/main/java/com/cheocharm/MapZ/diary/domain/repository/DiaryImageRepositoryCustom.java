@@ -1,6 +1,6 @@
 package com.cheocharm.MapZ.diary.domain.repository;
 
-import com.cheocharm.MapZ.diary.domain.DiaryEntity;
+import com.cheocharm.MapZ.diary.domain.Diary;
 import com.cheocharm.MapZ.diary.domain.repository.vo.DiaryImagePreviewVO;
 import com.cheocharm.MapZ.diary.domain.repository.vo.DiaryPreviewVO;
 
@@ -11,7 +11,7 @@ public interface DiaryImageRepositoryCustom {
 
     void deleteAllByDiaryId(Long diaryId);
 
-    void deleteAllByDiaryEntityList(List<DiaryEntity> diaryEntities);
+    void deleteAllByDiaries(List<Diary> diaryEntities);
 
     List<DiaryImagePreviewVO> findPreviewImage(List<Long> diaryIds);
 
