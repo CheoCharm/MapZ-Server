@@ -1,6 +1,8 @@
 package com.cheocharm.MapZ.common.oauth;
 
+import com.cheocharm.MapZ.common.exception.jwt.InvalidJwtException;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.util.MultiValueMap;
@@ -15,19 +17,31 @@ public class OauthApi {
 
     public ResponseEntity<String> callGoogle(OauthUrl url, String token) {
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-
+        HttpHeaders headers = setHeaders();
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(headers);
 
         UriComponentsBuilder uri = UriComponentsBuilder.fromHttpUrl(url.getUrl()).queryParam("id_token", token);
 
-        return restTemplate.exchange(
+        final ResponseEntity<String> response = restTemplate.exchange(
                 uri.toUriString(),
                 HttpMethod.GET,
                 request,
                 String.class
         );
+        checkHttpStatus(response);
+        return response;
+    }
+
+    private HttpHeaders setHeaders() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        return headers;
+    }
+
+    private void checkHttpStatus(ResponseEntity<String> response) {
+        if (ObjectUtils.notEqual(response.getStatusCode(), HttpStatus.OK)) {
+            throw new InvalidJwtException();
+        }
     }
 }
 

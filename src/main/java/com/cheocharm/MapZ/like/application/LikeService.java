@@ -37,13 +37,16 @@ public class LikeService {
         final DiaryEntity diaryEntity = diaryRepository.findById(likeDiaryRequest.getDiaryId())
                 .orElseThrow(NotFoundDiaryException::new);
 
+        checkAlreadyLikeDiary(userEntity, diaryEntity);
+
+        diaryLikeRepository.save(DiaryLikeEntity.of(diaryEntity, userEntity));
+    }
+
+    private void checkAlreadyLikeDiary(UserEntity userEntity, DiaryEntity diaryEntity) {
         diaryLikeRepository.findByDiaryEntityAndUserEntity(diaryEntity, userEntity)
                 .ifPresent(diaryLikeEntity -> {
                     throw new AlreadyLikedDiaryException();
                 });
-
-        DiaryLikeEntity diaryLikeEntity = DiaryLikeEntity.of(diaryEntity, userEntity);
-        diaryLikeRepository.save(diaryLikeEntity);
     }
 
     @Transactional(readOnly = true)
