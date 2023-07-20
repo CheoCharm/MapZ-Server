@@ -2,7 +2,7 @@ package com.cheocharm.MapZ.comment.domain.repository;
 
 import com.cheocharm.MapZ.comment.domain.repository.vo.CommentVO;
 import com.cheocharm.MapZ.comment.domain.repository.vo.QCommentVO;
-import com.cheocharm.MapZ.diary.domain.DiaryEntity;
+import com.cheocharm.MapZ.diary.domain.Diary;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
@@ -11,10 +11,10 @@ import org.springframework.data.domain.Slice;
 
 import java.util.List;
 
-import static com.cheocharm.MapZ.comment.domain.QCommentEntity.*;
+import static com.cheocharm.MapZ.comment.domain.QComment.comment;
 import static com.cheocharm.MapZ.common.util.QuerydslSupport.fetchSliceByCursor;
-import static com.cheocharm.MapZ.diary.domain.QDiaryEntity.diaryEntity;
-import static com.cheocharm.MapZ.user.domain.QUserEntity.userEntity;
+import static com.cheocharm.MapZ.diary.domain.QDiary.diary;
+import static com.cheocharm.MapZ.user.domain.QUser.user;
 
 @RequiredArgsConstructor
 public class CommentRepositoryCustomImpl implements CommentRepositoryCustom{
@@ -22,10 +22,10 @@ public class CommentRepositoryCustomImpl implements CommentRepositoryCustom{
     private final JPAQueryFactory queryFactory;
 
     @Override
-    public void deleteAllByDiaryEntityList(List<DiaryEntity> diaryEntityList) {
+    public void deleteAllByDiaries(List<Diary> diaries) {
         queryFactory
-                .delete(commentEntity)
-                .where(commentEntity.diaryEntity.in(diaryEntityList))
+                .delete(comment)
+                .where(comment.diary.in(diaries))
                 .execute();
     }
 
@@ -33,22 +33,22 @@ public class CommentRepositoryCustomImpl implements CommentRepositoryCustom{
     public Slice<CommentVO> findByDiaryId(Long userId, Long diaryId, Long cursorId, Pageable pageable) {
         JPAQuery<CommentVO> query = queryFactory
                 .select(new QCommentVO(
-                        commentEntity.userEntity.userImageUrl,
-                        commentEntity.userEntity.username,
-                        commentEntity.createdAt,
-                        commentEntity.content,
-                        commentEntity.userEntity.id,
-                        commentEntity.id,
-                        commentEntity.parentId,
-                        userEntity.id.eq(diaryEntity.userEntity.id),
-                        userEntity.id.eq(userId)
+                        comment.user.userImageUrl,
+                        comment.user.username,
+                        comment.createdAt,
+                        comment.content,
+                        comment.user.id,
+                        comment.id,
+                        comment.parentId,
+                        user.id.eq(diary.user.id),
+                        user.id.eq(userId)
                 ))
-                .from(commentEntity)
-                .innerJoin(commentEntity.diaryEntity, diaryEntity)
-                .innerJoin(commentEntity.userEntity, userEntity)
-                .where(commentEntity.id.gt(cursorId));
+                .from(comment)
+                .innerJoin(comment.diary, diary)
+                .innerJoin(comment.user, user)
+                .where(comment.id.gt(cursorId));
 
-        return fetchSliceByCursor(commentEntity.getType(), commentEntity.getMetadata(), query, pageable);
+        return fetchSliceByCursor(comment.getType(), comment.getMetadata(), query, pageable);
     }
 
 }

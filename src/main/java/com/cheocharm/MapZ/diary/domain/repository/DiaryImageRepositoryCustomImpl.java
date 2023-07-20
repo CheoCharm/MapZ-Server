@@ -1,6 +1,6 @@
 package com.cheocharm.MapZ.diary.domain.repository;
 
-import com.cheocharm.MapZ.diary.domain.DiaryEntity;
+import com.cheocharm.MapZ.diary.domain.Diary;
 import com.cheocharm.MapZ.diary.domain.repository.vo.DiaryImagePreviewVO;
 import com.cheocharm.MapZ.diary.domain.repository.vo.DiaryPreviewVO;
 import com.cheocharm.MapZ.diary.domain.repository.vo.QDiaryImagePreviewVO;
@@ -11,9 +11,9 @@ import lombok.RequiredArgsConstructor;
 
 import java.util.List;
 
-import static com.cheocharm.MapZ.diary.domain.QDiaryEntity.diaryEntity;
-import static com.cheocharm.MapZ.diary.domain.QDiaryImageEntity.diaryImageEntity;
-import static com.cheocharm.MapZ.like.domain.QDiaryLikeEntity.diaryLikeEntity;
+import static com.cheocharm.MapZ.diary.domain.QDiary.diary;
+import static com.cheocharm.MapZ.diary.domain.QDiaryImage.diaryImage;
+import static com.cheocharm.MapZ.like.domain.QDiaryLike.diaryLike;
 
 @RequiredArgsConstructor
 public class DiaryImageRepositoryCustomImpl implements DiaryImageRepositoryCustom{
@@ -22,8 +22,8 @@ public class DiaryImageRepositoryCustomImpl implements DiaryImageRepositoryCusto
     @Override
     public List<String> findAllByDiaryId(Long diaryId) {
         return queryFactory
-                .select(diaryImageEntity.diaryImageUrl)
-                .from(diaryImageEntity)
+                .select(diaryImage.diaryImageUrl)
+                .from(diaryImage)
                 .where(diaryIdEq(diaryId))
                 .fetch();
     }
@@ -31,16 +31,16 @@ public class DiaryImageRepositoryCustomImpl implements DiaryImageRepositoryCusto
     @Override
     public void deleteAllByDiaryId(Long diaryId) {
         queryFactory
-                .delete(diaryImageEntity)
+                .delete(diaryImage)
                 .where(diaryIdEq(diaryId))
                 .execute();
     }
 
     @Override
-    public void deleteAllByDiaryEntityList(List<DiaryEntity> diaryEntities) {
+    public void deleteAllByDiaries(List<Diary> diaries) {
         queryFactory
-                .delete(diaryImageEntity)
-                .where(diaryImageEntity.diaryEntity.in(diaryEntities))
+                .delete(diaryImage)
+                .where(diaryImage.diary.in(diaries))
                 .execute();
     }
 
@@ -48,35 +48,35 @@ public class DiaryImageRepositoryCustomImpl implements DiaryImageRepositoryCusto
     public List<DiaryImagePreviewVO> findPreviewImage(List<Long> diaryIds) {
         return queryFactory
                 .select(new QDiaryImagePreviewVO(
-                        diaryImageEntity.diaryEntity.id,
-                        diaryImageEntity.diaryImageUrl
+                        diaryImage.diary.id,
+                        diaryImage.diaryImageUrl
                 ))
-                .from(diaryImageEntity)
-                .where(diaryImageEntity.diaryEntity.id.in(diaryIds).and(diaryImageEntity.imageOrder.eq(1)))
+                .from(diaryImage)
+                .where(diaryImage.diary.id.in(diaryIds).and(diaryImage.imageOrder.eq(1)))
                 .fetch();
     }
 
     public List<DiaryPreviewVO> getDiaryPreview(Long diaryId, Long userId) {
         return queryFactory
                 .select(new QDiaryPreviewVO(
-                        diaryImageEntity.diaryImageUrl,
-                        diaryImageEntity.imageOrder,
-                        diaryEntity.address,
-                        diaryLikeEntity.isNotNull()
+                        diaryImage.diaryImageUrl,
+                        diaryImage.imageOrder,
+                        diary.address,
+                        diaryLike.isNotNull()
                 ))
-                .from(diaryImageEntity)
-                .innerJoin(diaryImageEntity.diaryEntity, diaryEntity)
-                .leftJoin(diaryEntity.diaryLikeEntities, diaryLikeEntity)
+                .from(diaryImage)
+                .innerJoin(diaryImage.diary, diary)
+                .leftJoin(diary.diaryLikes, diaryLike)
                 .on(likeUserIdEq(userId))
                 .where(diaryIdEq(diaryId))
                 .fetch();
     }
 
     private BooleanExpression diaryIdEq(Long diaryId) {
-        return diaryImageEntity.diaryEntity.id.eq(diaryId);
+        return diaryImage.diary.id.eq(diaryId);
     }
 
     private BooleanExpression likeUserIdEq(Long userId) {
-        return diaryLikeEntity.userEntity.id.eq(userId);
+        return diaryLike.user.id.eq(userId);
     }
 }

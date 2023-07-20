@@ -6,7 +6,7 @@ import com.cheocharm.MapZ.common.exception.user.ExitGroupChiefException;
 import com.cheocharm.MapZ.common.exception.user.NoPermissionUserException;
 import com.cheocharm.MapZ.common.exception.usergroup.GroupMemberSizeExceedException;
 import com.cheocharm.MapZ.common.interceptor.UserThreadLocal;
-import com.cheocharm.MapZ.group.domain.GroupEntity;
+import com.cheocharm.MapZ.group.domain.Group;
 import com.cheocharm.MapZ.group.domain.GroupLimit;
 import com.cheocharm.MapZ.group.presentation.dto.request.AcceptInvitationRequest;
 import com.cheocharm.MapZ.group.presentation.dto.request.ChangeChiefRequest;
@@ -19,9 +19,9 @@ import com.cheocharm.MapZ.group.presentation.dto.request.RefuseInvitationRequest
 import com.cheocharm.MapZ.group.presentation.dto.request.UpdateGroupRequest;
 import com.cheocharm.MapZ.group.presentation.dto.request.UpdateInvitationStatusRequest;
 import com.cheocharm.MapZ.group.presentation.dto.response.JoinGroupResultResponse;
-import com.cheocharm.MapZ.user.domain.UserEntity;
+import com.cheocharm.MapZ.user.domain.User;
 import com.cheocharm.MapZ.usergroup.domain.InvitationStatus;
-import com.cheocharm.MapZ.usergroup.domain.UserGroupEntity;
+import com.cheocharm.MapZ.usergroup.domain.UserGroup;
 import com.cheocharm.MapZ.usergroup.domain.UserRole;
 import org.jeasy.random.EasyRandom;
 import org.junit.jupiter.api.AfterAll;
@@ -57,13 +57,13 @@ class GroupServiceTest extends ServiceTest {
     private GroupService groupService;
 
     private static MockedStatic<UserThreadLocal> utl;
-    private static UserEntity user;
+    private static User user;
     private static final EasyRandom easyRandom = new EasyRandom();
 
     @BeforeAll
     static void beforeAll() {
         utl = mockStatic(UserThreadLocal.class);
-        user = easyRandom.nextObject(UserEntity.class);
+        user = easyRandom.nextObject(User.class);
         utl.when(UserThreadLocal::get).thenReturn(GroupServiceTest.user);
     }
 
@@ -105,11 +105,11 @@ class GroupServiceTest extends ServiceTest {
     void updateGroup() {
 
         //given
-        final GroupEntity group = easyRandom.nextObject(GroupEntity.class);
+        final Group group = easyRandom.nextObject(Group.class);
 
-        final UserGroupEntity userGroup = UserGroupEntity.builder()
-                .groupEntity(group)
-                .userEntity(user)
+        final UserGroup userGroup = UserGroup.builder()
+                .group(group)
+                .user(user)
                 .invitationStatus(InvitationStatus.ACCEPT)
                 .userRole(UserRole.CHIEF)
                 .build();
@@ -117,7 +117,7 @@ class GroupServiceTest extends ServiceTest {
         given(userGroupRepository.findByGroupIdAndUserId(anyLong(), anyLong()))
                 .willReturn(Optional.of(userGroup));
 
-        final UpdateGroupRequest updateGroupRequest = new UpdateGroupRequest(userGroup.getGroupEntity().getId(), "updateGroupName",
+        final UpdateGroupRequest updateGroupRequest = new UpdateGroupRequest(userGroup.getGroup().getId(), "updateGroupName",
                 "updateBio", false);
         final MockMultipartFile image = getMockMultipartFile("image");
 
@@ -125,7 +125,7 @@ class GroupServiceTest extends ServiceTest {
         groupService.updateGroup(updateGroupRequest, image);
 
         //then
-        assertThat(userGroup.getGroupEntity().getGroupName())
+        assertThat(userGroup.getGroup().getGroupName())
                 .isEqualTo(updateGroupRequest.getGroupName());
 
     }
@@ -135,11 +135,11 @@ class GroupServiceTest extends ServiceTest {
     void updateGroupFailWhenNoPermission() {
 
         //given
-        final GroupEntity group = easyRandom.nextObject(GroupEntity.class);
+        final Group group = easyRandom.nextObject(Group.class);
 
-        final UserGroupEntity userGroup = UserGroupEntity.builder()
-                .groupEntity(group)
-                .userEntity(user)
+        final UserGroup userGroup = UserGroup.builder()
+                .group(group)
+                .user(user)
                 .invitationStatus(InvitationStatus.ACCEPT)
                 .userRole(UserRole.MEMBER)
                 .build();
@@ -147,7 +147,7 @@ class GroupServiceTest extends ServiceTest {
         given(userGroupRepository.findByGroupIdAndUserId(anyLong(), anyLong()))
                 .willReturn(Optional.of(userGroup));
 
-        final UpdateGroupRequest updateGroupRequest = new UpdateGroupRequest(userGroup.getGroupEntity().getId(), "updateGroupName",
+        final UpdateGroupRequest updateGroupRequest = new UpdateGroupRequest(userGroup.getGroup().getId(), "updateGroupName",
                 "updateBio", false);
         final MockMultipartFile image = getMockMultipartFile("image");
 
@@ -161,11 +161,11 @@ class GroupServiceTest extends ServiceTest {
     void joinGroup() {
 
         //given
-        final GroupEntity group = easyRandom.nextObject(GroupEntity.class);
+        final Group group = easyRandom.nextObject(Group.class);
 
-        final UserGroupEntity userGroup = UserGroupEntity.builder()
-                .groupEntity(group)
-                .userEntity(user)
+        final UserGroup userGroup = UserGroup.builder()
+                .group(group)
+                .user(user)
                 .invitationStatus(InvitationStatus.PENDING)
                 .build();
 
@@ -173,10 +173,10 @@ class GroupServiceTest extends ServiceTest {
                 .willReturn(Optional.of(group));
         given(userGroupRepository.findByGroupIdAndUserId(anyLong(), anyLong()))
                 .willReturn(Optional.empty());
-        given(userGroupRepository.save(any(UserGroupEntity.class)))
+        given(userGroupRepository.save(any(UserGroup.class)))
                 .willReturn(userGroup);
 
-        final JoinGroupRequest joinGroupRequest = new JoinGroupRequest(userGroup.getGroupEntity().getId());
+        final JoinGroupRequest joinGroupRequest = new JoinGroupRequest(userGroup.getGroup().getId());
 
         //when
         final JoinGroupResultResponse response = groupService.joinGroup(joinGroupRequest);
@@ -193,15 +193,15 @@ class GroupServiceTest extends ServiceTest {
     void joinGroupWhenUserNotAttend() {
 
         //given
-        final GroupEntity group = easyRandom.nextObject(GroupEntity.class);
-        final UserGroupEntity userGroup = easyRandom.nextObject(UserGroupEntity.class);
+        final Group group = easyRandom.nextObject(Group.class);
+        final UserGroup userGroup = easyRandom.nextObject(UserGroup.class);
 
         given(groupRepository.findById(anyLong()))
                 .willReturn(Optional.of(group));
         given(userGroupRepository.findByGroupIdAndUserId(anyLong(), anyLong()))
                 .willReturn(Optional.of(userGroup));
 
-        final JoinGroupRequest joinGroupRequest = new JoinGroupRequest(userGroup.getGroupEntity().getId());
+        final JoinGroupRequest joinGroupRequest = new JoinGroupRequest(userGroup.getGroup().getId());
 
         //when
         final JoinGroupResultResponse response = groupService.joinGroup(joinGroupRequest);
@@ -216,21 +216,21 @@ class GroupServiceTest extends ServiceTest {
     void updateInvitationStatus() {
 
         //given
-        final GroupEntity group = easyRandom.nextObject(GroupEntity.class);
+        final Group group = easyRandom.nextObject(Group.class);
 
-        final UserGroupEntity userGroup = UserGroupEntity.builder()
-                .groupEntity(group)
-                .userEntity(user)
+        final UserGroup userGroup = UserGroup.builder()
+                .group(group)
+                .user(user)
                 .invitationStatus(InvitationStatus.ACCEPT)
                 .userRole(UserRole.CHIEF)
                 .build();
         given(userGroupRepository.findByGroupIdAndUserId(group.getId(), user.getId()))
                 .willReturn(Optional.of(userGroup));
 
-        final UserEntity otherUser = easyRandom.nextObject(UserEntity.class);
-        final UserGroupEntity otherUserGroup = UserGroupEntity.builder()
-                .groupEntity(group)
-                .userEntity(otherUser)
+        final User otherUser = easyRandom.nextObject(User.class);
+        final UserGroup otherUserGroup = UserGroup.builder()
+                .group(group)
+                .user(otherUser)
                 .invitationStatus(InvitationStatus.PENDING)
                 .userRole(UserRole.MEMBER)
                 .build();
@@ -251,10 +251,10 @@ class GroupServiceTest extends ServiceTest {
     void updateInvitationStatusFailWhenNotChief() {
 
         //given
-        final GroupEntity group = easyRandom.nextObject(GroupEntity.class);
-        final UserGroupEntity userGroup = UserGroupEntity.builder()
-                .userEntity(user)
-                .groupEntity(group)
+        final Group group = easyRandom.nextObject(Group.class);
+        final UserGroup userGroup = UserGroup.builder()
+                .user(user)
+                .group(group)
                 .invitationStatus(InvitationStatus.PENDING)
                 .userRole(UserRole.MEMBER)
                 .build();
@@ -281,10 +281,10 @@ class GroupServiceTest extends ServiceTest {
     void exitGroupFailWhenUserRoleIsChief() {
 
         //given
-        final GroupEntity group = easyRandom.nextObject(GroupEntity.class);
-        final UserGroupEntity userGroup = UserGroupEntity.builder()
-                .userEntity(user)
-                .groupEntity(group)
+        final Group group = easyRandom.nextObject(Group.class);
+        final UserGroup userGroup = UserGroup.builder()
+                .user(user)
+                .group(group)
                 .invitationStatus(InvitationStatus.ACCEPT)
                 .userRole(UserRole.CHIEF)
                 .build();
@@ -304,17 +304,17 @@ class GroupServiceTest extends ServiceTest {
     void updateChief() {
 
         //given
-        final GroupEntity group = easyRandom.nextObject(GroupEntity.class);
-        final UserGroupEntity userGroup = UserGroupEntity.builder()
-                .userEntity(user)
-                .groupEntity(group)
+        final Group group = easyRandom.nextObject(Group.class);
+        final UserGroup userGroup = UserGroup.builder()
+                .user(user)
+                .group(group)
                 .invitationStatus(InvitationStatus.ACCEPT)
                 .userRole(UserRole.CHIEF)
                 .build();
-        final UserEntity targetUser = easyRandom.nextObject(UserEntity.class);
-        final UserGroupEntity targetUserGroup = UserGroupEntity.builder()
-                .userEntity(targetUser)
-                .groupEntity(group)
+        final User targetUser = easyRandom.nextObject(User.class);
+        final UserGroup targetUserGroup = UserGroup.builder()
+                .user(targetUser)
+                .group(group)
                 .invitationStatus(InvitationStatus.ACCEPT)
                 .userRole(UserRole.MEMBER)
                 .build();
@@ -337,10 +337,10 @@ class GroupServiceTest extends ServiceTest {
     void updateChiefFailWhenNotChiefUser() {
 
         //given
-        final GroupEntity group = easyRandom.nextObject(GroupEntity.class);
-        final UserGroupEntity userGroup = UserGroupEntity.builder()
-                .userEntity(user)
-                .groupEntity(group)
+        final Group group = easyRandom.nextObject(Group.class);
+        final UserGroup userGroup = UserGroup.builder()
+                .user(user)
+                .group(group)
                 .invitationStatus(InvitationStatus.ACCEPT)
                 .userRole(UserRole.MEMBER)
                 .build();
@@ -361,12 +361,12 @@ class GroupServiceTest extends ServiceTest {
     void inviteUser() {
 
         //given
-        final GroupEntity group = easyRandom.nextObject(GroupEntity.class);
-        final UserGroupEntity userGroup = UserGroupEntity.builder()
+        final Group group = easyRandom.nextObject(Group.class);
+        final UserGroup userGroup = UserGroup.builder()
                 .userRole(UserRole.MEMBER)
                 .invitationStatus(InvitationStatus.ACCEPT)
-                .groupEntity(group)
-                .userEntity(user)
+                .group(group)
+                .user(user)
                 .build();
         given(userGroupRepository.findByGroupIdAndUserId(any(), any()))
                 .willReturn(Optional.of(userGroup));
@@ -374,13 +374,13 @@ class GroupServiceTest extends ServiceTest {
         final int randomNumber = new Random().nextInt(8) + 1;
 
         final ArrayList<Long> userIds = new ArrayList<>();
-        final ArrayList<UserEntity> users = new ArrayList<>();
+        final ArrayList<User> users = new ArrayList<>();
         for (int i = 0; i < randomNumber; i++) {
-            final UserEntity userEntity = easyRandom.nextObject(UserEntity.class);
-            userIds.add(userEntity.getId());
-            users.add(userEntity);
+            final User user = easyRandom.nextObject(User.class);
+            userIds.add(user.getId());
+            users.add(user);
         }
-        given(userRepository.getUserEntityListByUserIdList(userIds))
+        given(userRepository.getUserListByUserIdList(userIds))
                 .willReturn(users);
         final InviteGroupRequest inviteGroupRequest = new InviteGroupRequest(group.getId(), userIds);
 
@@ -388,7 +388,7 @@ class GroupServiceTest extends ServiceTest {
         groupService.inviteUser(inviteGroupRequest);
 
         //then
-        then(userGroupRepository).should(times(userIds.size())).save(any(UserGroupEntity.class));
+        then(userGroupRepository).should(times(userIds.size())).save(any(UserGroup.class));
     }
 
     @Test
@@ -396,10 +396,10 @@ class GroupServiceTest extends ServiceTest {
     void kickUser() {
 
         //given
-        final GroupEntity group = easyRandom.nextObject(GroupEntity.class);
-        final UserGroupEntity userGroup = UserGroupEntity.builder()
-                .userEntity(user)
-                .groupEntity(group)
+        final Group group = easyRandom.nextObject(Group.class);
+        final UserGroup userGroup = UserGroup.builder()
+                .user(user)
+                .group(group)
                 .invitationStatus(InvitationStatus.ACCEPT)
                 .userRole(UserRole.CHIEF)
                 .build();
@@ -407,10 +407,10 @@ class GroupServiceTest extends ServiceTest {
         given(userGroupRepository.findByGroupIdAndUserId(group.getId(), user.getId()))
                 .willReturn(Optional.of(userGroup));
 
-        final UserEntity targetUser = easyRandom.nextObject(UserEntity.class);
-        final UserGroupEntity targetUserGroup = UserGroupEntity.builder()
-                .userEntity(targetUser)
-                .groupEntity(group)
+        final User targetUser = easyRandom.nextObject(User.class);
+        final UserGroup targetUserGroup = UserGroup.builder()
+                .user(targetUser)
+                .group(group)
                 .invitationStatus(InvitationStatus.ACCEPT)
                 .userRole(UserRole.MEMBER)
                 .build();
@@ -431,10 +431,10 @@ class GroupServiceTest extends ServiceTest {
     void acceptInvitation() {
 
         //given
-        final GroupEntity group = easyRandom.nextObject(GroupEntity.class);
-        final UserGroupEntity userGroup = UserGroupEntity.builder()
-                .userEntity(user)
-                .groupEntity(group)
+        final Group group = easyRandom.nextObject(Group.class);
+        final UserGroup userGroup = UserGroup.builder()
+                .user(user)
+                .group(group)
                 .invitationStatus(InvitationStatus.PENDING)
                 .userRole(UserRole.MEMBER)
                 .build();
@@ -458,7 +458,7 @@ class GroupServiceTest extends ServiceTest {
     void joinFailWhenGroupOverCapacity() {
 
         //given
-        final GroupEntity group = easyRandom.nextObject(GroupEntity.class);
+        final Group group = easyRandom.nextObject(Group.class);
 
         given(userGroupRepository.countByGroupId(anyLong()))
                 .willReturn(GroupLimit.LIMIT_GROUP_PEOPLE.getLimitSize());
@@ -475,10 +475,10 @@ class GroupServiceTest extends ServiceTest {
     void refuseInvitation() {
 
         //given
-        final GroupEntity group = easyRandom.nextObject(GroupEntity.class);
-        final UserGroupEntity userGroup = UserGroupEntity.builder()
-                .userEntity(user)
-                .groupEntity(group)
+        final Group group = easyRandom.nextObject(Group.class);
+        final UserGroup userGroup = UserGroup.builder()
+                .user(user)
+                .group(group)
                 .invitationStatus(InvitationStatus.PENDING)
                 .userRole(UserRole.MEMBER)
                 .build();

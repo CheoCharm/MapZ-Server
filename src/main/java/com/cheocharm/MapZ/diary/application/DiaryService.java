@@ -6,8 +6,8 @@ import com.cheocharm.MapZ.common.exception.group.NotFoundGroupException;
 import com.cheocharm.MapZ.common.exception.user.NoPermissionUserException;
 import com.cheocharm.MapZ.common.interceptor.UserThreadLocal;
 import com.cheocharm.MapZ.common.util.S3Utils;
-import com.cheocharm.MapZ.diary.domain.DiaryEntity;
-import com.cheocharm.MapZ.diary.domain.DiaryImageEntity;
+import com.cheocharm.MapZ.diary.domain.Diary;
+import com.cheocharm.MapZ.diary.domain.DiaryImage;
 import com.cheocharm.MapZ.diary.domain.repository.vo.DiaryCoordinateVO;
 import com.cheocharm.MapZ.diary.domain.repository.vo.DiaryDetailVO;
 import com.cheocharm.MapZ.diary.domain.repository.vo.DiaryImagePreviewVO;
@@ -28,9 +28,9 @@ import com.cheocharm.MapZ.diary.domain.repository.DiaryImageRepository;
 import com.cheocharm.MapZ.diary.domain.repository.DiaryRepository;
 import com.cheocharm.MapZ.diary.domain.repository.vo.MyDiaryVO;
 import com.cheocharm.MapZ.diary.presentation.dto.response.WriteDiaryResponse;
-import com.cheocharm.MapZ.group.domain.GroupEntity;
+import com.cheocharm.MapZ.group.domain.Group;
 import com.cheocharm.MapZ.group.domain.repository.GroupRepository;
-import com.cheocharm.MapZ.user.domain.UserEntity;
+import com.cheocharm.MapZ.user.domain.User;
 import com.cheocharm.MapZ.usergroup.domain.repository.UserGroupRepository;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.ObjectUtils;
@@ -72,19 +72,19 @@ public class DiaryService {
 
     @Transactional
     public WriteDiaryResponse writeDiary(WriteDiaryRequest request) {
-        DiaryEntity diaryEntity = diaryRepository.findById(request.getDiaryId())
+        Diary diary = diaryRepository.findById(request.getDiaryId())
                 .orElseThrow(NotFoundDiaryException::new);
 
-        diaryEntity.write(request.getTitle(), request.getContent());
+        diary.write(request.getTitle(), request.getContent());
 
-        return WriteDiaryResponse.from(diaryEntity.getId());
+        return WriteDiaryResponse.from(diary.getId());
     }
 
     @Transactional(readOnly = true)
     public GetDiaryListResponse getDiary(Long groupId, Long cursorId, Integer page) {
-        UserEntity userEntity = UserThreadLocal.get();
+        User user = UserThreadLocal.get();
         final Slice<DiarySliceVO> diarySlice = diaryRepository.getDiarySlice(
-                userEntity.getId(),
+                user.getId(),
                 groupId,
                 applyCursorId(cursorId),
                 applyDescPageConfigBy(page, MY_DIARY_SIZE, FIELD_CREATED_AT)
@@ -96,25 +96,25 @@ public class DiaryService {
 
     @Transactional
     public void deleteDiary(DeleteDiaryRequest request) {
-        UserEntity userEntity = UserThreadLocal.get();
-        validateSameUser(request.getDiaryId(), userEntity.getId());
+        User user = UserThreadLocal.get();
+        validateSameUser(request.getDiaryId(), user.getId());
         diaryRepository.deleteById(request.getDiaryId());
     }
 
     private void validateSameUser(Long diaryId, Long userId) {
-        final DiaryEntity diary = diaryRepository.findById(diaryId)
+        final Diary diary = diaryRepository.findById(diaryId)
                 .orElseThrow(NotFoundDiaryException::new);
-        if (ObjectUtils.notEqual(diary.getUserEntity().getId(), userId)) {
+        if (ObjectUtils.notEqual(diary.getUser().getId(), userId)) {
             throw new NoPermissionUserException();
         }
     }
 
     @Transactional(readOnly = true)
     public MyDiaryResponse getMyDiary(Long cursorId, Integer page) {
-        UserEntity userEntity = UserThreadLocal.get();
+        User user = UserThreadLocal.get();
 
         Slice<MyDiaryVO> content = diaryRepository.findByUserId(
-                userEntity.getId(),
+                user.getId(),
                 applyCursorId(cursorId),
                 applyDescPageConfigBy(page, MY_DIARY_SIZE, FIELD_CREATED_AT)
         );
@@ -125,31 +125,31 @@ public class DiaryService {
 
     @Transactional
     public WriteDiaryImageResponse writeDiaryImage(WriteDiaryImageRequest request, List<MultipartFile> files) {
-        UserEntity userEntity = UserThreadLocal.get();
-        GroupEntity groupEntity = groupRepository.findById(request.getGroupId())
+        User user = UserThreadLocal.get();
+        Group group = groupRepository.findById(request.getGroupId())
                 .orElseThrow(NotFoundGroupException::new);
 
-        DiaryEntity diaryEntity = diaryRepository.save(
-                DiaryEntity.of(
-                        userEntity,
-                        groupEntity,
+        Diary diary = diaryRepository.save(
+                Diary.of(
+                        user,
+                        group,
                         request.getAddress(),
                         getPoint(request.getLongitude(), request.getLatitude())
                 )
         );
 
-        List<String> imageURLs = s3Utils.uploadDiaryImage(files, diaryEntity.getId());
-        saveDiaryImages(diaryEntity, imageURLs);
+        List<String> imageURLs = s3Utils.uploadDiaryImage(files, diary.getId());
+        saveDiaryImages(diary, imageURLs);
 
-        return new WriteDiaryImageResponse(diaryEntity.getId(), imageURLs, getImageName(files));
+        return new WriteDiaryImageResponse(diary.getId(), imageURLs, getImageName(files));
     }
 
-    private void saveDiaryImages(DiaryEntity diaryEntity, List<String> imageURLs) {
-        ArrayList<DiaryImageEntity> diaryImageEntities = new ArrayList<>();
+    private void saveDiaryImages(Diary diary, List<String> imageURLs) {
+        ArrayList<DiaryImage> diaryImageEntities = new ArrayList<>();
         int imageOrder = 1;
         for (String imageURL : imageURLs) {
             diaryImageEntities.add(
-                    DiaryImageEntity.of(diaryEntity, imageURL, imageOrder)
+                    DiaryImage.of(diary, imageURL, imageOrder)
             );
             imageOrder += 1;
         }
@@ -174,20 +174,20 @@ public class DiaryService {
 
     @Transactional(readOnly = true)
     public DiaryDetailResponse getDiaryDetail(Long diaryId) {
-        final UserEntity userEntity = UserThreadLocal.get();
+        final User user = UserThreadLocal.get();
 
-        final DiaryDetailVO diaryDetail = diaryRepository.getDiaryDetail(diaryId, userEntity.getId());
+        final DiaryDetailVO diaryDetail = diaryRepository.getDiaryDetail(diaryId, user.getId());
 
         return DiaryDetailResponse.of(diaryDetail);
     }
 
     @Transactional(readOnly = true)
     public List<DiaryCoordinateResponse> getDiaryCoordinate(Double longitude, Double latitude) {
-        final UserEntity userEntity = UserThreadLocal.get();
+        final User user = UserThreadLocal.get();
 
         final List<DiaryCoordinateVO> diaryCoordinateVOS = diaryRepository.findByDiaryCoordinate(
                 getPoint(longitude, latitude),
-                getGroupIds(userEntity.getId()),
+                getGroupIds(user.getId()),
                 SEARCH_RADIUS_DISTANCE
         );
         return DiaryCoordinateResponse.from(diaryCoordinateVOS);
@@ -195,11 +195,11 @@ public class DiaryService {
 
     @Transactional(readOnly = true)
     public List<DiaryPreviewResponse> getDiaryByMap(Double longitude, Double latitude, Double zoomLevel) {
-        final UserEntity userEntity = UserThreadLocal.get();
+        final User user = UserThreadLocal.get();
 
         final List<DiaryCoordinateVO> diaryCoordinateVOS = diaryRepository.findByDiaryCoordinate(
                 getPoint(longitude, latitude),
-                getGroupIds(userEntity.getId()),
+                getGroupIds(user.getId()),
                 getDistance(zoomLevel)
         );
 
@@ -225,9 +225,9 @@ public class DiaryService {
 
     @Transactional(readOnly = true)
     public DiaryPreviewDetailResponse getDiaryPreviewDetail(Long diaryId) {
-        final UserEntity userEntity = UserThreadLocal.get();
+        final User user = UserThreadLocal.get();
 
-        final List<DiaryPreviewVO> diaryPreviewVOS = diaryImageRepository.getDiaryPreview(diaryId, userEntity.getId());
+        final List<DiaryPreviewVO> diaryPreviewVOS = diaryImageRepository.getDiaryPreview(diaryId, user.getId());
         return DiaryPreviewDetailResponse.of(diaryPreviewVOS);
     }
 

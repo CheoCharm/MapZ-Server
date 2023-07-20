@@ -1,7 +1,7 @@
 package com.cheocharm.MapZ.user.presentation.dto.response;
 
-import com.cheocharm.MapZ.user.domain.UserEntity;
-import com.cheocharm.MapZ.usergroup.domain.UserGroupEntity;
+import com.cheocharm.MapZ.user.domain.User;
+import com.cheocharm.MapZ.usergroup.domain.UserGroup;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -27,7 +27,7 @@ public class GetUserListResponse {
 
     }
 
-    public static GetUserListResponse of(List<UserEntity> userEntities, List<UserGroupEntity> userGroupEntities, boolean hasNext) {
+    public static GetUserListResponse of(List<User> userEntities, List<UserGroup> userGroupEntities, boolean hasNext) {
         final List<GetUserListResponse.UserList> userList = userEntities.stream()
                 .map(userEntity ->
                         GetUserListResponse.UserList.builder()
@@ -35,7 +35,7 @@ public class GetUserListResponse {
                                 .userImageUrl(userEntity.getUserImageUrl())
                                 .userId(userEntity.getId())
                                 .isMember(userGroupEntities.stream()
-                                        .anyMatch(userGroupEntity -> userEntity.equals(userGroupEntity.getUserEntity()))
+                                        .anyMatch(userGroupEntity -> userEntity.equals(userGroupEntity.getUser()))
                                 )
                                 .build()
                 )
