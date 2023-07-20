@@ -1,7 +1,7 @@
 package com.cheocharm.MapZ.group.presentation.dto.response;
 
 import com.cheocharm.MapZ.usergroup.domain.InvitationStatus;
-import com.cheocharm.MapZ.usergroup.domain.UserGroupEntity;
+import com.cheocharm.MapZ.usergroup.domain.UserGroup;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -16,13 +16,13 @@ public class GroupMemberResponse {
     private Long userId;
     private InvitationStatus invitationStatus;
 
-    public static List<GroupMemberResponse> of(List<UserGroupEntity> userGroupEntities) {
+    public static List<GroupMemberResponse> of(List<UserGroup> userGroupEntities) {
         return userGroupEntities.stream()
                 .map(userGroupEntity ->
                         GroupMemberResponse.builder()
-                                    .username(userGroupEntity.getUserEntity().getUsername())
-                                    .userImageUrl(userGroupEntity.getUserEntity().getUserImageUrl())
-                                    .userId(userGroupEntity.getUserEntity().getId())
+                                    .username(userGroupEntity.getUser().getUsername())
+                                    .userImageUrl(userGroupEntity.getUser().getUserImageUrl())
+                                    .userId(userGroupEntity.getUser().getId())
                                     .invitationStatus(userGroupEntity.getInvitationStatus())
                                     .build()
                 )
