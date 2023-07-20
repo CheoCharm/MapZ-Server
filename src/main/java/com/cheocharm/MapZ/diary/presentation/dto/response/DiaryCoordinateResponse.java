@@ -14,7 +14,7 @@ public class DiaryCoordinateResponse {
     private Double longitude;
     private Double latitude;
 
-    public static List<DiaryCoordinateResponse> of(List<DiaryCoordinateVO> diaryCoordinateVOS) {
+    public static List<DiaryCoordinateResponse> from(List<DiaryCoordinateVO> diaryCoordinateVOS) {
         return diaryCoordinateVOS.stream()
                 .map(diaryCoordinateVO -> new DiaryCoordinateResponse(
                         diaryCoordinateVO.getDiaryId(),
