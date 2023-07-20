@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Getter;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Getter
@@ -19,7 +20,6 @@ public class GetMyGroupResponse {
     private String chiefUserImage;
     private Long groupId;
 
-
     public static List<GetMyGroupResponse> of(List<GroupEntity> groupEntities, List<CountUserGroupVO> countUserGroupVOS, List<ChiefUserImageVO> chiefUserImageVOS) {
         return groupEntities.stream()
                 .map(groupEntity ->
@@ -27,30 +27,26 @@ public class GetMyGroupResponse {
                                 .groupName(groupEntity.getGroupName())
                                 .groupImageUrl(groupEntity.getGroupImageUrl())
                                 .groupId(groupEntity.getId())
-                                .count(getCount(groupEntity,countUserGroupVOS))
-                                .chiefUserImage(getChiefUserImage(groupEntity, chiefUserImageVOS))
+                                .count(getCount(groupEntity.getId(), countUserGroupVOS))
+                                .chiefUserImage(getChiefUserImage(groupEntity.getId(), chiefUserImageVOS)
+                                        .orElse(null))
                                 .build()
                 )
                 .collect(Collectors.toList());
     }
 
-    private static Long getCount(GroupEntity groupEntity, List<CountUserGroupVO> countUserGroupVOS) {
-        Long count = 1L;
-        for (CountUserGroupVO countUserGroupVO : countUserGroupVOS) {
-            if (groupEntity.getId().equals(countUserGroupVO.getId())) {
-                count = countUserGroupVO.getCnt();
-                break;
-            }
-        }
-        return count - 1;
+    private static Long getCount(Long id, List<CountUserGroupVO> countUserGroupVOS) {
+        return countUserGroupVOS.stream()
+                .filter(vo -> id.equals(vo.getId()))
+                .map(CountUserGroupVO::getCnt)
+                .findAny()
+                .orElse(1L) - 1;
     }
 
-    private static String getChiefUserImage(GroupEntity groupEntity, List<ChiefUserImageVO> chiefUserImageVOS) {
-        for (ChiefUserImageVO chiefUserImageVO : chiefUserImageVOS) {
-            if (groupEntity.getId().equals(chiefUserImageVO.getId())) {
-                return chiefUserImageVO.getChiefUserImage();
-            }
-        }
-        return null;
+    private static Optional<String> getChiefUserImage(Long id, List<ChiefUserImageVO> chiefUserImageVOS) {
+        return chiefUserImageVOS.stream()
+                .filter(vo -> id.equals(vo.getId()))
+                .map(ChiefUserImageVO::getChiefUserImage)
+                .findAny();
     }
 }

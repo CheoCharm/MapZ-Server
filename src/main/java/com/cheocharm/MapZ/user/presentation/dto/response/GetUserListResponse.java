@@ -23,7 +23,7 @@ public class GetUserListResponse {
         private String userImageUrl;
         private Long userId;
         @Schema(description = "그룹에 포함되어 있는 멤버면 true, 아니면 false")
-        private Boolean member;
+        private Boolean isMember;
 
     }
 
@@ -34,20 +34,13 @@ public class GetUserListResponse {
                                 .username(userEntity.getUsername())
                                 .userImageUrl(userEntity.getUserImageUrl())
                                 .userId(userEntity.getId())
-                                .member(isMember(userEntity, userGroupEntities))
+                                .isMember(userGroupEntities.stream()
+                                        .anyMatch(userGroupEntity -> userEntity.equals(userGroupEntity.getUserEntity()))
+                                )
                                 .build()
                 )
                 .collect(Collectors.toList());
 
         return new GetUserListResponse(hasNext, userList);
-    }
-
-    private static Boolean isMember(UserEntity userEntity, List<UserGroupEntity> userGroupEntities) {
-        for (UserGroupEntity userGroupEntity : userGroupEntities) {
-            if (userEntity.equals(userGroupEntity.getUserEntity())) {
-                return true;
-            }
-        }
-        return false;
     }
 }
