@@ -1,7 +1,7 @@
 package com.cheocharm.MapZ.user.domain.repository;
 
 import com.cheocharm.MapZ.RepositoryTest;
-import com.cheocharm.MapZ.user.domain.UserEntity;
+import com.cheocharm.MapZ.user.domain.User;
 import com.cheocharm.MapZ.user.domain.UserProvider;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -21,13 +21,13 @@ class UserRepositoryCustomImplTest {
     @Autowired
     private UserRepository userRepository;
 
-    private UserEntity userEntity1;
-    private UserEntity userEntity2;
+    private User user1;
+    private User user2;
 
     @BeforeEach
     void BeforeEach() {
-        userEntity1 = userRepository.save(
-                UserEntity.builder()
+        user1 = userRepository.save(
+                User.builder()
                         .email("gildong@gmail.com")
                         .username("홍길동")
                         .password("pass")
@@ -39,8 +39,8 @@ class UserRepositoryCustomImplTest {
                         .build()
         );
 
-        userEntity2 = userRepository.save(
-                UserEntity.builder()
+        user2 = userRepository.save(
+                User.builder()
                         .email("test10@naver.com")
                         .username("테스트")
                         .password("password")
@@ -59,14 +59,14 @@ class UserRepositoryCustomImplTest {
 
         //given
         ArrayList<Long> userIdList = new ArrayList<>();
-        userIdList.add(userEntity1.getId());
-        userIdList.add(userEntity2.getId());
+        userIdList.add(user1.getId());
+        userIdList.add(user2.getId());
 
         //when
-        List<UserEntity> userEntityList = userRepository.getUserEntityListByUserIdList(userIdList);
+        List<User> userList = userRepository.getUserListByUserIdList(userIdList);
 
         //then
-        assertThat(userEntityList.size()).isEqualTo(userIdList.size());
+        assertThat(userList.size()).isEqualTo(userIdList.size());
     }
 
     @DisplayName("유저 조회하는 페이징 메서드")
@@ -74,10 +74,10 @@ class UserRepositoryCustomImplTest {
     void fetchByUserEntityAndSearchName() {
 
         //given
-        ArrayList<UserEntity> list = new ArrayList<>();
+        ArrayList<User> list = new ArrayList<>();
         for (int i = 0; i < 16; i++) {
             list.add(
-                    UserEntity.builder()
+                    User.builder()
                             .email(String.valueOf(i).concat("gildong@gmail.com"))
                             .username("테스트".concat(String.valueOf(i)))
                             .password("pass")
@@ -92,21 +92,21 @@ class UserRepositoryCustomImplTest {
         userRepository.saveAll(list);
 
         //when
-        Slice<UserEntity> firstUserEntitySlice = userRepository.fetchByUserEntityAndSearchName(
-                userEntity2,
+        Slice<User> firstUserEntitySlice = userRepository.fetchByUserAndSearchName(
+                user2,
                 "테스트",
                 applyCursorId(0L),
                 applyDescPageConfigBy(0, USER_SIZE, FIELD_CREATED_AT)
         );
-        List<UserEntity> firstContent = firstUserEntitySlice.getContent();
+        List<User> firstContent = firstUserEntitySlice.getContent();
 
-        Slice<UserEntity> secondUserEntitySlice = userRepository.fetchByUserEntityAndSearchName(
-                userEntity2,
+        Slice<User> secondUserEntitySlice = userRepository.fetchByUserAndSearchName(
+                user2,
                 "테스트",
                 applyCursorId(firstContent.get(firstContent.size() - 1).getId()),
                 applyDescPageConfigBy(1, USER_SIZE, FIELD_CREATED_AT)
         );
-        List<UserEntity> secondContent = secondUserEntitySlice.getContent();
+        List<User> secondContent = secondUserEntitySlice.getContent();
 
         //then
         assertThat(firstContent.size()).isEqualTo(USER_SIZE);

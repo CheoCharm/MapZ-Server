@@ -1,6 +1,6 @@
 package com.cheocharm.MapZ.user.application;
 
-import com.cheocharm.MapZ.agreement.AgreementEntity;
+import com.cheocharm.MapZ.agreement.Agreement;
 import com.cheocharm.MapZ.agreement.repository.AgreementRepository;
 import com.cheocharm.MapZ.common.exception.common.FailJsonProcessException;
 import com.cheocharm.MapZ.common.exception.jwt.InvalidJwtException;
@@ -16,7 +16,7 @@ import com.cheocharm.MapZ.common.util.ObjectMapperUtils;
 import com.cheocharm.MapZ.common.oauth.GoogleYml;
 import com.cheocharm.MapZ.common.util.RandomUtils;
 import com.cheocharm.MapZ.common.util.S3Utils;
-import com.cheocharm.MapZ.user.domain.UserEntity;
+import com.cheocharm.MapZ.user.domain.User;
 import com.cheocharm.MapZ.user.domain.UserProvider;
 import com.cheocharm.MapZ.user.domain.repository.UserRepository;
 import com.cheocharm.MapZ.user.presentation.dto.request.GoogleSignInRequest;
@@ -28,7 +28,7 @@ import com.cheocharm.MapZ.user.presentation.dto.response.GetUserListResponse;
 import com.cheocharm.MapZ.user.presentation.dto.response.GoogleIdTokenResponse;
 import com.cheocharm.MapZ.user.presentation.dto.response.MyPageInfoResponse;
 import com.cheocharm.MapZ.user.presentation.dto.response.TokenPairResponse;
-import com.cheocharm.MapZ.usergroup.domain.UserGroupEntity;
+import com.cheocharm.MapZ.usergroup.domain.UserGroup;
 import com.cheocharm.MapZ.usergroup.domain.repository.UserGroupRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
@@ -79,7 +79,7 @@ public class UserService {
                 UserProvider.GOOGLE
         );
 
-        final UserEntity user = userRepository.findByEmailAndUserProvider(idToken.getEmail(), UserProvider.GOOGLE)
+        final User user = userRepository.findByEmailAndUserProvider(idToken.getEmail(), UserProvider.GOOGLE)
                 .map(userEntity -> {
                     userEntity.updateRefreshToken(tokenPair.getRefreshToken());
                     return userEntity;
@@ -91,17 +91,17 @@ public class UserService {
         return tokenPair;
     }
 
-    private UserEntity createAndReturnUser(GoogleSignUpRequest userSignUpDto, MultipartFile multipartFile,
-                                           GoogleIdTokenResponse idToken, String refreshToken) {
-        final UserEntity user = createGoogleUser(userSignUpDto, multipartFile, idToken, refreshToken);
+    private User createAndReturnUser(GoogleSignUpRequest userSignUpDto, MultipartFile multipartFile,
+                                     GoogleIdTokenResponse idToken, String refreshToken) {
+        final User user = createGoogleUser(userSignUpDto, multipartFile, idToken, refreshToken);
         userRepository.save(user);
         return user;
     }
 
-    private UserEntity createGoogleUser(GoogleSignUpRequest userSignUpDto, MultipartFile multipartFile,
-                                        GoogleIdTokenResponse idToken, String refreshToken) {
-        final UserEntity user = userRepository.save(
-                UserEntity.createUserNoPassword(idToken.getEmail(), userSignUpDto.getUsername(), DEFAULT_BIO,
+    private User createGoogleUser(GoogleSignUpRequest userSignUpDto, MultipartFile multipartFile,
+                                  GoogleIdTokenResponse idToken, String refreshToken) {
+        final User user = userRepository.save(
+                User.createUserNoPassword(idToken.getEmail(), userSignUpDto.getUsername(), DEFAULT_BIO,
                         refreshToken, UserProvider.GOOGLE)
         );
 
@@ -133,7 +133,7 @@ public class UserService {
         TokenPairResponse tokenPair = jwtCreateUtils.createTokenPair(
                 request.getEmail(), request.getUsername(), UserProvider.MAPZ
         );
-        final UserEntity user = createMapZUser(request, multipartFile, tokenPair.getRefreshToken());
+        final User user = createMapZUser(request, multipartFile, tokenPair.getRefreshToken());
         saveUserAndAgreement(request.getPushAgreement(), user);
 
         return tokenPair;
@@ -145,21 +145,21 @@ public class UserService {
         });
     }
 
-    private UserEntity createMapZUser(MapZSignUpRequest request, MultipartFile multipartFile, String refreshToken) {
-        UserEntity userEntity = UserEntity.createUser(request.getEmail(), request.getUsername(),
+    private User createMapZUser(MapZSignUpRequest request, MultipartFile multipartFile, String refreshToken) {
+        User user = User.createUser(request.getEmail(), request.getUsername(),
                 passwordEncoder.encode(request.getPassword()), DEFAULT_BIO, refreshToken, UserProvider.MAPZ);
 
         if (!multipartFile.isEmpty()) {
-            userEntity.updateUserImageUrl(s3Service.uploadUserImage(multipartFile, request.getUsername()));
+            user.updateUserImageUrl(s3Service.uploadUserImage(multipartFile, request.getUsername()));
         }
-        return userEntity;
+        return user;
     }
 
-    private void saveUserAndAgreement(boolean pushAgreement, UserEntity user) {
+    private void saveUserAndAgreement(boolean pushAgreement, User user) {
         userRepository.save(user);
         agreementRepository.save(
-                AgreementEntity.builder()
-                        .userEntity(user)
+                Agreement.builder()
+                        .user(user)
                         .pushAgreement(pushAgreement)
                         .build()
         );
@@ -167,19 +167,19 @@ public class UserService {
 
     @Transactional
     public TokenPairResponse signInMapZ(MapZSignInRequest request) {
-        final UserEntity userEntity = validatePresentUserAndReturn(request.getEmail(), UserProvider.MAPZ);
+        final User user = validatePresentUserAndReturn(request.getEmail(), UserProvider.MAPZ);
 
-        checkPassword(request.getPassword(), userEntity);
+        checkPassword(request.getPassword(), user);
 
         final TokenPairResponse tokenPair = jwtCreateUtils.createTokenPair(
-                userEntity.getEmail(), userEntity.getUsername(), UserProvider.MAPZ
+                user.getEmail(), user.getUsername(), UserProvider.MAPZ
         );
-        userEntity.updateRefreshToken(tokenPair.getRefreshToken());
+        user.updateRefreshToken(tokenPair.getRefreshToken());
         return tokenPair;
     }
 
-    private void checkPassword(String requestPassword, UserEntity userEntity) {
-        if (!passwordEncoder.matches(requestPassword, userEntity.getPassword())) {
+    private void checkPassword(String requestPassword, User user) {
+        if (!passwordEncoder.matches(requestPassword, user.getPassword())) {
             throw new WrongPasswordException();
         }
     }
@@ -228,32 +228,32 @@ public class UserService {
 
     @Transactional
     public void setNewPassword(PasswordChangeRequest request) {
-        final UserEntity userEntity = validatePresentUserAndReturn(request.getEmail(), UserProvider.MAPZ);
+        final User user = validatePresentUserAndReturn(request.getEmail(), UserProvider.MAPZ);
 
         String password = passwordEncoder.encode(request.getPassword());
-        userEntity.updatePassword(password);
+        user.updatePassword(password);
     }
 
     public GetUserListResponse searchUser(Integer page, Long cursorId, String searchName, Long groupId) {
-        Slice<UserEntity> content = userRepository.fetchByUserEntityAndSearchName(
+        Slice<User> content = userRepository.fetchByUserAndSearchName(
                 UserThreadLocal.get(),
                 searchName,
                 applyCursorId(cursorId),
                 applyDescPageConfigBy(page, USER_SIZE, FIELD_CREATED_AT)
         );
 
-        final List<UserEntity> userEntities = content.getContent();
-        final List<UserGroupEntity> groupMembers = userGroupRepository.findBySearchNameAndGroupId(searchName, groupId);
+        final List<User> userEntities = content.getContent();
+        final List<UserGroup> groupMembers = userGroupRepository.findBySearchNameAndGroupId(searchName, groupId);
 
         return GetUserListResponse.of(userEntities, groupMembers, content.hasNext());
     }
 
     public MyPageInfoResponse getMyPageInfo() {
-        final UserEntity userEntity = UserThreadLocal.get();
-        return MyPageInfoResponse.from(userEntity);
+        final User user = UserThreadLocal.get();
+        return MyPageInfoResponse.from(user);
     }
 
-    private UserEntity validatePresentUserAndReturn(String email, UserProvider provider) {
+    private User validatePresentUserAndReturn(String email, UserProvider provider) {
         return userRepository.findByEmailAndUserProvider(email, provider)
                 .orElseThrow(NotFoundUserException::new);
     }

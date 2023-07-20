@@ -1,8 +1,7 @@
 package com.cheocharm.MapZ.user.presentation.dto.response;
 
-import com.cheocharm.MapZ.user.domain.UserEntity;
+import com.cheocharm.MapZ.user.domain.User;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 
 @AllArgsConstructor
@@ -11,7 +10,7 @@ public class MyPageInfoResponse {
     private String username;
     private String userImageUrl;
 
-    public static MyPageInfoResponse from(UserEntity user) {
+    public static MyPageInfoResponse from(User user) {
         return new MyPageInfoResponse(user.getUsername(), user.getUserImageUrl());
     }
 }
