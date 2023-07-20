@@ -1,6 +1,6 @@
 package com.cheocharm.MapZ.group.presentation.dto.response;
 
-import com.cheocharm.MapZ.group.domain.GroupEntity;
+import com.cheocharm.MapZ.group.domain.Group;
 import com.cheocharm.MapZ.usergroup.domain.repository.vo.ChiefUserImageVO;
 import com.cheocharm.MapZ.usergroup.domain.repository.vo.CountUserGroupVO;
 import lombok.AllArgsConstructor;
@@ -30,7 +30,7 @@ public class PagingGroupListResponse {
         private String chiefUserImage;
     }
 
-    public static PagingGroupListResponse of(List<GroupEntity> groupEntities, boolean hasNext,
+    public static PagingGroupListResponse of(List<Group> groupEntities, boolean hasNext,
                                              List<CountUserGroupVO> countUserGroupVOS,
                                              List<ChiefUserImageVO> chiefUserImageVOS) {
         List<PagingGroupListResponse.GroupList> groupList = groupEntities.stream()
@@ -50,10 +50,10 @@ public class PagingGroupListResponse {
         return new PagingGroupListResponse(hasNext, groupList);
     }
 
-    private static Long getCount(GroupEntity groupEntity, List<CountUserGroupVO> countUserGroupVOS) {
+    private static Long getCount(Group group, List<CountUserGroupVO> countUserGroupVOS) {
         Long count = 1L;
         for (CountUserGroupVO countUserGroupVO : countUserGroupVOS) {
-            if (groupEntity.getId().equals(countUserGroupVO.getId())) {
+            if (group.getId().equals(countUserGroupVO.getId())) {
                 count = countUserGroupVO.getCnt();
                 break;
             }
@@ -61,9 +61,9 @@ public class PagingGroupListResponse {
         return count - 1;
     }
 
-    private static String getChiefUserImage(GroupEntity groupEntity, List<ChiefUserImageVO> chiefUserImageVOS) {
+    private static String getChiefUserImage(Group group, List<ChiefUserImageVO> chiefUserImageVOS) {
         for (ChiefUserImageVO chiefUserImageVO : chiefUserImageVOS) {
-            if (groupEntity.getId().equals(chiefUserImageVO.getId())) {
+            if (group.getId().equals(chiefUserImageVO.getId())) {
                 return chiefUserImageVO.getChiefUserImage();
             }
         }

@@ -1,7 +1,7 @@
 package com.cheocharm.MapZ.group.domain.repository;
 
 import com.cheocharm.MapZ.RepositoryTest;
-import com.cheocharm.MapZ.group.domain.GroupEntity;
+import com.cheocharm.MapZ.group.domain.Group;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -30,10 +30,10 @@ class GroupRepositoryCustomImplTest {
     @Test
     void findByGroupName() {
         //given
-        ArrayList<GroupEntity> list = new ArrayList<>();
+        ArrayList<Group> list = new ArrayList<>();
         for (int i = 0; i < 16; i++) {
             list.add(
-                    GroupEntity.builder()
+                    Group.builder()
                             .groupName(String.valueOf(i).concat("테스트"))
                             .bio("bio")
                             .groupImageUrl("imageUrl")
@@ -44,7 +44,7 @@ class GroupRepositoryCustomImplTest {
         }
         groupRepository.saveAll(list);
         groupRepository.save(
-                GroupEntity.builder()
+                Group.builder()
                         .groupName(("17테스트"))
                         .bio("bio")
                         .groupImageUrl("imageUrl")
@@ -54,19 +54,19 @@ class GroupRepositoryCustomImplTest {
         );
 
         //when
-        Slice<GroupEntity> firstGroupEntitySlice = groupRepository.findByGroupName(
+        Slice<Group> firstGroupEntitySlice = groupRepository.findByGroupName(
                 "테스트",
                 applyCursorId(0L),
                 applyDescPageConfigBy(0, GROUP_SIZE, FIELD_CREATED_AT)
         );
-        List<GroupEntity> firstContent = firstGroupEntitySlice.getContent();
+        List<Group> firstContent = firstGroupEntitySlice.getContent();
 
-        Slice<GroupEntity> secondEntitySlice = groupRepository.findByGroupName(
+        Slice<Group> secondEntitySlice = groupRepository.findByGroupName(
                 "테스트",
                 applyCursorId(firstContent.get(firstContent.size() - 1).getId()),
                 applyDescPageConfigBy(1, GROUP_SIZE, FIELD_CREATED_AT)
         );
-        List<GroupEntity> secondContent = secondEntitySlice.getContent();
+        List<Group> secondContent = secondEntitySlice.getContent();
 
         //then
         assertThat(firstContent.size()).isEqualTo(GROUP_SIZE);

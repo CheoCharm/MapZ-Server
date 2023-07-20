@@ -1,6 +1,6 @@
 package com.cheocharm.MapZ.group.presentation.dto.response;
 
-import com.cheocharm.MapZ.group.domain.GroupEntity;
+import com.cheocharm.MapZ.group.domain.Group;
 import com.cheocharm.MapZ.usergroup.domain.repository.vo.ChiefUserImageVO;
 import com.cheocharm.MapZ.usergroup.domain.repository.vo.CountUserGroupVO;
 import lombok.Builder;
@@ -20,7 +20,7 @@ public class GetMyGroupResponse {
     private String chiefUserImage;
     private Long groupId;
 
-    public static List<GetMyGroupResponse> of(List<GroupEntity> groupEntities, List<CountUserGroupVO> countUserGroupVOS, List<ChiefUserImageVO> chiefUserImageVOS) {
+    public static List<GetMyGroupResponse> of(List<Group> groupEntities, List<CountUserGroupVO> countUserGroupVOS, List<ChiefUserImageVO> chiefUserImageVOS) {
         return groupEntities.stream()
                 .map(groupEntity ->
                         GetMyGroupResponse.builder()
