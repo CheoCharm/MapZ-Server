@@ -1,5 +1,6 @@
 package com.cheocharm.MapZ.diary.presentation.dto.response;
 
+import com.cheocharm.MapZ.common.exception.diary.NoMatchDiaryIdException;
 import com.cheocharm.MapZ.diary.domain.repository.vo.DiaryCoordinateVO;
 import com.cheocharm.MapZ.diary.domain.repository.vo.DiaryImagePreviewVO;
 import lombok.AllArgsConstructor;
@@ -7,7 +8,6 @@ import lombok.Getter;
 import org.locationtech.jts.geom.Coordinate;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 @AllArgsConstructor
@@ -33,11 +33,10 @@ public class DiaryPreviewResponse {
     }
 
     private static Coordinate getCoordinate(Long diaryId, List<DiaryCoordinateVO> diaryCoordinateVOS) {
-        for (DiaryCoordinateVO diaryCoordinateVO : diaryCoordinateVOS) {
-            if (Objects.equals(diaryId, diaryCoordinateVO.getDiaryId())) {
-                return new Coordinate(diaryCoordinateVO.getLatitude(), diaryCoordinateVO.getLongitude());
-            }
-        }
-        return null;
+        return diaryCoordinateVOS.stream()
+                .filter(vo -> diaryId.equals(vo.getDiaryId()))
+                .map(vo -> new Coordinate(vo.getLatitude(), vo.getLongitude()))
+                .findAny()
+                .orElseThrow(NoMatchDiaryIdException::new);
     }
 }
