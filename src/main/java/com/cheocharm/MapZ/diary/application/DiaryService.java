@@ -4,8 +4,9 @@ import com.cheocharm.MapZ.common.exception.common.FailParseException;
 import com.cheocharm.MapZ.common.exception.diary.NotFoundDiaryException;
 import com.cheocharm.MapZ.common.exception.group.NotFoundGroupException;
 import com.cheocharm.MapZ.common.exception.user.NoPermissionUserException;
+import com.cheocharm.MapZ.common.image.ImageHandler;
+import com.cheocharm.MapZ.common.image.ImageDirectory;
 import com.cheocharm.MapZ.common.interceptor.UserThreadLocal;
-import com.cheocharm.MapZ.common.util.S3Utils;
 import com.cheocharm.MapZ.diary.domain.Diary;
 import com.cheocharm.MapZ.diary.domain.DiaryImage;
 import com.cheocharm.MapZ.diary.domain.repository.vo.DiaryCoordinateVO;
@@ -33,10 +34,12 @@ import com.cheocharm.MapZ.group.domain.repository.GroupRepository;
 import com.cheocharm.MapZ.user.domain.User;
 import com.cheocharm.MapZ.usergroup.domain.repository.UserGroupRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKTReader;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -45,6 +48,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
@@ -53,6 +57,7 @@ import static com.cheocharm.MapZ.common.util.PagingUtils.applyDescPageConfigBy;
 import static com.cheocharm.MapZ.common.util.PagingUtils.MY_DIARY_SIZE;
 import static com.cheocharm.MapZ.common.util.PagingUtils.FIELD_CREATED_AT;
 
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class DiaryService {
@@ -61,8 +66,8 @@ public class DiaryService {
     private final DiaryImageRepository diaryImageRepository;
     private final GroupRepository groupRepository;
     private final UserGroupRepository userGroupRepository;
-
-    private final S3Utils s3Utils;
+    private final ApplicationEventPublisher eventPublisher;
+    private final ImageHandler imageHandler;
 
     private static final int SEARCH_RADIUS_DISTANCE = 1_500;
     private static final int ZOOM_LEVEL_ONE_DISTANCE = 24_576_000;
@@ -98,6 +103,8 @@ public class DiaryService {
     public void deleteDiary(DeleteDiaryRequest request) {
         User user = UserThreadLocal.get();
         validateSameUser(request.getDiaryId(), user.getId());
+        //Soft Delete or Hard Delete 로직 필요
+
         diaryRepository.deleteById(request.getDiaryId());
     }
 
@@ -129,19 +136,28 @@ public class DiaryService {
         Group group = groupRepository.findById(request.getGroupId())
                 .orElseThrow(NotFoundGroupException::new);
 
-        Diary diary = diaryRepository.save(
-                Diary.of(
-                        user,
-                        group,
-                        request.getAddress(),
-                        getPoint(request.getLongitude(), request.getLatitude())
-                )
-        );
+        Diary diary = saveDiaryAndReturn(request, user, group);
 
-        List<String> imageURLs = s3Utils.uploadDiaryImage(files, diary.getId());
+        final List<CompletableFuture<String>> futures = new ArrayList<>();
+        for (MultipartFile file : files) {
+            futures.add(imageHandler.uploadImageAsync(file, ImageDirectory.DIARY));
+        }
+
+        final List<String> imageURLs = getImageURLs(futures);
         saveDiaryImages(diary, imageURLs);
+        return WriteDiaryImageResponse.of(diary.getId(), imageURLs, files);
+    }
 
-        return new WriteDiaryImageResponse(diary.getId(), imageURLs, getImageName(files));
+    private Diary saveDiaryAndReturn(WriteDiaryImageRequest request, User user, Group group) {
+        return diaryRepository.save(
+                Diary.of(user, group, request.getAddress(), getPoint(request.getLongitude(), request.getLatitude()))
+        );
+    }
+
+    private List<String> getImageURLs(List<CompletableFuture<String>> futures) {
+        return futures.stream()
+                .map(CompletableFuture::join)
+                .collect(Collectors.toList());
     }
 
     private void saveDiaryImages(Diary diary, List<String> imageURLs) {
@@ -156,20 +172,20 @@ public class DiaryService {
         diaryImageRepository.saveAll(diaryImageEntities);
     }
 
-    private List<String> getImageName(List<MultipartFile> files) {
-        return files.stream()
-                .map(MultipartFile::getOriginalFilename)
-                .collect(Collectors.toList());
-    }
-
     @Transactional
     public void deleteTempDiary(DeleteTempDiaryRequest request) {
         Long diaryId = request.getDiaryId();
-        List<String> diaryImageURLs = diaryImageRepository.findAllByDiaryId(diaryId);
+        List<DiaryImage> diaryImages = diaryImageRepository.findAllByDiaryId(diaryId);
 
-        s3Utils.deleteImages(diaryImageURLs);
-        diaryImageRepository.deleteAllByDiaryId(diaryId);
+        deleteImages(diaryImages, diaryId);
         diaryRepository.deleteById(diaryId);
+    }
+
+    private void deleteImages(List<DiaryImage> diaryImages, Long diaryId) {
+        for (DiaryImage diaryImage : diaryImages) {
+            eventPublisher.publishEvent(diaryImage);
+        }
+        diaryImageRepository.deleteAllByDiaryId(diaryId);
     }
 
     @Transactional(readOnly = true)
