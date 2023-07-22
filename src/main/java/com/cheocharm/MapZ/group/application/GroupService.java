@@ -9,8 +9,9 @@ import com.cheocharm.MapZ.common.exception.user.NotFoundUserException;
 import com.cheocharm.MapZ.common.exception.usergroup.GroupMemberSizeExceedException;
 import com.cheocharm.MapZ.common.exception.usergroup.NotFoundUserGroupException;
 import com.cheocharm.MapZ.common.exception.usergroup.SelfKickException;
+import com.cheocharm.MapZ.common.image.ImageHandler;
+import com.cheocharm.MapZ.common.image.ImageDirectory;
 import com.cheocharm.MapZ.common.interceptor.UserThreadLocal;
-import com.cheocharm.MapZ.common.util.S3Utils;
 import com.cheocharm.MapZ.diary.domain.Diary;
 import com.cheocharm.MapZ.diary.domain.repository.DiaryImageRepository;
 import com.cheocharm.MapZ.group.domain.Group;
@@ -69,8 +70,7 @@ public class GroupService {
     private final GroupRepository groupRepository;
     private final UserGroupRepository userGroupRepository;
     private final UserRepository userRepository;
-
-    private final S3Utils s3Utils;
+    private final ImageHandler imageHandler;
 
     @Transactional
     public void createGroup(CreateGroupRequest request, MultipartFile multipartFile) {
@@ -100,7 +100,7 @@ public class GroupService {
         final Group group = Group.of(groupName, request.getBio(), request.getChangeStatus());
 
         if (!multipartFile.isEmpty()) {
-            group.updateGroupImageUrl(s3Utils.uploadGroupImage(multipartFile, group.getGroupUUID()));
+            group.updateGroupImageUrl(imageHandler.uploadImage(multipartFile, ImageDirectory.GROUP));
         }
         return group;
     }
@@ -129,7 +129,7 @@ public class GroupService {
         Group group = userGroup.getGroup();
         checkDuplicateGroupName(request.getGroupName(), group);
         if (!multipartFile.isEmpty()) {
-            group.updateGroupImageUrl(s3Utils.uploadGroupImage(multipartFile, group.getGroupUUID()));
+            group.updateGroupImageUrl(imageHandler.uploadImage(multipartFile, ImageDirectory.GROUP));
         }
 
         group.updateGroupInfo(request);
