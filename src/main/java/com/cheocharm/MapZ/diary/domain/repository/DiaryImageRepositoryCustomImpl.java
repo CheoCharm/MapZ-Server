@@ -1,6 +1,7 @@
 package com.cheocharm.MapZ.diary.domain.repository;
 
 import com.cheocharm.MapZ.diary.domain.Diary;
+import com.cheocharm.MapZ.diary.domain.DiaryImage;
 import com.cheocharm.MapZ.diary.domain.repository.vo.DiaryImagePreviewVO;
 import com.cheocharm.MapZ.diary.domain.repository.vo.DiaryPreviewVO;
 import com.cheocharm.MapZ.diary.domain.repository.vo.QDiaryImagePreviewVO;
@@ -20,9 +21,9 @@ public class DiaryImageRepositoryCustomImpl implements DiaryImageRepositoryCusto
 
     private final JPAQueryFactory queryFactory;
     @Override
-    public List<String> findAllByDiaryId(Long diaryId) {
+    public List<DiaryImage> findAllByDiaryId(Long diaryId) {
         return queryFactory
-                .select(diaryImage.diaryImageUrl)
+                .select(diaryImage)
                 .from(diaryImage)
                 .where(diaryIdEq(diaryId))
                 .fetch();
