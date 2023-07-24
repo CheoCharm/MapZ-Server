@@ -8,6 +8,8 @@ import com.cheocharm.MapZ.common.exception.user.DuplicatedEmailException;
 import com.cheocharm.MapZ.common.exception.user.DuplicatedUsernameException;
 import com.cheocharm.MapZ.common.exception.user.WrongPasswordException;
 import com.cheocharm.MapZ.common.exception.user.NotFoundUserException;
+import com.cheocharm.MapZ.common.image.ImageHandler;
+import com.cheocharm.MapZ.common.image.ImageDirectory;
 import com.cheocharm.MapZ.common.interceptor.UserThreadLocal;
 import com.cheocharm.MapZ.common.jwt.JwtCreateUtils;
 import com.cheocharm.MapZ.common.oauth.OauthApi;
@@ -15,7 +17,6 @@ import com.cheocharm.MapZ.common.oauth.OauthUrl;
 import com.cheocharm.MapZ.common.util.ObjectMapperUtils;
 import com.cheocharm.MapZ.common.oauth.GoogleYml;
 import com.cheocharm.MapZ.common.util.RandomUtils;
-import com.cheocharm.MapZ.common.util.S3Utils;
 import com.cheocharm.MapZ.user.domain.User;
 import com.cheocharm.MapZ.user.domain.UserProvider;
 import com.cheocharm.MapZ.user.domain.repository.UserRepository;
@@ -62,7 +63,7 @@ public class UserService {
     private final GoogleYml googleYml;
     private final OauthApi oauthApi;
     private final PasswordEncoder passwordEncoder;
-    private final S3Utils s3Service;
+    private final ImageHandler imageHandler;
     private final JavaMailSender mailSender;
 
     private static final String GMAIL_ADDRESS = "mapz.official@gmail.com";
@@ -106,7 +107,7 @@ public class UserService {
         );
 
         if (!multipartFile.isEmpty()) {
-            user.updateUserImageUrl(s3Service.uploadUserImage(multipartFile, user.getUsername()));
+            user.updateUserImageUrl(imageHandler.uploadImage(multipartFile, ImageDirectory.USER));
         }
         return user;
     }
@@ -150,7 +151,7 @@ public class UserService {
                 passwordEncoder.encode(request.getPassword()), DEFAULT_BIO, refreshToken, UserProvider.MAPZ);
 
         if (!multipartFile.isEmpty()) {
-            user.updateUserImageUrl(s3Service.uploadUserImage(multipartFile, request.getUsername()));
+            user.updateUserImageUrl(imageHandler.uploadImage(multipartFile, ImageDirectory.USER));
         }
         return user;
     }

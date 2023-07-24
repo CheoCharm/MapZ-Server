@@ -1,13 +1,14 @@
 package com.cheocharm.MapZ.diary.domain.repository;
 
 import com.cheocharm.MapZ.diary.domain.Diary;
+import com.cheocharm.MapZ.diary.domain.DiaryImage;
 import com.cheocharm.MapZ.diary.domain.repository.vo.DiaryImagePreviewVO;
 import com.cheocharm.MapZ.diary.domain.repository.vo.DiaryPreviewVO;
 
 import java.util.List;
 
 public interface DiaryImageRepositoryCustom {
-    List<String> findAllByDiaryId(Long diaryId);
+    List<DiaryImage> findAllByDiaryId(Long diaryId);
 
     void deleteAllByDiaryId(Long diaryId);
 
