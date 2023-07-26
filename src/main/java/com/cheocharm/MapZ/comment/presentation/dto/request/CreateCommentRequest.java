@@ -1,15 +1,15 @@
 package com.cheocharm.MapZ.comment.presentation.dto.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.Builder;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
 @Schema(description = "댓글 작성 Request Body")
+@AllArgsConstructor
 @Getter
-@Builder
 public class CreateCommentRequest {
 
     @Schema(description = "300자 제한")
@@ -23,5 +23,4 @@ public class CreateCommentRequest {
 
     @NotNull
     private Long diaryId;
-
 }

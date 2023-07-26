@@ -1,11 +1,13 @@
 package com.cheocharm.MapZ.comment.presentation.dto.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import javax.validation.constraints.NotNull;
 
 @Schema(description = "댓글 삭제 Request Body")
+@AllArgsConstructor
 @Getter
 public class DeleteCommentRequest {
 
