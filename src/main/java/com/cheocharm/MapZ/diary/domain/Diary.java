@@ -23,6 +23,10 @@ import java.util.List;
 @Entity
 public class Diary extends BaseEntity {
 
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    private Long id;
+
     private String title;
 
     @Column(columnDefinition = "TEXT")
@@ -50,7 +54,8 @@ public class Diary extends BaseEntity {
     private List<DiaryImage> diaryImages = new ArrayList<>();
 
     @Builder
-    public Diary(String title, String content, Point point, String address, User user, Group group) {
+    public Diary(Long id, String title, String content, Point point, String address, User user, Group group) {
+        this.id = id;
         this.title = title;
         this.content = content;
         this.point = point;

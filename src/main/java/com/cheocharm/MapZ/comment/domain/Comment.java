@@ -1,5 +1,6 @@
 package com.cheocharm.MapZ.comment.domain;
 
+import com.cheocharm.MapZ.comment.presentation.dto.request.CreateCommentRequest;
 import com.cheocharm.MapZ.common.domain.BaseEntity;
 import com.cheocharm.MapZ.diary.domain.Diary;
 import com.cheocharm.MapZ.user.domain.User;
@@ -18,6 +19,10 @@ import javax.persistence.*;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
 public class Comment extends BaseEntity {
+
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    private Long id;
 
     private String content;
 
@@ -38,6 +43,15 @@ public class Comment extends BaseEntity {
         this.parentId = parentId;
         this.user = user;
         this.diary = diary;
+    }
+
+    public static Comment of(CreateCommentRequest request, User user, Diary diary) {
+        return Comment.builder()
+                .content(request.getContent())
+                .parentId(request.getParentId())
+                .user(user)
+                .diary(diary)
+                .build();
     }
 
 }

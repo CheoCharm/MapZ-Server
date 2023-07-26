@@ -18,6 +18,10 @@ import javax.persistence.*;
 @Entity
 public class UserGroup extends BaseEntity {
 
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    private Long id;
+
     @JoinColumn(name = "group_id")
     @ManyToOne(fetch = FetchType.LAZY)
     private Group group;
