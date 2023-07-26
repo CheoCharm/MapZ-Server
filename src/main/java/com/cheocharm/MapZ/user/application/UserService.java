@@ -71,12 +71,12 @@ public class UserService {
 
 
     @Transactional
-    public TokenPairResponse signUpGoogle(GoogleSignUpRequest userSignUpDto, MultipartFile multipartFile) {
-        final GoogleIdTokenResponse idToken = fetchAndValidateIdToken(userSignUpDto.getIdToken());
+    public TokenPairResponse signUpGoogle(GoogleSignUpRequest request, MultipartFile multipartFile) {
+        final GoogleIdTokenResponse idToken = fetchAndValidateIdToken(request.getIdToken());
 
         final TokenPairResponse tokenPair = jwtCreateUtils.createTokenPair(
                 idToken.getEmail(),
-                userSignUpDto.getUsername(),
+                request.getUsername(),
                 UserProvider.GOOGLE
         );
 
@@ -85,24 +85,24 @@ public class UserService {
                     userEntity.updateRefreshToken(tokenPair.getRefreshToken());
                     return userEntity;
                 })
-                .orElseGet(() -> createAndReturnUser(userSignUpDto, multipartFile, idToken, tokenPair.getRefreshToken()));
+                .orElseGet(() -> createAndReturnUser(request, multipartFile, idToken, tokenPair.getRefreshToken()));
 
-        saveUserAndAgreement(userSignUpDto.getPushAgreement(), user);
+        saveUserAndAgreement(request.getPushAgreement(), user);
 
         return tokenPair;
     }
 
-    private User createAndReturnUser(GoogleSignUpRequest userSignUpDto, MultipartFile multipartFile,
+    private User createAndReturnUser(GoogleSignUpRequest request, MultipartFile multipartFile,
                                      GoogleIdTokenResponse idToken, String refreshToken) {
-        final User user = createGoogleUser(userSignUpDto, multipartFile, idToken, refreshToken);
+        final User user = createGoogleUser(request, multipartFile, idToken, refreshToken);
         userRepository.save(user);
         return user;
     }
 
-    private User createGoogleUser(GoogleSignUpRequest userSignUpDto, MultipartFile multipartFile,
+    private User createGoogleUser(GoogleSignUpRequest request, MultipartFile multipartFile,
                                   GoogleIdTokenResponse idToken, String refreshToken) {
         final User user = userRepository.save(
-                User.createUserNoPassword(idToken.getEmail(), userSignUpDto.getUsername(), DEFAULT_BIO,
+                User.createUserNoPassword(idToken.getEmail(), request.getUsername(), DEFAULT_BIO,
                         refreshToken, UserProvider.GOOGLE)
         );
 
@@ -159,10 +159,7 @@ public class UserService {
     private void saveUserAndAgreement(boolean pushAgreement, User user) {
         userRepository.save(user);
         agreementRepository.save(
-                Agreement.builder()
-                        .user(user)
-                        .pushAgreement(pushAgreement)
-                        .build()
+                Agreement.of(pushAgreement, user)
         );
     }
 
