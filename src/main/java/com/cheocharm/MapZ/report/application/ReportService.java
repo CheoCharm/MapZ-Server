@@ -4,10 +4,9 @@ import com.cheocharm.MapZ.common.exception.diary.NotFoundDiaryException;
 import com.cheocharm.MapZ.common.exception.report.AlreadyReportedDiary;
 import com.cheocharm.MapZ.common.interceptor.UserThreadLocal;
 import com.cheocharm.MapZ.diary.domain.repository.DiaryRepository;
-import com.cheocharm.MapZ.report.domain.ReportEntity;
+import com.cheocharm.MapZ.report.domain.Report;
 import com.cheocharm.MapZ.report.presentation.dto.ReportRequest;
 import com.cheocharm.MapZ.report.domain.repository.ReportRepository;
-import com.cheocharm.MapZ.user.domain.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,32 +19,46 @@ public class ReportService {
     private final ReportRepository reportRepository;
     private final DiaryRepository diaryRepository;
 
+    private static final int REPORTED_COUNT = 2;
+
     @Transactional
-    public void reportDiary(ReportRequest reportRequest) {
-        final User user = UserThreadLocal.get();
+    public void reportDiary(ReportRequest request) {
+        Long userId = UserThreadLocal.get().getId();
+        Long diaryId = request.getDiaryId();
 
-        Long userId = user.getId();
-        Long diaryId = reportRequest.getDiaryId();
+        validatePresentDiary(diaryId);
+        checkSameUserReportDiary(userId, diaryId);
 
-        diaryRepository.findById(diaryId).orElseThrow(NotFoundDiaryException::new);
-
-        reportRepository.findReportById(userId, diaryId).ifPresent(ReportEntity -> {
-            throw new AlreadyReportedDiary();
-        });
-
-        int count = reportRepository.countReportEntityByDiaryId(diaryId);
-
-        if (count >= 2) {
-            diaryRepository.deleteById(diaryId);
+        if (isDiaryOverReported(diaryId)) {
             return;
         }
+        saveReport(userId, diaryId);
+    }
 
-        ReportEntity reportEntity = ReportEntity.builder()
-                .userId(userId)
-                .diaryId(diaryId)
-                .build();
+    private boolean isDiaryOverReported(Long diaryId) {
+        int count = reportRepository.countReportByDiaryId(diaryId);
 
-        reportRepository.save(reportEntity);
+        if (count >= REPORTED_COUNT) {
+            diaryRepository.deleteById(diaryId);
+            return true;
+        }
+        return false;
+    }
 
+    private void saveReport(Long userId, Long diaryId) {
+        reportRepository.save(
+                Report.of(userId, diaryId)
+        );
+    }
+
+    private void checkSameUserReportDiary(Long userId, Long diaryId) {
+        reportRepository.findReportById(userId, diaryId).ifPresent(Report -> {
+            throw new AlreadyReportedDiary();
+        });
+    }
+
+    private void validatePresentDiary(Long diaryId) {
+        diaryRepository.findById(diaryId)
+                .orElseThrow(NotFoundDiaryException::new);
     }
 }
