@@ -1,11 +1,14 @@
 package com.cheocharm.MapZ.comment.presentation.dto.response;
 
+import com.cheocharm.MapZ.comment.domain.repository.vo.CommentVO;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Getter
 @AllArgsConstructor
@@ -25,5 +28,24 @@ public class GetCommentResponse {
         private Long parentId;
         private Boolean isWriter;
         private boolean canDelete;
+    }
+
+    public static GetCommentResponse of(boolean hasNext, List<CommentVO> commentVOS) {
+        List<GetCommentResponse.Comment> list = commentVOS.stream()
+                .map(commentVO ->
+                        GetCommentResponse.Comment.builder()
+                                .imageUrl(commentVO.getImageUrl())
+                                .username(commentVO.getUsername())
+                                .createdAt(commentVO.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy.MM.dd")))
+                                .content(commentVO.getContent())
+                                .commentId(commentVO.getCommentId())
+                                .parentId(commentVO.getParentId())
+                                .isWriter(commentVO.isWriter())
+                                .canDelete(commentVO.isCanDelete())
+                                .build()
+                )
+                .collect(Collectors.toList());
+
+        return new GetCommentResponse(hasNext, list);
     }
 }

@@ -16,13 +16,10 @@ public class DiaryLikePeopleResponse {
 
     public static List<DiaryLikePeopleResponse> of(List<DiaryLike> diaryLikeEntities) {
         return diaryLikeEntities.stream()
-                .map(diaryLikeEntity -> {
-                            User user = diaryLikeEntity.getUser();
-                            return DiaryLikePeopleResponse.builder()
-                                    .userImageUrl(user.getUserImageUrl())
-                                    .username(user.getUsername())
-                                    .build();
-                        }
+                .map(diaryLikeEntity -> DiaryLikePeopleResponse.builder()
+                        .userImageUrl(diaryLikeEntity.getUser().getUserImageUrl())
+                        .username(diaryLikeEntity.getUser().getUsername())
+                        .build()
                 )
                 .collect(Collectors.toList());
     }

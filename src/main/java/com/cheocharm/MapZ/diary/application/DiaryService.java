@@ -82,7 +82,7 @@ public class DiaryService {
 
         diary.write(request.getTitle(), request.getContent());
 
-        return WriteDiaryResponse.from(diary.getId());
+        return WriteDiaryResponse.from(request.getDiaryId());
     }
 
     @Transactional(readOnly = true)
@@ -161,15 +161,15 @@ public class DiaryService {
     }
 
     private void saveDiaryImages(Diary diary, List<String> imageURLs) {
-        ArrayList<DiaryImage> diaryImageEntities = new ArrayList<>();
+        ArrayList<DiaryImage> diaryImages = new ArrayList<>();
         int imageOrder = 1;
         for (String imageURL : imageURLs) {
-            diaryImageEntities.add(
+            diaryImages.add(
                     DiaryImage.of(diary, imageURL, imageOrder)
             );
             imageOrder += 1;
         }
-        diaryImageRepository.saveAll(diaryImageEntities);
+        diaryImageRepository.saveAll(diaryImages);
     }
 
     @Transactional

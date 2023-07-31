@@ -16,6 +16,10 @@ import javax.persistence.*;
 @Entity
 public class DiaryLike extends BaseEntity {
 
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    private Long id;
+
     @JoinColumn(name = "diary_id")
     @ManyToOne(fetch = FetchType.LAZY)
     private Diary diary;

@@ -16,9 +16,8 @@ import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Objects;
 
 import static com.cheocharm.MapZ.common.util.PagingUtils.COMMENT_SIZE;
 import static com.cheocharm.MapZ.common.util.PagingUtils.FIELD_CREATED_AT;
@@ -32,28 +31,28 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final DiaryRepository diaryRepository;
 
+    private static final Long ROOT_COMMENT_PARENT_ID = 0L;
+
     @Transactional
-    public void createComment(CreateCommentRequest createCommentDto) {
+    public void createComment(CreateCommentRequest request) {
         final User user = UserThreadLocal.get();
-        Diary diary = diaryRepository.findById(createCommentDto.getDiaryId()).orElseThrow(() -> new NotFoundDiaryException());
+        Diary diary = diaryRepository.findById(request.getDiaryId())
+                .orElseThrow(NotFoundDiaryException::new);
+
         commentRepository.save(
-                Comment.builder()
-                        .content(createCommentDto.getContent())
-                        .parentId(createCommentDto.getParentId())
-                        .user(user)
-                        .diary(diary)
-                        .build()
+                Comment.of(request, user, diary)
         );
     }
 
     @Transactional
-    public void deleteComment(DeleteCommentRequest deleteCommentDto) {
-        final Long commentId = deleteCommentDto.getCommentId();
-        final Long parentId = deleteCommentDto.getParentId();
-
+    public void deleteComment(DeleteCommentRequest request) {
+        final Long commentId = request.getCommentId();
         commentRepository.deleteById(commentId);
+        checkParentCommentAndDeleteChildComment(request.getParentId(), commentId);
+    }
 
-        if (parentId == 0) {
+    private void checkParentCommentAndDeleteChildComment(Long parentId, Long commentId) {
+        if (Objects.equals(parentId, ROOT_COMMENT_PARENT_ID)) {
             commentRepository.deleteAllByIdInQuery(commentId);
         }
     }
@@ -68,24 +67,7 @@ public class CommentService {
         );
 
         List<CommentVO> commentVOS = content.getContent();
-
-        List<GetCommentResponse.Comment> commentList = commentVOS.stream()
-                .map(commentVO ->
-                                GetCommentResponse.Comment.builder()
-                                        .imageUrl(commentVO.getImageUrl())
-                                        .username(commentVO.getUsername())
-                                        .createdAt(commentVO.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy.MM.dd")))
-                                        .content(commentVO.getContent())
-                                        .commentId(commentVO.getCommentId())
-                                        .parentId(commentVO.getParentId())
-                                        .isWriter(commentVO.isWriter())
-                                        .canDelete(commentVO.isCanDelete())
-                                        .build()
-                        )
-                .collect(Collectors.toList());
-
-        return new GetCommentResponse(content.hasNext(), commentList);
-
+        return GetCommentResponse.of(content.hasNext(), commentVOS);
     }
 
 }

@@ -32,9 +32,9 @@ public class LikeService {
     private final DiaryLikeRepository diaryLikeRepository;
 
     @Transactional
-    public void likeDiary(LikeDiaryRequest likeDiaryRequest) {
+    public void likeDiary(LikeDiaryRequest request) {
         final User user = UserThreadLocal.get();
-        final Diary diary = diaryRepository.findById(likeDiaryRequest.getDiaryId())
+        final Diary diary = diaryRepository.findById(request.getDiaryId())
                 .orElseThrow(NotFoundDiaryException::new);
 
         checkAlreadyLikeDiary(user, diary);
@@ -51,8 +51,8 @@ public class LikeService {
 
     @Transactional(readOnly = true)
     public List<DiaryLikePeopleResponse> getDiaryLikePeople(Long diaryId) {
-        List<DiaryLike> diaryLikeEntities = diaryLikeRepository.findByDiaryId(diaryId);
-        return DiaryLikePeopleResponse.of(diaryLikeEntities);
+        List<DiaryLike> diaryLikes = diaryLikeRepository.findByDiaryId(diaryId);
+        return DiaryLikePeopleResponse.of(diaryLikes);
     }
 
     @Transactional(readOnly = true)
