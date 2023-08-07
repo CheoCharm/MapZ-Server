@@ -1,12 +1,20 @@
 package com.cheocharm.MapZ.user.presentation.dto.request;
 
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
+import javax.validation.constraints.Email;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+@AllArgsConstructor
 @Getter
 public class PasswordChangeRequest {
+
+    @Email
     @NotNull
     private String email;
 
