@@ -32,16 +32,16 @@ public class CommentController {
 
     @Operation(description = "댓글 삭제")
     @Parameter(name = "accessToken", in = ParameterIn.HEADER, required = true)
-    @DeleteMapping
-    public CommonResponse<?> deleteComment(@RequestBody @Valid DeleteCommentRequest deleteCommentDto) {
-        commentService.deleteComment(deleteCommentDto);
+    @DeleteMapping("/{parentId}/{commentId}")
+    public CommonResponse<?> deleteComment(@PathVariable Long parentId, @PathVariable Long commentId) {
+        commentService.deleteComment(parentId, commentId);
         return CommonResponse.success();
     }
 
     @Operation(description = "댓글 조회")
     @Parameter(name = "accessToken", in = ParameterIn.HEADER, required = true)
-    @GetMapping
-    public CommonResponse<GetCommentResponse> getComment(@Parameter @RequestParam Long diaryId, @RequestParam Long cursorId, @RequestParam Integer page) {
-        return CommonResponse.success(commentService.getComment(diaryId, cursorId, page));
+    @GetMapping("/{diaryId}/{page}")
+    public CommonResponse<GetCommentResponse> getComment(@Parameter @PathVariable Long diaryId, @PathVariable Integer page, @RequestParam Long cursorId) {
+        return CommonResponse.success(commentService.getComment(diaryId, page, cursorId));
     }
 }

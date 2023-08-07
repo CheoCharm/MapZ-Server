@@ -21,6 +21,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -58,9 +59,9 @@ public class DiaryController {
 
     @Operation(description = "예외 사항으로 인해 일기 작성을 취소하면 일기, 이미지 데이터 삭제 (1차 요청 후 상황에 맞게 호출) ")
     @Parameter(name = "accessToken", in = ParameterIn.HEADER, required = true)
-    @DeleteMapping("/image")
-    public CommonResponse<?> deleteTempDiary(@Parameter @RequestBody @Valid DeleteTempDiaryRequest deleteTempDiaryRequest) {
-        diaryService.deleteTempDiary(deleteTempDiaryRequest);
+    @DeleteMapping("/image/{diaryId}")
+    public CommonResponse<?> deleteTempDiary(@Parameter @PathVariable Long diaryId) {
+        diaryService.deleteTempDiary(diaryId);
         return CommonResponse.success();
     }
 
@@ -73,23 +74,23 @@ public class DiaryController {
 
     @Operation(description = "일기 삭제")
     @Parameter(name = "accessToken", in = ParameterIn.HEADER, required = true)
-    @DeleteMapping
-    public CommonResponse<?> deleteDiary(@Parameter @RequestBody DeleteDiaryRequest deleteDiaryRequest) {
-        diaryService.deleteDiary(deleteDiaryRequest);
+    @DeleteMapping("/{diaryId}")
+    public CommonResponse<?> deleteDiary(@Parameter @PathVariable Long diaryId) {
+        diaryService.deleteDiary(diaryId);
         return CommonResponse.success();
     }
 
     @Operation(description = "내가 쓴 일기 조회")
     @Parameter(name = "accessToken", in = ParameterIn.HEADER, required = true)
-    @GetMapping("/my")
-    public CommonResponse<MyDiaryResponse> getMyDiary(@Parameter @RequestParam Long cursorId, @RequestParam Integer page) {
-        return CommonResponse.success(diaryService.getMyDiary(cursorId, page));
+    @GetMapping("/my/{page}")
+    public CommonResponse<MyDiaryResponse> getMyDiary(@PathVariable Integer page, @Parameter @RequestParam Long cursorId) {
+        return CommonResponse.success(diaryService.getMyDiary(page, cursorId));
     }
 
     @Operation(description = "일기 디테일 조회")
     @Parameter(name = "accessToken", in = ParameterIn.HEADER, required = true)
-    @GetMapping("/detail")
-    public CommonResponse<DiaryDetailResponse> getDiaryDetail(@Parameter @RequestParam Long diaryId) {
+    @GetMapping("/detail/{diaryId}")
+    public CommonResponse<DiaryDetailResponse> getDiaryDetail(@Parameter @PathVariable Long diaryId) {
         return CommonResponse.success(diaryService.getDiaryDetail(diaryId));
     }
 
@@ -109,8 +110,8 @@ public class DiaryController {
 
     @Operation(description = "지도에서 일기 클릭해서 조회")
     @Parameter(name = "accessToken", in = ParameterIn.HEADER, required = true)
-    @GetMapping("/preview")
-    public CommonResponse<DiaryPreviewDetailResponse> getDiaryPreviewDetail(@Parameter @RequestParam Long diaryId) {
+    @GetMapping("/preview/{diaryId}")
+    public CommonResponse<DiaryPreviewDetailResponse> getDiaryPreviewDetail(@Parameter @PathVariable Long diaryId) {
         return CommonResponse.success(diaryService.getDiaryPreviewDetail(diaryId));
     }
 }
