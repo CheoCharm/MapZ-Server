@@ -113,7 +113,7 @@ public class UserService {
     }
 
     @Transactional
-    public TokenPairResponse loginGoogle(GoogleSignInRequest request) {
+    public TokenPairResponse signInGoogle(GoogleSignInRequest request) {
         final GoogleIdTokenResponse idToken = fetchAndValidateIdToken(request.getIdToken());
 
         return userRepository.findByEmailAndUserProvider(idToken.getEmail(), UserProvider.GOOGLE)
