@@ -39,7 +39,7 @@ public class JwtCreateUtils {
     }
 
     @Transactional
-    public TokenPairResponse createAccessToken(String refreshToken) {
+    public TokenPairResponse createTokenPair(String refreshToken) {
         final User user = jwtCommonUtils.findUserByToken(refreshToken);
         if(!user.getRefreshToken().equals(refreshToken)){
             throw new RuntimeException("토큰 정보 불일치");
