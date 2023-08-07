@@ -11,6 +11,7 @@ import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -45,8 +46,8 @@ public class LikeController {
 
     @Operation(description = "좋아요한 일기 조회")
     @Parameter(name = "accessToken", in = ParameterIn.HEADER, required = true)
-    @GetMapping("/mylike")
-    public CommonResponse<MyLikeDiaryResponse> getMyLikeDiary(@Parameter @RequestParam Long cursorId, @RequestParam Integer page) {
-        return CommonResponse.success(likeService.getMyLikeDiary(cursorId, page));
+    @GetMapping("/mylike/{page}")
+    public CommonResponse<MyLikeDiaryResponse> getMyLikeDiary(@PathVariable Integer page, @Parameter @RequestParam Long cursorId) {
+        return CommonResponse.success(likeService.getMyLikeDiary(page, cursorId));
     }
 }

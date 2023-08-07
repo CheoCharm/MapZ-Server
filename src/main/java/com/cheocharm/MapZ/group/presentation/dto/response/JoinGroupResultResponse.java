@@ -1,8 +1,10 @@
 package com.cheocharm.MapZ.group.presentation.dto.response;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
+@AllArgsConstructor
 @Getter
 @Builder
 public class JoinGroupResultResponse {

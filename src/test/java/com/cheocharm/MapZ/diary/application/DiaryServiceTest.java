@@ -108,15 +108,15 @@ class DiaryServiceTest extends ServiceTest {
         //given
         final Diary diary = Diary.builder()
                 .user(user)
+                .id(1L)
                 .build();
-        final DeleteDiaryRequest request = easyRandom.nextObject(DeleteDiaryRequest.class);
-        given(diaryRepository.findById(request.getDiaryId())).willReturn(Optional.of(diary));
+        given(diaryRepository.findById(diary.getId())).willReturn(Optional.of(diary));
 
         //when
-        diaryService.deleteDiary(request);
+        diaryService.deleteDiary(diary.getId());
 
         //then
-        then(diaryRepository).should(times(1)).deleteById(request.getDiaryId());
+        then(diaryRepository).should(times(1)).deleteById(diary.getId());
 
     }
 
@@ -127,12 +127,12 @@ class DiaryServiceTest extends ServiceTest {
         //given
         final Diary diary = Diary.builder()
                 .user(easyRandom.nextObject(User.class))
+                .id(1L)
                 .build();
-        final DeleteDiaryRequest request = easyRandom.nextObject(DeleteDiaryRequest.class);
-        given(diaryRepository.findById(request.getDiaryId())).willReturn(Optional.of(diary));
+        given(diaryRepository.findById(diary.getId())).willReturn(Optional.of(diary));
 
         //when, then
-        assertThatThrownBy(() -> diaryService.deleteDiary(request))
+        assertThatThrownBy(() -> diaryService.deleteDiary(diary.getId()))
                 .isInstanceOf(NoPermissionUserException.class);
     }
 
@@ -195,11 +195,10 @@ class DiaryServiceTest extends ServiceTest {
                         .build()
         );
 
-        final DeleteTempDiaryRequest request = new DeleteTempDiaryRequest(diary.getId());
-        given(diaryImageRepository.findAllByDiaryId(request.getDiaryId()))
+        given(diaryImageRepository.findAllByDiaryId(diary.getId()))
                 .willReturn(diaryImages);
         //when
-        diaryService.deleteTempDiary(request);
+        diaryService.deleteTempDiary(diary.getId());
 
         //then
         then(diaryRepository).should(times(1)).deleteById(anyLong());

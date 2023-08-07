@@ -27,7 +27,7 @@ public enum ExceptionDetails {
     NOT_FOUND_USER(HttpStatus.NOT_FOUND, "2005", "가입된 사용자가 아닙니다."),
     WRONG_PASSWORD(HttpStatus.BAD_REQUEST, "2006", "비밀번호가 일치하지 않습니다."),
     INVALID_USER_INFO(HttpStatus.BAD_REQUEST, "2007", "유효성 검사 통과에 실패하였습니다."),
-    NO_PERMISSION_USER(HttpStatus.BAD_REQUEST, "2008", "허가되지 않은 유저입니다."),
+    NO_PERMISSION_USER(HttpStatus.FORBIDDEN, "2008", "허가되지 않은 유저입니다."),
     EXIT_GROUP_CHIEF(HttpStatus.BAD_REQUEST, "2009", "그룹장은 그룹을 나갈 수 없습니다."),
     CONSTRAINT_VIOLATION(HttpStatus.BAD_REQUEST, "2010", "올바른 형식의 이메일 주소여야 합니다"),
 

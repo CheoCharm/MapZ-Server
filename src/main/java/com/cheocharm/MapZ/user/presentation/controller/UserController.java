@@ -44,7 +44,7 @@ public class UserController {
 
     @Operation(description = "구글회원가입")
     @PostMapping
-    public CommonResponse<TokenPairResponse> googleSignUp(
+    public CommonResponse<TokenPairResponse> signUpGoogle(
             @Parameter @RequestPart(value = "dto") @Valid GoogleSignUpRequest userSignUpDto,
             @RequestPart(value = "file", required = false) MultipartFile multipartFile) {
         return CommonResponse.success(userService.signUpGoogle(userSignUpDto, multipartFile));
@@ -52,8 +52,8 @@ public class UserController {
 
     @Operation(description = "구글로그인")
     @PostMapping("/login")
-    public CommonResponse<TokenPairResponse> googleLogin(@Parameter @RequestBody @Valid GoogleSignInRequest userLoginDto) {
-        return CommonResponse.success(userService.loginGoogle(userLoginDto));
+    public CommonResponse<TokenPairResponse> signInGoogle(@Parameter @RequestBody @Valid GoogleSignInRequest userLoginDto) {
+        return CommonResponse.success(userService.signInGoogle(userLoginDto));
     }
 
     @Operation(description = "이메일 인증 유효성 검사")
@@ -65,7 +65,7 @@ public class UserController {
 
     @Operation(description = "맵지회원가입")
     @PostMapping("/signup")
-    public CommonResponse<TokenPairResponse> signUp(
+    public CommonResponse<TokenPairResponse> signUpMapZ(
             @Parameter @RequestPart(value = "dto") @Valid MapZSignUpRequest mapZSignUpRequest,
             @RequestPart(value = "file", required = false) MultipartFile multipartFile) {
         return CommonResponse.success(userService.signUpMapZ(mapZSignUpRequest, multipartFile));
@@ -73,7 +73,7 @@ public class UserController {
 
     @Operation(description = "맵지로그인")
     @PostMapping("/signin")
-    public CommonResponse<TokenPairResponse> signIn(@Parameter @RequestBody @Valid MapZSignInRequest mapZSignInRequest) {
+    public CommonResponse<TokenPairResponse> signInMapZ(@Parameter @RequestBody @Valid MapZSignInRequest mapZSignInRequest) {
         return CommonResponse.success(userService.signInMapZ(mapZSignInRequest));
     }
 
@@ -108,6 +108,6 @@ public class UserController {
     @Parameter(name = "refreshToken", in = ParameterIn.HEADER, required = true)
     @GetMapping("/refresh")
     public CommonResponse<TokenPairResponse> refresh(@RequestHeader("refreshToken") String refreshToken) {
-        return CommonResponse.success(jwtCreateUtils.createAccessToken(refreshToken));
+        return CommonResponse.success(jwtCreateUtils.createTokenPair(refreshToken));
     }
 }

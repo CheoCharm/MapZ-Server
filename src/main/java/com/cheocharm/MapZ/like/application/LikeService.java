@@ -56,7 +56,7 @@ public class LikeService {
     }
 
     @Transactional(readOnly = true)
-    public MyLikeDiaryResponse getMyLikeDiary(Long cursorId, Integer page) {
+    public MyLikeDiaryResponse getMyLikeDiary(Integer page, Long cursorId) {
         User user = UserThreadLocal.get();
 
         Slice<MyLikeDiaryVO> content = diaryLikeRepository.findByUserId(

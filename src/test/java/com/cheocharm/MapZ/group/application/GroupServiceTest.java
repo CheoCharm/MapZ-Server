@@ -417,10 +417,8 @@ class GroupServiceTest extends ServiceTest {
         given(userGroupRepository.findByGroupIdAndUserId(group.getId(), targetUser.getId()))
                 .willReturn(Optional.of(targetUserGroup));
 
-        final KickUserRequest kickUserRequest = new KickUserRequest(targetUser.getId(), group.getId());
-
         //when
-        groupService.kickUser(kickUserRequest);
+        groupService.kickUser(group.getId(), targetUser.getId());
 
         //then
         then(userGroupRepository).should(times(1)).deleteById(targetUserGroup.getId());
@@ -486,10 +484,8 @@ class GroupServiceTest extends ServiceTest {
         given(userGroupRepository.findByGroupIdAndUserId(group.getId(), user.getId()))
                 .willReturn(Optional.of(userGroup));
 
-        final RefuseInvitationRequest refuseInvitationRequest = new RefuseInvitationRequest(group.getId());
-
         //when
-        groupService.refuseInvitation(refuseInvitationRequest);
+        groupService.refuseInvitation(group.getId());
 
         //then
         then(userGroupRepository).should(times(1)).delete(userGroup);
