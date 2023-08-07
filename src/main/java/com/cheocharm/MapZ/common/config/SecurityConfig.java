@@ -55,10 +55,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                     .antMatchers(HttpMethod.POST,"/api/users/signup").permitAll()
                     .antMatchers(HttpMethod.POST,"/api/users/signin").permitAll()
                     .antMatchers(HttpMethod.GET, "/api/users/password/**").permitAll()
-                    .antMatchers(HttpMethod.PATCH,"/api/users/password/").permitAll()
+                    .antMatchers(HttpMethod.PATCH,"/api/users/password").permitAll()
                     .antMatchers(HttpMethod.GET, "/api/users/user").authenticated()
                     .antMatchers(HttpMethod.GET, "/api/users/mypage").authenticated()
-                    .antMatchers(HttpMethod.GET, "/api/users/refresh").authenticated()
+                    .antMatchers(HttpMethod.GET, "/api/users/refresh").permitAll()
 
                     //group
                     .antMatchers(HttpMethod.POST, "/api/group").authenticated()
@@ -69,32 +69,35 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                     .antMatchers(HttpMethod.PATCH, "/api/group/exit").authenticated()
                     .antMatchers(HttpMethod.PATCH, "/api/group/chief").authenticated()
                     .antMatchers(HttpMethod.POST, "/api/group/invite").authenticated()
+                    .antMatchers(HttpMethod.GET, "/api/group/invite").authenticated()
+                    .antMatchers(HttpMethod.PATCH, "/api/group/invite").authenticated()
+                    .antMatchers(HttpMethod.DELETE, "/api/group/invite/{groupId}").authenticated()
                     .antMatchers(HttpMethod.GET, "/api/group/mygroup").authenticated()
                     .antMatchers(HttpMethod.GET, "/api/group/member").authenticated()
-                    .antMatchers(HttpMethod.DELETE, "/api/group/user").authenticated()
+                    .antMatchers(HttpMethod.DELETE, "/api/group/user/{groupId}/{userId}").authenticated()
 
                     //diary
                     .antMatchers(HttpMethod.POST, "/api/diary").authenticated()
                     .antMatchers(HttpMethod.GET, "/api/diary").authenticated()
-                    .antMatchers(HttpMethod.DELETE, "/api/diary").authenticated()
-                    .antMatchers(HttpMethod.GET,"/api/diary/my").authenticated()
+                    .antMatchers(HttpMethod.DELETE, "/api/diary/{diaryId}").authenticated()
+                    .antMatchers(HttpMethod.GET,"/api/diary/my/{page}").authenticated()
                     .antMatchers(HttpMethod.POST, "/api/diary/image").authenticated()
                     .antMatchers(HttpMethod.POST, "/api/diary/write").authenticated()
-                    .antMatchers(HttpMethod.DELETE, "/api/diary/image").authenticated()
-                    .antMatchers(HttpMethod.GET, "/api/diary/detail").authenticated()
+                    .antMatchers(HttpMethod.DELETE, "/api/diary/image/{diaryId}").authenticated()
+                    .antMatchers(HttpMethod.GET, "/api/diary/detail/{diaryId}").authenticated()
                     .antMatchers(HttpMethod.GET, "/api/diary/low").authenticated()
                     .antMatchers(HttpMethod.GET, "/api/diary/high").authenticated()
-                    .antMatchers(HttpMethod.GET, "/api/diary/preview").authenticated()
+                    .antMatchers(HttpMethod.GET, "/api/diary/preview/{diaryId}").authenticated()
 
                     //commnet
                     .antMatchers(HttpMethod.POST, "/api/comment").authenticated()
-                    .antMatchers(HttpMethod.DELETE, "/api/comment").authenticated()
-                    .antMatchers(HttpMethod.GET, "/api/comment").authenticated()
+                    .antMatchers(HttpMethod.DELETE, "/api/comment/{parentId}/{commentId}").authenticated()
+                    .antMatchers(HttpMethod.GET, "/api/comment/{diaryId}/{page}").authenticated()
 
                     //like
                     .antMatchers(HttpMethod.POST, "/api/like").authenticated()
                     .antMatchers(HttpMethod.GET, "/api/like").authenticated()
-                    .antMatchers(HttpMethod.GET, "/api/like/mylike").authenticated()
+                    .antMatchers(HttpMethod.GET, "/api/like/mylike/{page}").authenticated()
 
                     //report
                     .antMatchers(HttpMethod.POST, "/api/report").authenticated()
