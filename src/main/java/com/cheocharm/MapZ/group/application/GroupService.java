@@ -259,14 +259,14 @@ public class GroupService {
     }
 
     @Transactional
-    public void kickUser(KickUserRequest request) {
+    public void kickUser(Long groupId, Long userId) {
 
         User user = UserThreadLocal.get();
 
-        validateSameUser(request.getUserId(), user.getId());
-        validateUserRoleIsChiefAndReturnUserGroup(request.getGroupId(), user.getId());
+        validateSameUser(userId, user.getId());
+        validateUserRoleIsChiefAndReturnUserGroup(groupId, user.getId());
 
-        UserGroup targetUserGroup = validateUserGroupAndReturn(request.getGroupId(), request.getUserId());
+        UserGroup targetUserGroup = validateUserGroupAndReturn(groupId, userId);
 
         Long targetUserId = targetUserGroup.getUser().getId();
         deleteGroupActivityOfUser(targetUserId, targetUserGroup.getId());
@@ -301,9 +301,9 @@ public class GroupService {
     }
 
     @Transactional
-    public void refuseInvitation(RefuseInvitationRequest refuseInvitationRequest) {
+    public void refuseInvitation(Long groupId) {
         final User user = UserThreadLocal.get();
-        final UserGroup userGroup = validateUserGroupAndReturn(refuseInvitationRequest.getGroupId(), user.getId());
+        final UserGroup userGroup = validateUserGroupAndReturn(groupId, user.getId());
 
         userGroupRepository.delete(userGroup);
     }

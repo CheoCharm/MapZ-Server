@@ -45,10 +45,9 @@ public class CommentService {
     }
 
     @Transactional
-    public void deleteComment(DeleteCommentRequest request) {
-        final Long commentId = request.getCommentId();
+    public void deleteComment(Long parentId, Long commentId) {
         commentRepository.deleteById(commentId);
-        checkParentCommentAndDeleteChildComment(request.getParentId(), commentId);
+        checkParentCommentAndDeleteChildComment(parentId, commentId);
     }
 
     private void checkParentCommentAndDeleteChildComment(Long parentId, Long commentId) {
@@ -57,7 +56,7 @@ public class CommentService {
         }
     }
 
-    public GetCommentResponse getComment(Long diaryId, Long cursorId, Integer page) {
+    public GetCommentResponse getComment(Long diaryId, Integer page, Long cursorId) {
         Long userId = UserThreadLocal.get().getId();
         Slice<CommentVO> content = commentRepository.findByDiaryId(
                 userId,

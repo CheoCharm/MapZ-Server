@@ -89,13 +89,11 @@ class CommentServiceTest {
     void deleteComment() {
 
         //given
-        DeleteCommentRequest request = new DeleteCommentRequest(
-                ThreadLocalRandom.current().nextLong() + 1,
-                ThreadLocalRandom.current().nextLong() + 1
-        );
+        Long parentId = ThreadLocalRandom.current().nextLong() + 1;
+        Long commentId = ThreadLocalRandom.current().nextLong() + 1;
 
         //when
-        commentService.deleteComment(request);
+        commentService.deleteComment(parentId, commentId);
 
         //then
         then(commentRepository).should().deleteById(anyLong());
@@ -107,13 +105,11 @@ class CommentServiceTest {
     void childCommentDeleteWhenRootCommentDelete() {
 
         //given
-        DeleteCommentRequest request = new DeleteCommentRequest(
-                0L,
-                ThreadLocalRandom.current().nextLong() + 1
-        );
+        Long parentId = 0L;
+        Long commentId = ThreadLocalRandom.current().nextLong() + 1;
 
         //when
-        commentService.deleteComment(request);
+        commentService.deleteComment(parentId, commentId);
 
         //then
         then(commentRepository).should().deleteById(anyLong());

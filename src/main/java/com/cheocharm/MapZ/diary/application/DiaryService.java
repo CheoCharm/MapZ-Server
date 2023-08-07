@@ -100,12 +100,12 @@ public class DiaryService {
     }
 
     @Transactional
-    public void deleteDiary(DeleteDiaryRequest request) {
+    public void deleteDiary(Long diaryId) {
         User user = UserThreadLocal.get();
-        validateSameUser(request.getDiaryId(), user.getId());
+        validateSameUser(diaryId, user.getId());
         //Soft Delete or Hard Delete 로직 필요
 
-        diaryRepository.deleteById(request.getDiaryId());
+        diaryRepository.deleteById(diaryId);
     }
 
     private void validateSameUser(Long diaryId, Long userId) {
@@ -117,7 +117,7 @@ public class DiaryService {
     }
 
     @Transactional(readOnly = true)
-    public MyDiaryResponse getMyDiary(Long cursorId, Integer page) {
+    public MyDiaryResponse getMyDiary(Integer page, Long cursorId) {
         User user = UserThreadLocal.get();
 
         Slice<MyDiaryVO> content = diaryRepository.findByUserId(
@@ -173,8 +173,7 @@ public class DiaryService {
     }
 
     @Transactional
-    public void deleteTempDiary(DeleteTempDiaryRequest request) {
-        Long diaryId = request.getDiaryId();
+    public void deleteTempDiary(Long diaryId) {
         List<DiaryImage> diaryImages = diaryImageRepository.findAllByDiaryId(diaryId);
 
         deleteImages(diaryImages, diaryId);
