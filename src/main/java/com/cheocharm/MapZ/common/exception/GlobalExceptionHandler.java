@@ -1,7 +1,14 @@
 package com.cheocharm.MapZ.common.exception;
 
 import com.cheocharm.MapZ.common.CommonResponse;
+import com.cheocharm.MapZ.common.exception.jwt.InvalidJwtException;
 import com.cheocharm.MapZ.common.exception.jwt.JwtExpiredException;
+import com.cheocharm.MapZ.common.exception.report.AlreadyReportedDiary;
+import com.cheocharm.MapZ.common.exception.user.DuplicatedEmailException;
+import com.cheocharm.MapZ.common.exception.user.ExitGroupChiefException;
+import com.cheocharm.MapZ.common.exception.user.NoPermissionUserException;
+import com.cheocharm.MapZ.common.exception.usergroup.GroupMemberSizeExceedException;
+import com.cheocharm.MapZ.common.exception.usergroup.SelfKickException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -19,6 +26,27 @@ import java.util.Objects;
 public class GlobalExceptionHandler {
 
     private final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler({
+            ExitGroupChiefException.class,
+            InvalidJwtException.class,
+            GroupMemberSizeExceedException.class,
+            SelfKickException.class,
+            DuplicatedEmailException.class,
+            AlreadyReportedDiary.class
+    })
+    protected CommonResponse<?> handleBadRequest(CustomException e) {
+        return CommonResponse.fail(e.getStatusCode(), e.getCustomCode(), e.getMessage());
+    }
+
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    @ExceptionHandler({
+            NoPermissionUserException.class,
+    })
+    protected CommonResponse<?> handleForbidden(CustomException e) {
+        return CommonResponse.fail(e.getStatusCode(), e.getCustomCode(), e.getMessage());
+    }
 
     @ExceptionHandler(CustomException.class)
     protected CommonResponse<?> handleCustomException(CustomException ex) {
