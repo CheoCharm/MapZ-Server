@@ -16,6 +16,7 @@ import com.cheocharm.MapZ.group.presentation.dto.request.KickUserRequest;
 import com.cheocharm.MapZ.group.presentation.dto.request.UpdateGroupRequest;
 import com.cheocharm.MapZ.group.presentation.dto.request.UpdateInvitationStatusRequest;
 import com.cheocharm.MapZ.group.presentation.dto.response.JoinGroupResultResponse;
+import com.cheocharm.MapZ.group.presentation.dto.response.PagingGroupListResponse;
 import com.cheocharm.MapZ.user.domain.User;
 import com.cheocharm.MapZ.user.domain.UserProvider;
 import com.cheocharm.MapZ.user.domain.repository.UserRepository;
@@ -31,14 +32,18 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.request.MockMultipartHttpServletRequestBuilder;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.willDoNothing;
 import static org.mockito.BDDMockito.willThrow;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -150,7 +155,23 @@ class GroupControllerTest extends ControllerTest {
 
     @Test
     @DisplayName("유저는 그룹 참가를 위해 그룹을 검색할 수 있다.")
-    void userCanSearchGroup() {
+    void userCanSearchGroup() throws Exception {
+
+        //given
+        String accessToken = getAccessToken();
+        PagingGroupListResponse response = new PagingGroupListResponse(false, Collections.emptyList());
+        given(groupService.getGroup(anyString(), anyLong(), anyInt()))
+                .willReturn(response);
+
+        //when, then
+        mockMvc.perform(get("/api/group/{page}", 0)
+                        .param("groupName", "mapz")
+                        .param("cursorId", "0")
+                        .header(AUTHORIZATION_HEADER_NAME, accessToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().isOk());
 
     }
 

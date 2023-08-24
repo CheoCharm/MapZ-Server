@@ -1,5 +1,7 @@
 package com.cheocharm.MapZ.common.util;
 
+import com.cheocharm.MapZ.common.exception.common.FailJsonProcessException;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -16,5 +18,13 @@ public class ObjectMapperUtils {
 
     public static ObjectMapper getObjectMapper() {
         return objectMapper;
+    }
+
+    public static <T> T readValue(String body, Class<T> classType) {
+        try {
+            return objectMapper.readValue(body, classType);
+        } catch (JsonProcessingException e) {
+            throw new FailJsonProcessException(e);
+        }
     }
 }

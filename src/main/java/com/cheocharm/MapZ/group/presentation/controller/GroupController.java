@@ -58,8 +58,9 @@ public class GroupController {
 
     @Operation(description = "그룹 참가를 위한 그룹 조회")
     @Parameter(name = "accessToken", in = ParameterIn.HEADER, required = true)
-    @GetMapping
-    public CommonResponse<PagingGroupListResponse> getGroup(@RequestParam String groupName, @RequestParam Long cursorId, @RequestParam Integer page) {
+    @GetMapping("/{page}")
+    public CommonResponse<PagingGroupListResponse> getGroup(
+            @RequestParam String groupName, @RequestParam Long cursorId, @PathVariable Integer page) {
         return CommonResponse.success(groupService.getGroup(groupName, cursorId, page));
     }
 

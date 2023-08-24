@@ -12,17 +12,19 @@ import com.cheocharm.MapZ.usergroup.domain.UserRole;
 import com.cheocharm.MapZ.usergroup.domain.repository.UserGroupRepository;
 import com.cheocharm.MapZ.usergroup.domain.repository.vo.ChiefUserImageVO;
 import com.cheocharm.MapZ.usergroup.domain.repository.vo.CountUserGroupVO;
+import org.jeasy.random.EasyRandom;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 
 import static org.assertj.core.api.Assertions.*;
 
 @RepositoryTest
-class UserGroupRepositoryCustomImplTest {
+class UserGroupRepositoryTest {
 
     @Autowired
     private UserGroupRepository userGroupRepository;
@@ -33,6 +35,8 @@ class UserGroupRepositoryCustomImplTest {
     @Autowired
     private GroupRepository groupRepository;
 
+    private final EasyRandom easyRandom = new EasyRandom();
+    private final ThreadLocalRandom random = ThreadLocalRandom.current();
     private List<Group> groupList;
     private User user;
 
@@ -196,4 +200,51 @@ class UserGroupRepositoryCustomImplTest {
             assertThat(map.get(countUserGroupVO.getId())).isEqualTo(countUserGroupVO.getCnt());
         }
     }
+
+
+    @Test
+    @DisplayName("groupId를 조건으로 group에 속한 유저의 수를 조회한다.")
+    void countUserByGroupIdFromUserGroupTable() {
+
+        //given
+        Group group = groupList.get(0);
+        int randNumber = random.nextInt(10) + 1;
+        for (int i = 0; i < randNumber; i++) {
+            userGroupRepository.save(
+                    UserGroup.of(
+                            group,
+                            userRepository.save(User.builder().id(i + 3L).build()),
+                            InvitationStatus.ACCEPT,
+                            UserRole.MEMBER
+                    )
+            );
+
+        }
+        //when
+        Long userCount = userGroupRepository.countByGroupId(group.getId());
+
+        //then
+        assertThat(userCount).isEqualTo(randNumber + 1);
+    }
+
+    @Test
+    @DisplayName("userId를 조건으로 그룹의 초대장들을 페이징하여 조회한다.")
+    void getInvitationSliceByUserIdFromUserGroupTable() {
+
+    }
+
+    @Test
+    @DisplayName("userId를 조건으로 Group의 Id를 조회한다.")
+    void getGroupIdByUserIdFromUserGroupTable() {
+
+        //given
+        Long userId = user.getId();
+
+        //when
+        List<Long> groupIds = userGroupRepository.getGroupIdByUserId(userId);
+
+        //then
+        assertThat(groupIds.size()).isEqualTo(groupList.size());
+    }
+
 }

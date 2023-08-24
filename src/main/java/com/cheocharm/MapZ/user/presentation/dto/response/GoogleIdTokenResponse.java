@@ -1,7 +1,13 @@
 package com.cheocharm.MapZ.user.presentation.dto.response;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
+@NoArgsConstructor
+@Builder
+@AllArgsConstructor
 @Getter
 public class GoogleIdTokenResponse {
     private String iss;

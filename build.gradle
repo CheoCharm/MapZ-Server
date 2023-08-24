@@ -70,6 +70,11 @@ jacoco {
 }
 
 jacocoTestCoverageVerification {
+	def QDomains = []
+	for (qPattern in '*.QA'..'*.QZ') {
+		QDomains.add(qPattern + '*')
+	}
+
 	violationRules {
 		rule {
 			enabled = true
@@ -79,7 +84,7 @@ jacocoTestCoverageVerification {
 			limit {
 				counter = 'LINE'
 				value = 'COVEREDRATIO'
-//				minimum = 0.1
+				minimum = 0.6
 			}
 
 			excludes = [
@@ -88,11 +93,10 @@ jacocoTestCoverageVerification {
 					'*.dto.*',
 					'*.infrastructure.*',
 					'*.common.*',
-//					'*.common.util.*',
 					'*.*.repository.vo.*',
 					'*.BaseEntity',
 					'*.ControllerAdvice',
-			]
+			] + QDomains
 		}
 	}
 }
@@ -102,6 +106,27 @@ tasks.named('test') {
 }
 
 jacocoTestReport {
+
+	dependsOn test
+
+	def Qdomains = []
+	for(qPattern in "**/QA" .. "**/QZ"){
+		Qdomains.add(qPattern+"*")
+	}
+
+
+	afterEvaluate {
+		classDirectories.setFrom(files(classDirectories.files.collect {
+			fileTree(dir: it, exclude: [
+					"**/*request*",
+					"**/*response*",
+					"**/*vo*",
+					"**/config/*",
+					"**/*exception*"
+			] + Qdomains)
+
+		}))
+	}
 	finalizedBy 'jacocoTestCoverageVerification'
 }
 

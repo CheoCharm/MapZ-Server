@@ -38,7 +38,8 @@ public class Group extends BaseEntity {
     private boolean openStatus;
 
     @Builder
-    public Group(String groupName, String bio, String groupImageUrl, String groupUUID, boolean openStatus) {
+    public Group(Long id, String groupName, String bio, String groupImageUrl, String groupUUID, boolean openStatus) {
+        this.id = id;
         this.groupName = groupName;
         this.bio = bio;
         this.groupImageUrl = groupImageUrl;
@@ -56,7 +57,7 @@ public class Group extends BaseEntity {
     }
 
     public void updateGroupInfo(UpdateGroupRequest updateGroupRequest) {
-        this.groupName = updateGroupRequest.getGroupName();
+        this.groupName = updateGroupRequest.getGroupName().trim();
         this.bio = updateGroupRequest.getBio();
         this.openStatus = updateGroupRequest.getIsOpenGroup();
     }

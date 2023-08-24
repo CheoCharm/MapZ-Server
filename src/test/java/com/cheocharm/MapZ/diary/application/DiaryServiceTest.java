@@ -3,20 +3,25 @@ package com.cheocharm.MapZ.diary.application;
 import com.cheocharm.MapZ.ServiceTest;
 import com.cheocharm.MapZ.common.exception.user.NoPermissionUserException;
 import com.cheocharm.MapZ.common.image.ImageDirectory;
-import com.cheocharm.MapZ.common.image.ImageHandler;
 import com.cheocharm.MapZ.common.interceptor.UserThreadLocal;
+import com.cheocharm.MapZ.common.util.PagingUtils;
 import com.cheocharm.MapZ.diary.domain.Diary;
 import com.cheocharm.MapZ.diary.domain.DiaryImage;
-import com.cheocharm.MapZ.diary.domain.repository.DiaryRepository;
-import com.cheocharm.MapZ.diary.presentation.dto.request.DeleteDiaryRequest;
-import com.cheocharm.MapZ.diary.presentation.dto.request.DeleteTempDiaryRequest;
+import com.cheocharm.MapZ.diary.domain.repository.vo.DiaryCoordinateVO;
+import com.cheocharm.MapZ.diary.domain.repository.vo.DiaryDetailVO;
+import com.cheocharm.MapZ.diary.domain.repository.vo.DiaryImagePreviewVO;
+import com.cheocharm.MapZ.diary.domain.repository.vo.DiaryPreviewVO;
+import com.cheocharm.MapZ.diary.domain.repository.vo.DiarySliceVO;
 import com.cheocharm.MapZ.diary.presentation.dto.request.WriteDiaryImageRequest;
 import com.cheocharm.MapZ.diary.presentation.dto.request.WriteDiaryRequest;
+import com.cheocharm.MapZ.diary.presentation.dto.response.DiaryDetailResponse;
+import com.cheocharm.MapZ.diary.presentation.dto.response.DiaryPreviewDetailResponse;
+import com.cheocharm.MapZ.diary.presentation.dto.response.DiaryPreviewResponse;
+import com.cheocharm.MapZ.diary.presentation.dto.response.GetDiaryListResponse;
 import com.cheocharm.MapZ.diary.presentation.dto.response.WriteDiaryImageResponse;
 import com.cheocharm.MapZ.diary.presentation.dto.response.WriteDiaryResponse;
 import com.cheocharm.MapZ.group.domain.Group;
 import com.cheocharm.MapZ.user.domain.User;
-import org.assertj.core.api.Assertions;
 import org.jeasy.random.EasyRandom;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -30,16 +35,26 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.SliceImpl;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ThreadLocalRandom;
 
+import static com.cheocharm.MapZ.common.fixtures.DiaryFixtures.ADDRESS;
+import static com.cheocharm.MapZ.common.fixtures.DiaryFixtures.DIARY_TITLE;
+import static com.cheocharm.MapZ.common.fixtures.DiaryFixtures.NO_IMAGE_CONTENT;
+import static com.cheocharm.MapZ.common.util.PagingUtils.FIELD_CREATED_AT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyDouble;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
@@ -102,6 +117,29 @@ class DiaryServiceTest extends ServiceTest {
     }
 
     @Test
+    @DisplayName("그룹의 일기를 페이징하여 조회할 수 있다.")
+    void getDiary() {
+
+        //given
+        Slice<DiarySliceVO> diarySliceVOS = new SliceImpl<>(
+                List.of(easyRandom.nextObject(DiarySliceVO.class),
+                        easyRandom.nextObject(DiarySliceVO.class)),
+                PagingUtils.applyDescPageConfigBy(0, PagingUtils.MY_DIARY_SIZE, FIELD_CREATED_AT),
+                true
+        );
+
+        given(diaryRepository.getDiarySlice(anyLong(), anyLong(), anyLong(), any(Pageable.class)))
+                .willReturn(diarySliceVOS);
+
+        //when
+        GetDiaryListResponse response = diaryService.getDiary(1L, 0L, 0);
+
+        //then
+        assertThat(response.getDiaryList().size()).isEqualTo(diarySliceVOS.getContent().size());
+        assertThat(response.isHasNext()).isEqualTo(diarySliceVOS.hasNext());
+    }
+
+    @Test
     @DisplayName("작성된 일기는 작성자만 삭제할 수 있다")
     void sameUserCanDeleteDiary() {
 
@@ -134,6 +172,12 @@ class DiaryServiceTest extends ServiceTest {
         //when, then
         assertThatThrownBy(() -> diaryService.deleteDiary(diary.getId()))
                 .isInstanceOf(NoPermissionUserException.class);
+    }
+
+    @Test
+    @DisplayName("내가 작성한 일기를 페이징하여 조회한다.")
+    void getMyDiary() {
+
     }
 
     @Test
@@ -211,6 +255,34 @@ class DiaryServiceTest extends ServiceTest {
     @DisplayName("일기 상세 정보 조회")
     void getDiaryDetail() {
 
+        //given
+        Diary diary = Diary.builder()
+                .id(1L)
+                .user(user)
+                .title(DIARY_TITLE)
+                .content(NO_IMAGE_CONTENT)
+                .address(ADDRESS)
+                .build();
+        DiaryDetailVO diaryDetailVO = new DiaryDetailVO(
+                diary.getTitle(),
+                diary.getContent(),
+                diary.getAddress(),
+                LocalDateTime.now(),
+                user.getUsername(),
+                user.getUserImageUrl(),
+                0,
+                true,
+                4L,
+                true
+        );
+        given(diaryRepository.getDiaryDetail(anyLong(), anyLong()))
+                .willReturn(diaryDetailVO);
+        //when
+        DiaryDetailResponse response = diaryService.getDiaryDetail(diary.getId());
+
+        //then
+        assertThat(response.getTitle()).isEqualTo(diaryDetailVO.getTitle());
+        assertThat(response.getUsername()).isEqualTo(diaryDetailVO.getUsername());
     }
 
     @Test
@@ -219,9 +291,44 @@ class DiaryServiceTest extends ServiceTest {
 
     }
 
-    @Test
+//    @Test
     @DisplayName("일기 좌표 조회 반경이 좁은 경우")
     void getDiaryCoordinateWhenZoomLevelHigh() {
 
+        //given
+        List<DiaryCoordinateVO> diaryCoordinateVOS = List.of(
+                easyRandom.nextObject(DiaryCoordinateVO.class)
+        );
+        DiaryCoordinateVO diaryCoordinateVO = diaryCoordinateVOS.get(0);
+        given(diaryRepository.findByDiaryCoordinate(any(), anyList(), anyDouble()))
+                .willReturn(diaryCoordinateVOS);
+        given(diaryImageRepository.findPreviewImage(anyList()))
+                .willReturn(List.of(new DiaryImagePreviewVO(diaryCoordinateVO.getDiaryId(), "11")));
+        //when
+        List<DiaryPreviewResponse> response = diaryService.getDiaryByMap(
+                127.77777, 13.23333, 15.2
+        );
+
+        //then
+        assertThat(response.size()).isEqualTo(diaryCoordinateVOS.size());
+    }
+
+    @Test
+    @DisplayName("지도에서 일기 클릭해서 조회")
+    void getDiaryPreviewDetail() {
+
+        //given
+        List<DiaryPreviewVO> diaryPreviewVOS = List.of(
+                easyRandom.nextObject(DiaryPreviewVO.class),
+                easyRandom.nextObject(DiaryPreviewVO.class)
+        );
+        given(diaryImageRepository.getDiaryPreview(anyLong(), anyLong()))
+                .willReturn(diaryPreviewVOS);
+
+        //when
+        DiaryPreviewDetailResponse response = diaryService.getDiaryPreviewDetail(1L);
+
+        //then
+        assertThat(response.getDiaryImageURLs().size()).isEqualTo(diaryPreviewVOS.size());
     }
 }

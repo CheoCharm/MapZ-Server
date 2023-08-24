@@ -1,5 +1,6 @@
 package com.cheocharm.MapZ;
 
+import com.cheocharm.MapZ.agreement.repository.AgreementRepository;
 import com.cheocharm.MapZ.common.image.ImageHandler;
 import com.cheocharm.MapZ.diary.domain.repository.DiaryImageRepository;
 import com.cheocharm.MapZ.diary.domain.repository.DiaryRepository;
@@ -33,9 +34,16 @@ public class ServiceTest {
     protected DiaryImageRepository diaryImageRepository;
 
     @MockBean
+    protected AgreementRepository agreementRepository;
+
+    @MockBean
     protected ImageHandler imageHandler;
 
     protected MockMultipartFile getMockMultipartFile(String name) {
         return new MockMultipartFile(name, new byte[0]);
+    }
+
+    protected MockMultipartFile getMockMultipartFileHasContent(String name) {
+        return new MockMultipartFile(name, new byte[3]);
     }
 }

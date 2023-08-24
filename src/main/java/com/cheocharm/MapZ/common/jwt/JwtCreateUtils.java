@@ -1,5 +1,6 @@
 package com.cheocharm.MapZ.common.jwt;
 
+import com.cheocharm.MapZ.common.exception.jwt.InvalidJwtException;
 import com.cheocharm.MapZ.user.domain.User;
 import com.cheocharm.MapZ.user.domain.UserProvider;
 import com.cheocharm.MapZ.user.presentation.dto.response.TokenPairResponse;
@@ -42,7 +43,7 @@ public class JwtCreateUtils {
     public TokenPairResponse createTokenPair(String refreshToken) {
         final User user = jwtCommonUtils.findUserByToken(refreshToken);
         if(!user.getRefreshToken().equals(refreshToken)){
-            throw new RuntimeException("토큰 정보 불일치");
+            throw new InvalidJwtException();
         }
         final TokenPairResponse tokenPair = createTokenPair(user.getEmail(), user.getUsername(), user.getUserProvider());
         user.updateRefreshToken(tokenPair.getRefreshToken());

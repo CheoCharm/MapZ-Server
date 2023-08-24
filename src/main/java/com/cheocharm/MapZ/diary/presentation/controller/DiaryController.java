@@ -67,8 +67,9 @@ public class DiaryController {
 
     @Operation(description = "일기 페이징 조회")
     @Parameter(name = "accessToken", in = ParameterIn.HEADER, required = true)
-    @GetMapping
-    public CommonResponse<GetDiaryListResponse> getDiary(@Parameter @RequestParam Long groupId, @RequestParam Long cursorId, @RequestParam Integer page) {
+    @GetMapping("/{page}")
+    public CommonResponse<GetDiaryListResponse> getDiary(
+            @Parameter @RequestParam Long groupId, @RequestParam Long cursorId, @PathVariable Integer page) {
         return CommonResponse.success(diaryService.getDiary(groupId, cursorId, page));
     }
 
