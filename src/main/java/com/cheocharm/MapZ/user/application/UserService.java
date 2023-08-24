@@ -6,6 +6,7 @@ import com.cheocharm.MapZ.common.exception.common.FailJsonProcessException;
 import com.cheocharm.MapZ.common.exception.jwt.InvalidJwtException;
 import com.cheocharm.MapZ.common.exception.user.DuplicatedEmailException;
 import com.cheocharm.MapZ.common.exception.user.DuplicatedUsernameException;
+import com.cheocharm.MapZ.common.exception.user.PresentUserException;
 import com.cheocharm.MapZ.common.exception.user.WrongPasswordException;
 import com.cheocharm.MapZ.common.exception.user.NotFoundUserException;
 import com.cheocharm.MapZ.common.image.ImageHandler;
@@ -31,7 +32,6 @@ import com.cheocharm.MapZ.user.presentation.dto.response.MyPageInfoResponse;
 import com.cheocharm.MapZ.user.presentation.dto.response.TokenPairResponse;
 import com.cheocharm.MapZ.usergroup.domain.UserGroup;
 import com.cheocharm.MapZ.usergroup.domain.repository.UserGroupRepository;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.data.domain.Slice;
@@ -49,6 +49,7 @@ import static com.cheocharm.MapZ.common.util.PagingUtils.applyCursorId;
 import static com.cheocharm.MapZ.common.util.PagingUtils.applyDescPageConfigBy;
 import static com.cheocharm.MapZ.common.util.PagingUtils.FIELD_CREATED_AT;
 import static com.cheocharm.MapZ.common.util.PagingUtils.USER_SIZE;
+import static com.cheocharm.MapZ.user.domain.User.createUserNoPassword;
 
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -74,42 +75,22 @@ public class UserService {
     public TokenPairResponse signUpGoogle(GoogleSignUpRequest request, MultipartFile multipartFile) {
         final GoogleIdTokenResponse idToken = fetchAndValidateIdToken(request.getIdToken());
 
+        userRepository.findByEmailAndUserProvider(idToken.getEmail(), UserProvider.GOOGLE)
+                .ifPresent(user -> {
+                    throw new PresentUserException();
+                });
+
         final TokenPairResponse tokenPair = jwtCreateUtils.createTokenPair(
                 idToken.getEmail(),
                 request.getUsername(),
                 UserProvider.GOOGLE
         );
+        User user = createUserNoPassword(idToken.getEmail(), request.getUsername(), DEFAULT_BIO,
+                tokenPair.getRefreshToken(), UserProvider.GOOGLE);
 
-        final User user = userRepository.findByEmailAndUserProvider(idToken.getEmail(), UserProvider.GOOGLE)
-                .map(userEntity -> {
-                    userEntity.updateRefreshToken(tokenPair.getRefreshToken());
-                    return userEntity;
-                })
-                .orElseGet(() -> createAndReturnUser(request, multipartFile, idToken, tokenPair.getRefreshToken()));
-
+        updateUserImageURL(multipartFile, user);
         saveUserAndAgreement(request.getPushAgreement(), user);
-
         return tokenPair;
-    }
-
-    private User createAndReturnUser(GoogleSignUpRequest request, MultipartFile multipartFile,
-                                     GoogleIdTokenResponse idToken, String refreshToken) {
-        final User user = createGoogleUser(request, multipartFile, idToken, refreshToken);
-        userRepository.save(user);
-        return user;
-    }
-
-    private User createGoogleUser(GoogleSignUpRequest request, MultipartFile multipartFile,
-                                  GoogleIdTokenResponse idToken, String refreshToken) {
-        final User user = userRepository.save(
-                User.createUserNoPassword(idToken.getEmail(), request.getUsername(), DEFAULT_BIO,
-                        refreshToken, UserProvider.GOOGLE)
-        );
-
-        if (!multipartFile.isEmpty()) {
-            user.updateUserImageUrl(imageHandler.uploadImage(multipartFile, ImageDirectory.USER));
-        }
-        return user;
     }
 
     @Transactional
@@ -150,9 +131,7 @@ public class UserService {
         User user = User.createUser(request.getEmail(), request.getUsername(),
                 passwordEncoder.encode(request.getPassword()), DEFAULT_BIO, refreshToken, UserProvider.MAPZ);
 
-        if (!multipartFile.isEmpty()) {
-            user.updateUserImageUrl(imageHandler.uploadImage(multipartFile, ImageDirectory.USER));
-        }
+        updateUserImageURL(multipartFile, user);
         return user;
     }
 
@@ -251,6 +230,12 @@ public class UserService {
         return MyPageInfoResponse.from(user);
     }
 
+    private void updateUserImageURL(MultipartFile multipartFile, User user) {
+        if (!multipartFile.isEmpty()) {
+            user.updateUserImageUrl(imageHandler.uploadImage(multipartFile, ImageDirectory.USER));
+        }
+    }
+
     private User validatePresentUserAndReturn(String email, UserProvider provider) {
         return userRepository.findByEmailAndUserProvider(email, provider)
                 .orElseThrow(NotFoundUserException::new);
@@ -264,11 +249,7 @@ public class UserService {
     }
 
     private GoogleIdTokenResponse getIdToken(ResponseEntity<String> response) {
-        try {
-            return ObjectMapperUtils.getObjectMapper().readValue(response.getBody(), GoogleIdTokenResponse.class);
-        } catch (JsonProcessingException e) {
-            throw new FailJsonProcessException(e);
-        }
+        return ObjectMapperUtils.readValue(response.getBody(), GoogleIdTokenResponse.class);
     }
 
     private void checkAudValue(GoogleIdTokenResponse idToken) {
@@ -277,4 +258,8 @@ public class UserService {
         }
     }
 
+    @Transactional
+    public TokenPairResponse refresh(String refreshToken) {
+        return jwtCreateUtils.createTokenPair(refreshToken);
+    }
 }
