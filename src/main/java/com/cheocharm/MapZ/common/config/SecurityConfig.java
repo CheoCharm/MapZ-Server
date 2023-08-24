@@ -62,7 +62,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
                     //group
                     .antMatchers(HttpMethod.POST, "/api/group").authenticated()
-                    .antMatchers(HttpMethod.GET, "/api/group").authenticated()
+                    .antMatchers(HttpMethod.GET, "/api/group/{page}").authenticated()
                     .antMatchers(HttpMethod.PATCH, "/api/group").authenticated()
                     .antMatchers(HttpMethod.POST, "/api/group/join").authenticated()
                     .antMatchers(HttpMethod.PATCH, "/api/group/join").authenticated()
@@ -78,7 +78,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
                     //diary
                     .antMatchers(HttpMethod.POST, "/api/diary").authenticated()
-                    .antMatchers(HttpMethod.GET, "/api/diary").authenticated()
+                    .antMatchers(HttpMethod.GET, "/api/diary/{page}").authenticated()
                     .antMatchers(HttpMethod.DELETE, "/api/diary/{diaryId}").authenticated()
                     .antMatchers(HttpMethod.GET,"/api/diary/my/{page}").authenticated()
                     .antMatchers(HttpMethod.POST, "/api/diary/image").authenticated()
