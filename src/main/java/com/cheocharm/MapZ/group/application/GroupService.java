@@ -17,7 +17,6 @@ import com.cheocharm.MapZ.diary.domain.repository.DiaryImageRepository;
 import com.cheocharm.MapZ.group.domain.Group;
 import com.cheocharm.MapZ.group.domain.GroupLimit;
 import com.cheocharm.MapZ.group.presentation.dto.request.AcceptInvitationRequest;
-import com.cheocharm.MapZ.group.presentation.dto.request.RefuseInvitationRequest;
 import com.cheocharm.MapZ.group.presentation.dto.response.MyInvitationResponse;
 import com.cheocharm.MapZ.like.domain.repository.DiaryLikeRepository;
 import com.cheocharm.MapZ.diary.domain.repository.DiaryRepository;
@@ -29,7 +28,6 @@ import com.cheocharm.MapZ.group.presentation.dto.request.CreateGroupRequest;
 import com.cheocharm.MapZ.group.presentation.dto.request.ExitGroupRequest;
 import com.cheocharm.MapZ.group.presentation.dto.request.InviteGroupRequest;
 import com.cheocharm.MapZ.group.presentation.dto.request.JoinGroupRequest;
-import com.cheocharm.MapZ.group.presentation.dto.request.KickUserRequest;
 import com.cheocharm.MapZ.group.presentation.dto.response.GetMyGroupResponse;
 import com.cheocharm.MapZ.group.presentation.dto.response.GroupMemberResponse;
 import com.cheocharm.MapZ.group.presentation.dto.response.JoinGroupResultResponse;
@@ -83,12 +81,6 @@ public class GroupService {
         saveGroupAndUserGroup(user, group);
     }
 
-    private void checkDuplicateGroupName(String groupName) {
-        if (groupRepository.existsByGroupName(groupName)) {
-            throw new DuplicatedGroupException();
-        }
-    }
-
     private void saveGroupAndUserGroup(User user, Group group) {
         groupRepository.save(group);
         userGroupRepository.save(
@@ -98,10 +90,7 @@ public class GroupService {
 
     private Group createGroup(CreateGroupRequest request, MultipartFile multipartFile, String groupName) {
         final Group group = Group.of(groupName, request.getBio(), request.getChangeStatus());
-
-        if (!multipartFile.isEmpty()) {
-            group.updateGroupImageUrl(imageHandler.uploadImage(multipartFile, ImageDirectory.GROUP));
-        }
+        updateGroupImage(multipartFile, group);
         return group;
     }
 
@@ -127,18 +116,10 @@ public class GroupService {
         final UserGroup userGroup = validateUserRoleIsChiefAndReturnUserGroup(request.getGroupId(), user.getId());
 
         Group group = userGroup.getGroup();
-        checkDuplicateGroupName(request.getGroupName(), group);
-        if (!multipartFile.isEmpty()) {
-            group.updateGroupImageUrl(imageHandler.uploadImage(multipartFile, ImageDirectory.GROUP));
-        }
+        checkDuplicateGroupName(request.getGroupName().trim());
+        updateGroupImage(multipartFile, group);
 
         group.updateGroupInfo(request);
-    }
-
-    private void checkDuplicateGroupName(String requestGroupName, Group group) {
-        if (group.getGroupName().equals(requestGroupName)) {
-            throw new DuplicatedGroupException();
-        }
     }
 
     @Transactional
@@ -251,8 +232,8 @@ public class GroupService {
         return GroupMemberResponse.of(userGroupEntities);
     }
 
-    private void validateUserExistInGroup(User user, List<UserGroup> userGroupEntities) {
-        if (isGroupUser(user.getId(), userGroupEntities)) {
+    private void validateUserExistInGroup(User user, List<UserGroup> userGroups) {
+        if (isGroupUser(user.getId(), userGroups)) {
             return;
         }
         throw new NoPermissionUserException();
@@ -321,6 +302,18 @@ public class GroupService {
         return MyInvitationResponse.of(myInvitations, invitationSlice.hasNext());
     }
 
+    private void updateGroupImage(MultipartFile multipartFile, Group group) {
+        if (!multipartFile.isEmpty()) {
+            group.updateGroupImageUrl(imageHandler.uploadImage(multipartFile, ImageDirectory.GROUP));
+        }
+    }
+
+    private void checkDuplicateGroupName(String groupName) {
+        if (groupRepository.existsByGroupName(groupName)) {
+            throw new DuplicatedGroupException();
+        }
+    }
+
     private UserGroup validateUserGroupAndReturn(Long groupId, Long userId) {
         return userGroupRepository.findByGroupIdAndUserId(groupId, userId)
                 .orElseThrow(NotFoundUserGroupException::new);
@@ -346,19 +339,19 @@ public class GroupService {
         }
     }
 
-    private void deleteGroupActivityOfUser(Long deleteUserId, Long deleteUserGroupEntityId) {
-        List<Diary> diaryEntities = diaryRepository.findAllByUserId(deleteUserId);
+    private void deleteGroupActivityOfUser(Long deleteUserId, Long deleteUserGroupId) {
+        List<Diary> diaries = diaryRepository.findAllByUserId(deleteUserId);
 
-        diaryLikeRepository.deleteAllByDiaries(diaryEntities);
-        commentRepository.deleteAllByDiaries(diaryEntities);
-        diaryImageRepository.deleteAllByDiaries(diaryEntities);
+        diaryLikeRepository.deleteAllByDiaries(diaries);
+        commentRepository.deleteAllByDiaries(diaries);
+        diaryImageRepository.deleteAllByDiaries(diaries);
         diaryRepository.deleteAllByUserId(deleteUserId);
 
-        userGroupRepository.deleteById(deleteUserGroupEntityId);
+        userGroupRepository.deleteById(deleteUserGroupId);
     }
 
-    private boolean isGroupUser(Long userId, List<UserGroup> userGroupEntities) {
-        return userGroupEntities.stream()
+    private boolean isGroupUser(Long userId, List<UserGroup> userGroups) {
+        return userGroups.stream()
                 .anyMatch(userGroup -> userId.equals(userGroup.getUser().getId()));
     }
 }
