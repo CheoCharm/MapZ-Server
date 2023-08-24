@@ -21,7 +21,7 @@ import org.springframework.mock.web.MockMultipartFile;
 
 import java.nio.charset.StandardCharsets;
 
-import static com.cheocharm.MapZ.common.fixtures.UserFixtures.AGREE_PUSHAlERT;
+import static com.cheocharm.MapZ.common.fixtures.UserFixtures.AGREE_PUSH_AlERT;
 import static com.cheocharm.MapZ.common.fixtures.UserFixtures.INVALID_EMAIL;
 import static com.cheocharm.MapZ.common.fixtures.UserFixtures.INVALID_PASSWORD;
 import static com.cheocharm.MapZ.common.fixtures.UserFixtures.REFRESH_TOKEN_HEADER_NAME;
@@ -169,7 +169,7 @@ class UserControllerTest extends ControllerTest {
                 VALID_EMAIL,
                 VALID_PASSWORD,
                 VALID_USERNAME,
-                AGREE_PUSHAlERT
+                AGREE_PUSH_AlERT
         );
         String dtoJson = objectMapper.writeValueAsString(request);
         MockMultipartFile dto = new MockMultipartFile(
