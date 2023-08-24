@@ -40,7 +40,6 @@ import javax.validation.constraints.Email;
 public class UserController {
 
     private final UserService userService;
-    private final JwtCreateUtils jwtCreateUtils;
 
     @Operation(description = "구글회원가입")
     @PostMapping
@@ -108,6 +107,6 @@ public class UserController {
     @Parameter(name = "refreshToken", in = ParameterIn.HEADER, required = true)
     @GetMapping("/refresh")
     public CommonResponse<TokenPairResponse> refresh(@RequestHeader("refreshToken") String refreshToken) {
-        return CommonResponse.success(jwtCreateUtils.createTokenPair(refreshToken));
+        return CommonResponse.success(userService.refresh(refreshToken));
     }
 }
