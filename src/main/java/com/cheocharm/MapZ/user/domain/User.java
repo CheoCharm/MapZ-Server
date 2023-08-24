@@ -18,7 +18,6 @@ public class User extends BaseEntity {
     @Id
     private Long id;
 
-    @Column(unique = true)
     private String email;
 
     @Column(unique = true)
@@ -39,7 +38,8 @@ public class User extends BaseEntity {
     private UserProvider userProvider;
 
     @Builder
-    public User(String email, String username, String password, String userImageUrl, String bio, String fcmToken, String refreshToken, UserProvider userProvider) {
+    public User(Long id, String email, String username, String password, String userImageUrl, String bio, String fcmToken, String refreshToken, UserProvider userProvider) {
+        this.id = id;
         this.email = email;
         this.username = username;
         this.password = password;
