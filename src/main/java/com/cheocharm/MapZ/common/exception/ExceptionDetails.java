@@ -30,6 +30,7 @@ public enum ExceptionDetails {
     NO_PERMISSION_USER(HttpStatus.FORBIDDEN, "2008", "허가되지 않은 유저입니다."),
     EXIT_GROUP_CHIEF(HttpStatus.BAD_REQUEST, "2009", "그룹장은 그룹을 나갈 수 없습니다."),
     CONSTRAINT_VIOLATION(HttpStatus.BAD_REQUEST, "2010", "올바른 형식의 이메일 주소여야 합니다"),
+    PRESENT_USER(HttpStatus.BAD_REQUEST, "2011", "이미 존재하는 회원입니다."),
 
     //그룹 관련 에러
     NOT_FOUND_GROUP(HttpStatus.NOT_FOUND, "3001", "해당되는 그룹이 없습니다."),
