@@ -11,9 +11,9 @@
 - Spring Boot 2.6.8
 - Spring Data JPA + QueryDSL
 - DB: MySQL 5.7.38(AWS RDS)
-- Test: Junit5, H2
+- Test: Junit5, H2, Mockito
 - VCS: Git, GitHub
-- CI/CD: AWS EC2, Jenkins, Docker
+- Infra: AWS EC2, Jenkins, Docker, Github Action, Nginx
 
 
 ## 📏 Rule
