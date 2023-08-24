@@ -8,6 +8,7 @@ import com.cheocharm.MapZ.diary.presentation.dto.response.DiaryCoordinateRespons
 import com.cheocharm.MapZ.diary.presentation.dto.response.DiaryDetailResponse;
 import com.cheocharm.MapZ.diary.presentation.dto.response.DiaryPreviewDetailResponse;
 import com.cheocharm.MapZ.diary.presentation.dto.response.DiaryPreviewResponse;
+import com.cheocharm.MapZ.diary.presentation.dto.response.GetDiaryListResponse;
 import com.cheocharm.MapZ.diary.presentation.dto.response.MyDiaryResponse;
 import com.cheocharm.MapZ.diary.presentation.dto.response.WriteDiaryImageResponse;
 import com.cheocharm.MapZ.diary.presentation.dto.response.WriteDiaryResponse;
@@ -135,6 +136,27 @@ class DiaryControllerTest extends ControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                 )
+                .andDo(print())
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("그룹에 속해 있는 일기들을 조회한다.")
+    void getDiary() throws Exception {
+
+        //given
+        String accessToken = getAccessToken();
+        GetDiaryListResponse response = new GetDiaryListResponse(false, Collections.emptyList());
+        given(diaryService.getDiary(anyLong(), anyLong(), anyInt()))
+                .willReturn(response);
+
+        //when, then
+        mockMvc.perform(get("/api/diary/{page}", 0)
+                        .param("groupId", "1")
+                        .param("cursorId", "0")
+                        .header(AUTHORIZATION_HEADER_NAME, accessToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isOk());
     }
