@@ -12,6 +12,9 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
+import static com.cheocharm.MapZ.common.fixtures.UserFixtures.VALID_EMAIL;
+import static com.cheocharm.MapZ.common.fixtures.UserFixtures.VALID_USERNAME;
+
 @Transactional
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -38,8 +41,8 @@ public abstract class ControllerTest {
 
     protected String getAccessToken() {
         return jwtCreateUtils.createAccessToken(
-                "mapzbest@gmail.com",
-                "최강맵지",
+                VALID_EMAIL,
+                VALID_USERNAME,
                 UserProvider.MAPZ
         );
     }
