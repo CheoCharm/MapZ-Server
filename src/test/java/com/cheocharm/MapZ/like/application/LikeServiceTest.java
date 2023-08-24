@@ -2,12 +2,15 @@ package com.cheocharm.MapZ.like.application;
 
 import com.cheocharm.MapZ.common.exception.diary.AlreadyLikedDiaryException;
 import com.cheocharm.MapZ.common.interceptor.UserThreadLocal;
+import com.cheocharm.MapZ.common.util.PagingUtils;
 import com.cheocharm.MapZ.diary.domain.Diary;
 import com.cheocharm.MapZ.diary.domain.repository.DiaryRepository;
+import com.cheocharm.MapZ.diary.domain.repository.vo.MyLikeDiaryVO;
 import com.cheocharm.MapZ.like.domain.DiaryLike;
 import com.cheocharm.MapZ.like.domain.repository.DiaryLikeRepository;
 import com.cheocharm.MapZ.like.presentation.dto.request.LikeDiaryRequest;
 import com.cheocharm.MapZ.like.presentation.dto.response.DiaryLikePeopleResponse;
+import com.cheocharm.MapZ.like.presentation.dto.response.MyLikeDiaryResponse;
 import com.cheocharm.MapZ.user.domain.User;
 import org.jeasy.random.EasyRandom;
 import org.junit.jupiter.api.AfterAll;
@@ -20,6 +23,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.SliceImpl;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,9 +32,12 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
 
+import static com.cheocharm.MapZ.common.util.PagingUtils.FIELD_CREATED_AT;
+import static com.cheocharm.MapZ.common.util.PagingUtils.MY_LIKE_DIARY_SIZE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.mockStatic;
@@ -126,5 +134,30 @@ class LikeServiceTest {
 
         //then
         assertThat(response.size()).isEqualTo(diaryLikes.size());
+    }
+
+    @Test
+    @DisplayName("유저는 좋아요를 누른 다이어리를 조회할 수 있다.")
+    void getMyLikeDiary() {
+
+        //given
+        SliceImpl<MyLikeDiaryVO> slice = new SliceImpl<>(
+                List.of(
+                        easyRandom.nextObject(MyLikeDiaryVO.class),
+                        easyRandom.nextObject(MyLikeDiaryVO.class)
+                ),
+                PagingUtils.applyDescPageConfigBy(0, MY_LIKE_DIARY_SIZE, FIELD_CREATED_AT),
+                false
+        );
+
+        given(diaryLikeRepository.findByUserId(anyLong(), anyLong(), any(Pageable.class)))
+                .willReturn(slice);
+
+        //when
+        MyLikeDiaryResponse response = likeService.getMyLikeDiary(0, 0L);
+
+        //then
+        assertThat(response.isHasNext()).isFalse();
+        assertThat(response.getDiaryList().size()).isEqualTo(slice.getContent().size());
     }
 }
