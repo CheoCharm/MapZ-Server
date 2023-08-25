@@ -2,6 +2,7 @@ package com.cheocharm.MapZ.user.application;
 
 import com.cheocharm.MapZ.ServiceTest;
 import com.cheocharm.MapZ.agreement.Agreement;
+import com.cheocharm.MapZ.common.client.webclient.GoogleAuthWebClient;
 import com.cheocharm.MapZ.common.exception.jwt.InvalidJwtException;
 import com.cheocharm.MapZ.common.exception.user.DuplicatedEmailException;
 import com.cheocharm.MapZ.common.exception.user.DuplicatedUsernameException;
@@ -12,9 +13,6 @@ import com.cheocharm.MapZ.common.interceptor.UserThreadLocal;
 import com.cheocharm.MapZ.common.jwt.JwtCommonUtils;
 import com.cheocharm.MapZ.common.jwt.JwtCreateUtils;
 import com.cheocharm.MapZ.common.oauth.GoogleYml;
-import com.cheocharm.MapZ.common.oauth.OauthApi;
-import com.cheocharm.MapZ.common.oauth.OauthUrl;
-import com.cheocharm.MapZ.common.util.ObjectMapperUtils;
 import com.cheocharm.MapZ.user.domain.User;
 import com.cheocharm.MapZ.user.domain.UserProvider;
 import com.cheocharm.MapZ.user.presentation.dto.request.GoogleSignInRequest;
@@ -23,6 +21,7 @@ import com.cheocharm.MapZ.user.presentation.dto.request.MapZSignInRequest;
 import com.cheocharm.MapZ.user.presentation.dto.request.MapZSignUpRequest;
 import com.cheocharm.MapZ.user.presentation.dto.request.PasswordChangeRequest;
 import com.cheocharm.MapZ.user.presentation.dto.response.GetUserListResponse;
+import com.cheocharm.MapZ.user.presentation.dto.response.GoogleIdTokenResponse;
 import com.cheocharm.MapZ.user.presentation.dto.response.MyPageInfoResponse;
 import com.cheocharm.MapZ.user.presentation.dto.response.TokenPairResponse;
 import org.jeasy.random.EasyRandom;
@@ -37,7 +36,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.SliceImpl;
-import org.springframework.http.ResponseEntity;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mock.web.MockMultipartFile;
@@ -90,7 +88,7 @@ class UserServiceTest extends ServiceTest {
     private JavaMailSender mailSender;
 
     @MockBean
-    private OauthApi oauthApi;
+    private GoogleAuthWebClient googleAuthWebClient;
 
     @MockBean
     private JwtCommonUtils jwtCommonUtils;
@@ -112,19 +110,18 @@ class UserServiceTest extends ServiceTest {
 
     @Test
     @DisplayName("구글 회원가입")
-    void signUpGoogle() throws Exception {
+    void signUpGoogle() {
 
         //given
         GoogleSignUpRequest request = new GoogleSignUpRequest(
                 VALID_USERNAME, "idToken", true
         );
-        String idToken = ObjectMapperUtils.getObjectMapper()
-                .writeValueAsString(createIdTokenResponse(googleYml.getClient_id()));
+        GoogleIdTokenResponse idToken = createIdTokenResponse(googleYml.getClient_id());
         TokenPairResponse tokenPairResponse = createdExpectedTokenPairResponse(
                 VALID_EMAIL, request.getUsername(), UserProvider.GOOGLE);
 
-        given(oauthApi.callGoogle(eq(OauthUrl.GOOGLE), anyString()))
-                .willReturn(ResponseEntity.ok(idToken));
+        given(googleAuthWebClient.getGoogleAuth(anyString()))
+                .willReturn(idToken);
         given(userRepository.findByEmailAndUserProvider(anyString(), eq(UserProvider.GOOGLE)))
                 .willReturn(Optional.empty());
 
@@ -140,16 +137,15 @@ class UserServiceTest extends ServiceTest {
 
     @Test
     @DisplayName("구글 회원가입 시 AUD 필드 인증에 실패하면 예외를 발생시킨다.")
-    void throwExceptionAudIsDifferentWhenGoogleSignUp() throws Exception {
+    void throwExceptionAudIsDifferentWhenGoogleSignUp() {
 
         //given
         GoogleSignUpRequest request = new GoogleSignUpRequest(
                 VALID_USERNAME, "idToken", AGREE_PUSH_AlERT
         );
-        String idToken = ObjectMapperUtils.getObjectMapper()
-                .writeValueAsString(createWrongIdTokenResponse());
-        given(oauthApi.callGoogle(eq(OauthUrl.GOOGLE), anyString()))
-                .willReturn(ResponseEntity.ok(idToken));
+        GoogleIdTokenResponse wrongIdToken = createWrongIdTokenResponse();
+        given(googleAuthWebClient.getGoogleAuth(anyString()))
+                .willReturn(wrongIdToken);
 
         //when,then
         assertThatThrownBy(()-> userService.signUpGoogle(request, getMockMultipartFile("file")))
@@ -158,7 +154,7 @@ class UserServiceTest extends ServiceTest {
 
     @Test
     @DisplayName("구글 회원가입시 이미 존재하는 회원이면 예외를 발생시킨다.")
-    void throwExceptionWhenPresentGoogleUser() throws Exception{
+    void throwExceptionWhenPresentGoogleUser() {
 
         //given
         GoogleSignUpRequest request = new GoogleSignUpRequest(
@@ -166,11 +162,10 @@ class UserServiceTest extends ServiceTest {
         );
         MultipartFile file = getMockMultipartFile("file");
 
-        String idToken = ObjectMapperUtils.getObjectMapper()
-                .writeValueAsString(createIdTokenResponse(googleYml.getClient_id()));
+        GoogleIdTokenResponse idToken = createIdTokenResponse(googleYml.getClient_id());
 
-        given(oauthApi.callGoogle(eq(OauthUrl.GOOGLE), anyString()))
-                .willReturn(ResponseEntity.ok(idToken));
+        given(googleAuthWebClient.getGoogleAuth(anyString()))
+                .willReturn(idToken);
         given(userRepository.findByEmailAndUserProvider(anyString(), eq(UserProvider.GOOGLE)))
                 .willReturn(Optional.of(googleSignUpUser()));
 
@@ -187,13 +182,12 @@ class UserServiceTest extends ServiceTest {
         User user = googleSignUpUser();
         GoogleSignInRequest request = new GoogleSignInRequest("idToken");
 
-        String idToken = ObjectMapperUtils.getObjectMapper()
-                .writeValueAsString(createIdTokenResponse(googleYml.getClient_id()));
+        GoogleIdTokenResponse idToken = createIdTokenResponse(googleYml.getClient_id());
         TokenPairResponse tokenPairResponse = createdExpectedTokenPairResponse(
                 VALID_EMAIL, user.getUsername(), user.getUserProvider());
 
-        given(oauthApi.callGoogle(eq(OauthUrl.GOOGLE), anyString()))
-                .willReturn(ResponseEntity.ok(idToken));
+        given(googleAuthWebClient.getGoogleAuth(anyString()))
+                .willReturn(idToken);
         given(userRepository.findByEmailAndUserProvider(anyString(), eq(UserProvider.GOOGLE)))
                 .willReturn(Optional.of(user));
 
@@ -212,11 +206,10 @@ class UserServiceTest extends ServiceTest {
         //given
         GoogleSignInRequest request = new GoogleSignInRequest("idToken");
 
-        String idToken = ObjectMapperUtils.getObjectMapper()
-                .writeValueAsString(createIdTokenResponse(googleYml.getClient_id()));
+        GoogleIdTokenResponse idToken = createIdTokenResponse(googleYml.getClient_id());
 
-        given(oauthApi.callGoogle(eq(OauthUrl.GOOGLE), anyString()))
-                .willReturn(ResponseEntity.ok(idToken));
+        given(googleAuthWebClient.getGoogleAuth(anyString()))
+                .willReturn(idToken);
         given(userRepository.findByEmailAndUserProvider(anyString(), eq(UserProvider.GOOGLE)))
                 .willReturn(Optional.empty());
         given(jwtCreateUtils.createNullToken())
@@ -236,10 +229,9 @@ class UserServiceTest extends ServiceTest {
         //given
         GoogleSignInRequest request = new GoogleSignInRequest("idToken");
 
-        String idToken = ObjectMapperUtils.getObjectMapper()
-                .writeValueAsString(createWrongIdTokenResponse());
-        given(oauthApi.callGoogle(eq(OauthUrl.GOOGLE), anyString()))
-                .willReturn(ResponseEntity.ok(idToken));
+        GoogleIdTokenResponse wrongIdToken = createWrongIdTokenResponse();
+        given(googleAuthWebClient.getGoogleAuth(anyString()))
+                .willReturn(wrongIdToken);
 
         //when, then
         assertThatThrownBy(() -> userService.signInGoogle(request))
