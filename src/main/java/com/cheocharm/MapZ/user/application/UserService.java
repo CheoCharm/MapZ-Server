@@ -2,7 +2,7 @@ package com.cheocharm.MapZ.user.application;
 
 import com.cheocharm.MapZ.agreement.Agreement;
 import com.cheocharm.MapZ.agreement.repository.AgreementRepository;
-import com.cheocharm.MapZ.common.exception.common.FailJsonProcessException;
+import com.cheocharm.MapZ.common.client.webclient.GoogleAuthWebClient;
 import com.cheocharm.MapZ.common.exception.jwt.InvalidJwtException;
 import com.cheocharm.MapZ.common.exception.user.DuplicatedEmailException;
 import com.cheocharm.MapZ.common.exception.user.DuplicatedUsernameException;
@@ -13,9 +13,6 @@ import com.cheocharm.MapZ.common.image.ImageHandler;
 import com.cheocharm.MapZ.common.image.ImageDirectory;
 import com.cheocharm.MapZ.common.interceptor.UserThreadLocal;
 import com.cheocharm.MapZ.common.jwt.JwtCreateUtils;
-import com.cheocharm.MapZ.common.oauth.OauthApi;
-import com.cheocharm.MapZ.common.oauth.OauthUrl;
-import com.cheocharm.MapZ.common.util.ObjectMapperUtils;
 import com.cheocharm.MapZ.common.oauth.GoogleYml;
 import com.cheocharm.MapZ.common.util.RandomUtils;
 import com.cheocharm.MapZ.user.domain.User;
@@ -35,7 +32,6 @@ import com.cheocharm.MapZ.usergroup.domain.repository.UserGroupRepository;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.data.domain.Slice;
-import org.springframework.http.ResponseEntity;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -62,7 +58,7 @@ public class UserService {
 
     private final JwtCreateUtils jwtCreateUtils;
     private final GoogleYml googleYml;
-    private final OauthApi oauthApi;
+    private final GoogleAuthWebClient googleAuthWebClient;
     private final PasswordEncoder passwordEncoder;
     private final ImageHandler imageHandler;
     private final JavaMailSender mailSender;
@@ -242,14 +238,9 @@ public class UserService {
     }
 
     private GoogleIdTokenResponse fetchAndValidateIdToken(String idToken) {
-        final ResponseEntity<String> response = oauthApi.callGoogle(OauthUrl.GOOGLE, idToken);
-        final GoogleIdTokenResponse googleIdToken = getIdToken(response);
+        GoogleIdTokenResponse googleIdToken = googleAuthWebClient.getGoogleAuth(idToken);
         checkAudValue(googleIdToken);
         return googleIdToken;
-    }
-
-    private GoogleIdTokenResponse getIdToken(ResponseEntity<String> response) {
-        return ObjectMapperUtils.readValue(response.getBody(), GoogleIdTokenResponse.class);
     }
 
     private void checkAudValue(GoogleIdTokenResponse idToken) {
