@@ -14,18 +14,7 @@ import java.util.List;
 
 public class QuerydslSupport {
 
-    public static <T> Slice<T> fetchSlice(JPAQuery<T> query, Pageable pageable) {
-        int pageSize = pageable.getPageSize();
-
-        List<T> content = query
-                .offset(pageable.getOffset())
-                .limit(pageSize + 1)
-                .fetch();
-
-        return new SliceImpl<>(content, pageable, isHasNext(pageSize, content));
-    }
-
-    public static <T> Slice<T> fetchSlice(Class<? extends T> type, PathMetadata pathMetadata, JPAQuery<T> query, Pageable pageable) {
+    public static <T> Slice<T> fetchSliceByOffset(Class<? extends T> type, PathMetadata pathMetadata, JPAQuery<T> query, Pageable pageable) {
         Sort.Order order = pageable.getSort().iterator().next();
 
         int pageSize = pageable.getPageSize();
@@ -33,6 +22,19 @@ public class QuerydslSupport {
         List<T> content = query
                 .orderBy(getOrderSpecifier(type, pathMetadata, order))
                 .offset(pageable.getOffset())
+                .limit(pageSize + 1)
+                .fetch();
+
+        return new SliceImpl<>(content, pageable, isHasNext(pageSize, content));
+    }
+
+    public static <T> Slice<T> fetchSliceByCursor(Class<?> type, PathMetadata pathMetadata, JPAQuery<T> query, Pageable pageable) {
+        Sort.Order order = pageable.getSort().iterator().next();
+
+        int pageSize = pageable.getPageSize();
+
+        List<T> content = query
+                .orderBy(getOrderSpecifier(type, pathMetadata, order))
                 .limit(pageSize + 1)
                 .fetch();
 

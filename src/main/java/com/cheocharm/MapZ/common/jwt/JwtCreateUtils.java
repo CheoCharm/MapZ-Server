@@ -1,8 +1,9 @@
 package com.cheocharm.MapZ.common.jwt;
 
-import com.cheocharm.MapZ.user.domain.UserEntity;
+import com.cheocharm.MapZ.common.exception.jwt.InvalidJwtException;
+import com.cheocharm.MapZ.user.domain.User;
 import com.cheocharm.MapZ.user.domain.UserProvider;
-import com.cheocharm.MapZ.user.domain.dto.TokenPairResponseDto;
+import com.cheocharm.MapZ.user.presentation.dto.response.TokenPairResponse;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
@@ -18,9 +19,9 @@ import java.util.Map;
 @Component
 public class JwtCreateUtils {
 
-    private final String USER_EMAIL = "email";
-    private final long EXPIRE = 1000 * 60 * 30;
-    private final long REFRESH_EXPIRE = EXPIRE * 2 * 24 * 14;
+    private static final String USER_EMAIL = "email";
+    private static final long EXPIRE = 1000 * 60 * 60;
+    private static final long REFRESH_EXPIRE = EXPIRE * 2 * 24 * 14;
 
     private final JwtCommonUtils jwtCommonUtils;
 
@@ -39,13 +40,13 @@ public class JwtCreateUtils {
     }
 
     @Transactional
-    public TokenPairResponseDto createAccessToken(String refreshToken) {
-        final UserEntity userEntity = jwtCommonUtils.findUserByToken(refreshToken);
-        if(!userEntity.getRefreshToken().equals(refreshToken)){
-            throw new RuntimeException("토큰 정보 불일치");
+    public TokenPairResponse createTokenPair(String refreshToken) {
+        final User user = jwtCommonUtils.findUserByToken(refreshToken);
+        if(!user.getRefreshToken().equals(refreshToken)){
+            throw new InvalidJwtException();
         }
-        final TokenPairResponseDto tokenPair = createTokenPair(userEntity.getEmail(), userEntity.getUsername(), userEntity.getUserProvider());
-        userEntity.updateRefreshToken(tokenPair.getRefreshToken());
+        final TokenPairResponse tokenPair = createTokenPair(user.getEmail(), user.getUsername(), user.getUserProvider());
+        user.updateRefreshToken(tokenPair.getRefreshToken());
         return tokenPair;
     }
 
@@ -63,17 +64,15 @@ public class JwtCreateUtils {
                 .compact();
     }
 
-    public TokenPairResponseDto createTokenPair(String email, String username, UserProvider userProvider) {
-        return TokenPairResponseDto.builder()
+    public TokenPairResponse createTokenPair(String email, String username, UserProvider userProvider) {
+        return TokenPairResponse.builder()
                 .accessToken(createAccessToken(email, username, userProvider))
                 .refreshToken(createRefreshToken(email, username, userProvider))
                 .build();
     }
 
     private Map<String, Object> createHeader() {
-        HashMap<String, Object> headerMap = new HashMap<>();
-        headerMap.put("typ", "JWT");
-        return headerMap;
+        return Map.of("typ", "JWT");
     }
 
     private Map<String, Object> createClaims(String email, String username, UserProvider userProvider) {
@@ -85,8 +84,8 @@ public class JwtCreateUtils {
     }
 
 
-    public TokenPairResponseDto createNullToken() {
-        return TokenPairResponseDto.builder()
+    public TokenPairResponse createNullToken() {
+        return TokenPairResponse.builder()
                 .build();
     }
 }

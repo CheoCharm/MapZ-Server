@@ -1,7 +1,7 @@
 package com.cheocharm.MapZ.common.interceptor;
 
 import com.cheocharm.MapZ.common.jwt.JwtCommonUtils;
-import com.cheocharm.MapZ.user.domain.UserEntity;
+import com.cheocharm.MapZ.user.domain.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
@@ -24,7 +24,7 @@ public class AuthInterceptor implements HandlerInterceptor {
             throw new RuntimeException("token value null");
         }
 
-        UserEntity user = jwtCommonUtils.findUserByToken(token);
+        User user = jwtCommonUtils.findUserByToken(token);
         UserThreadLocal.set(user);
 
         return true;

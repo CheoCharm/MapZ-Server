@@ -18,16 +18,19 @@ import java.util.Objects;
 public class ResponseLogAspect {
     private final Logger logger = LoggerFactory.getLogger(ResponseLogAspect.class);
 
-    @Pointcut("execution(* com.cheocharm.MapZ.user.domain.UserController.*(..))")
+    @Pointcut("execution(* com.cheocharm.MapZ.user.presentation.controller.UserController.*(..))")
     public void userControllerPointcut() {}
 
-    @Pointcut("execution(* com.cheocharm.MapZ.diary.domain.DiaryController.*(..))")
+    @Pointcut("execution(* com.cheocharm.MapZ.diary.presentation.controller.DiaryController.*(..))")
     public void diaryControllerPointcut() {}
 
-    @Pointcut("execution(* com.cheocharm.MapZ.group.domain.GroupController.*(..))")
+    @Pointcut("execution(* com.cheocharm.MapZ.group.presentation.controller.GroupController.*(..))")
     public void groupControllerPointcut() {}
 
-    @AfterReturning(pointcut = "userControllerPointcut() || diaryControllerPointcut() || groupControllerPointcut()", returning = "result")
+    @Pointcut("execution(* com.cheocharm.MapZ.like.presentation.controller.LikeController.*(..))")
+    public void likeControllerPointcut() {}
+
+    @AfterReturning(pointcut = "userControllerPointcut() || diaryControllerPointcut() || groupControllerPointcut() || likeControllerPointcut()", returning = "result")
     public void userResponseLog(Object result) {
         HttpServletRequest request = ((ServletRequestAttributes) Objects.requireNonNull(RequestContextHolder.getRequestAttributes())).getRequest();
         CommonResponse response = (CommonResponse) result;
