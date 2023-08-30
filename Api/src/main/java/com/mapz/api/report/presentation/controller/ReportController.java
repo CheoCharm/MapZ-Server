@@ -1,8 +1,8 @@
-package com.cheocharm.MapZ.report.presentation.controller;
+package com.mapz.api.report.presentation.controller;
 
-import com.cheocharm.MapZ.common.CommonResponse;
-import com.cheocharm.MapZ.report.application.ReportService;
-import com.cheocharm.MapZ.report.presentation.dto.ReportRequest;
+import com.mapz.api.common.CommonResponse;
+import com.mapz.api.report.application.ReportService;
+import com.mapz.api.report.presentation.dto.ReportRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;

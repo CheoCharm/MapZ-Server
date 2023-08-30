@@ -1,4 +1,4 @@
-package com.cheocharm.MapZ.like.presentation.dto.request;
+package com.mapz.api.like.presentation.dto.request;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
