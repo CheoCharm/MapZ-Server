@@ -1,9 +1,9 @@
-package com.cheocharm.MapZ.common.image.s3;
+package com.mapz.api.common.image.s3;
 
 import com.amazonaws.services.s3.model.ObjectMetadata;
-import com.cheocharm.MapZ.common.exception.common.InputStreamIOException;
-import com.cheocharm.MapZ.common.image.ImageHandler;
-import com.cheocharm.MapZ.common.image.ImageDirectory;
+import com.mapz.api.common.exception.common.InputStreamIOException;
+import com.mapz.api.common.image.ImageHandler;
+import com.mapz.api.common.image.ImageDirectory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;

@@ -1,6 +1,6 @@
-package com.cheocharm.MapZ.common.config;
+package com.mapz.api.common.config;
 
-import com.cheocharm.MapZ.common.interceptor.AuthInterceptor;
+import com.mapz.api.common.interceptor.AuthInterceptor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

@@ -1,8 +1,8 @@
-package com.cheocharm.MapZ.common.log.exception;
+package com.mapz.api.common.log.response;
 
-import com.cheocharm.MapZ.common.CommonResponse;
-import com.cheocharm.MapZ.common.exception.common.FailConvertToJsonException;
-import com.cheocharm.MapZ.common.util.ObjectMapperUtils;
+import com.mapz.api.common.CommonResponse;
+import com.mapz.api.common.exception.common.FailConvertToJsonException;
+import com.mapz.api.common.util.ObjectMapperUtils;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -11,19 +11,17 @@ import java.io.IOException;
 
 @Getter
 @Builder
-public class ExceptionLogSchema {
+public class ResponseLogSchema {
     private String api;
     private String httpMethod;
     private int statusCode;
-    private String customCode;
     private String message;
 
-    public static ExceptionLogSchema createLogSchema(HttpServletRequest request, CommonResponse response) {
-        return ExceptionLogSchema.builder()
+    public static ResponseLogSchema createLogSchema(HttpServletRequest request, CommonResponse response) {
+        return ResponseLogSchema.builder()
                 .api(request.getRequestURI())
                 .httpMethod(request.getMethod())
                 .statusCode(response.getStatusCode())
-                .customCode(response.getCustomCode())
                 .message(response.getMessage())
                 .build();
     }
@@ -39,4 +37,5 @@ public class ExceptionLogSchema {
 
         return json;
     }
+
 }

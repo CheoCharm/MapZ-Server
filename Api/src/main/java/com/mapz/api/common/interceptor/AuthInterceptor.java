@@ -1,7 +1,7 @@
-package com.cheocharm.MapZ.common.interceptor;
+package com.mapz.api.common.interceptor;
 
-import com.cheocharm.MapZ.common.jwt.JwtCommonUtils;
-import com.cheocharm.MapZ.user.domain.User;
+import com.mapz.api.common.jwt.JwtCommonUtils;
+import com.mapz.domain.domains.user.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;

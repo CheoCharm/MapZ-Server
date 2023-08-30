@@ -1,14 +1,14 @@
-package com.cheocharm.MapZ.common.exception;
+package com.mapz.api.common.exception;
 
-import com.cheocharm.MapZ.common.CommonResponse;
-import com.cheocharm.MapZ.common.exception.jwt.InvalidJwtException;
-import com.cheocharm.MapZ.common.exception.jwt.JwtExpiredException;
-import com.cheocharm.MapZ.common.exception.report.AlreadyReportedDiary;
-import com.cheocharm.MapZ.common.exception.user.DuplicatedEmailException;
-import com.cheocharm.MapZ.common.exception.user.ExitGroupChiefException;
-import com.cheocharm.MapZ.common.exception.user.NoPermissionUserException;
-import com.cheocharm.MapZ.common.exception.usergroup.GroupMemberSizeExceedException;
-import com.cheocharm.MapZ.common.exception.usergroup.SelfKickException;
+import com.mapz.api.common.CommonResponse;
+import com.mapz.api.common.exception.jwt.InvalidJwtException;
+import com.mapz.api.common.exception.jwt.JwtExpiredException;
+import com.mapz.api.common.exception.report.AlreadyReportedDiary;
+import com.mapz.api.common.exception.user.DuplicatedEmailException;
+import com.mapz.api.common.exception.user.ExitGroupChiefException;
+import com.mapz.api.common.exception.user.NoPermissionUserException;
+import com.mapz.api.common.exception.usergroup.GroupMemberSizeExceedException;
+import com.mapz.api.common.exception.usergroup.SelfKickException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;

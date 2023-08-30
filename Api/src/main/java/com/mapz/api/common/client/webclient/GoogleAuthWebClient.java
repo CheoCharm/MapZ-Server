@@ -1,8 +1,8 @@
-package com.cheocharm.MapZ.common.client.webclient;
+package com.mapz.api.common.client.webclient;
 
-import com.cheocharm.MapZ.common.exception.jwt.InvalidJwtException;
-import com.cheocharm.MapZ.common.oauth.OauthUrl;
-import com.cheocharm.MapZ.user.presentation.dto.response.GoogleIdTokenResponse;
+import com.mapz.api.common.exception.jwt.InvalidJwtException;
+import com.mapz.api.common.oauth.OauthUrl;
+import com.mapz.api.user.presentation.dto.response.GoogleIdTokenResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;

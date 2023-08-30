@@ -1,4 +1,4 @@
-package com.cheocharm.MapZ.common.config;
+package com.mapz.api.common.config;
 
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;

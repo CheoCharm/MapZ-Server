@@ -1,7 +1,7 @@
-package com.cheocharm.MapZ.common.config;
+package com.mapz.api.common.config;
 
-import com.cheocharm.MapZ.common.CommonResponse;
-import com.cheocharm.MapZ.common.util.ObjectMapperUtils;
+import com.mapz.api.common.CommonResponse;
+import com.mapz.api.common.util.ObjectMapperUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.AuthenticationException;

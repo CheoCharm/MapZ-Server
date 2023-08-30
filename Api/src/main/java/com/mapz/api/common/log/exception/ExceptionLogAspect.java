@@ -1,6 +1,6 @@
-package com.cheocharm.MapZ.common.log.exception;
+package com.mapz.api.common.log.exception;
 
-import com.cheocharm.MapZ.common.CommonResponse;
+import com.mapz.api.common.CommonResponse;
 import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
@@ -18,7 +18,7 @@ import java.util.Objects;
 public class ExceptionLogAspect {
     private final Logger logger = LoggerFactory.getLogger(ExceptionLogAspect.class);
 
-    @Pointcut("execution(* com.cheocharm.MapZ.common.exception.GlobalExceptionHandler.*(..))")
+    @Pointcut("execution(* com.mapz.api.common.exception.GlobalExceptionHandler.*(..))")
     public void exceptionPointcut() {}
 
     @AfterReturning(pointcut = "exceptionPointcut()", returning = "result")

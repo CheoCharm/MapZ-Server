@@ -1,7 +1,7 @@
-package com.cheocharm.MapZ.common.event;
+package com.mapz.api.common.event;
 
-import com.cheocharm.MapZ.common.image.ImageHandler;
-import com.cheocharm.MapZ.diary.domain.DiaryImage;
+import com.mapz.api.common.image.ImageHandler;
+import com.mapz.domain.domains.diary.entity.DiaryImage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;

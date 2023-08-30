@@ -1,4 +1,4 @@
-package com.cheocharm.MapZ.common.image.s3;
+package com.mapz.api.common.image.s3;
 
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.DeleteObjectRequest;

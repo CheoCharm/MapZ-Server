@@ -1,6 +1,6 @@
-package com.cheocharm.MapZ.common.interceptor;
+package com.mapz.api.common.interceptor;
 
-import com.cheocharm.MapZ.user.domain.User;
+import com.mapz.domain.domains.user.entity.User;
 
 public class UserThreadLocal {
 

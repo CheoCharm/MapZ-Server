@@ -1,4 +1,4 @@
-package com.cheocharm.MapZ.common.config;
+package com.mapz.api.common.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

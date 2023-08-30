@@ -1,13 +1,13 @@
-package com.cheocharm.MapZ;
+package com.mapz;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class MapZApplicationTests {
+class MapZApiApplicationTests {
 
-	@Test
-	void contextLoads() {
-	}
+    @Test
+    void contextLoads() {
 
+    }
 }

@@ -1,6 +1,6 @@
-package com.cheocharm.MapZ.common.log.response;
+package com.mapz.api.common.log.response;
 
-import com.cheocharm.MapZ.common.CommonResponse;
+import com.mapz.api.common.CommonResponse;
 import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
@@ -18,16 +18,16 @@ import java.util.Objects;
 public class ResponseLogAspect {
     private final Logger logger = LoggerFactory.getLogger(ResponseLogAspect.class);
 
-    @Pointcut("execution(* com.cheocharm.MapZ.user.presentation.controller.UserController.*(..))")
+    @Pointcut("execution(* com.mapz.api.user.presentation.controller.UserController.*(..))")
     public void userControllerPointcut() {}
 
-    @Pointcut("execution(* com.cheocharm.MapZ.diary.presentation.controller.DiaryController.*(..))")
+    @Pointcut("execution(* com.mapz.api.diary.presentation.controller.DiaryController.*(..))")
     public void diaryControllerPointcut() {}
 
-    @Pointcut("execution(* com.cheocharm.MapZ.group.presentation.controller.GroupController.*(..))")
+    @Pointcut("execution(* com.mapz.api.group.presentation.controller.GroupController.*(..))")
     public void groupControllerPointcut() {}
 
-    @Pointcut("execution(* com.cheocharm.MapZ.like.presentation.controller.LikeController.*(..))")
+    @Pointcut("execution(* com.mapz.api.like.presentation.controller.LikeController.*(..))")
     public void likeControllerPointcut() {}
 
     @AfterReturning(pointcut = "userControllerPointcut() || diaryControllerPointcut() || groupControllerPointcut() || likeControllerPointcut()", returning = "result")
