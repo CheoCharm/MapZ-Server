@@ -1,4 +1,4 @@
-package com.cheocharm.MapZ.usergroup.domain;
+package com.mapz.domain.domains.usergroup.enums;
 
 import lombok.Getter;
 
