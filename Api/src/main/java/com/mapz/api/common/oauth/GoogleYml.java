@@ -1,4 +1,4 @@
-package com.cheocharm.MapZ.common.oauth;
+package com.mapz.api.common.oauth;
 
 import lombok.Getter;
 import org.springframework.boot.context.properties.ConfigurationProperties;

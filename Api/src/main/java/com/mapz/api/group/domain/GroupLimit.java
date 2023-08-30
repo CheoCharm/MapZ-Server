@@ -1,4 +1,4 @@
-package com.cheocharm.MapZ.group.domain;
+package com.mapz.api.group.domain;
 
 import lombok.Getter;
 

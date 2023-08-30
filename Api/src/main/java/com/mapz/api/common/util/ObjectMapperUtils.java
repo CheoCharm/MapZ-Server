@@ -1,6 +1,6 @@
-package com.cheocharm.MapZ.common.util;
+package com.mapz.api.common.util;
 
-import com.cheocharm.MapZ.common.exception.common.FailJsonProcessException;
+import com.mapz.api.common.exception.common.FailJsonProcessException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;

@@ -1,6 +1,6 @@
-package com.cheocharm.MapZ.common.oauth;
+package com.mapz.api.common.oauth;
 
-import com.cheocharm.MapZ.common.exception.jwt.InvalidJwtException;
+import com.mapz.api.common.exception.jwt.InvalidJwtException;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.http.*;

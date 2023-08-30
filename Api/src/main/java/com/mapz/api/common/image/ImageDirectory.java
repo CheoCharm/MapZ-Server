@@ -1,4 +1,4 @@
-package com.cheocharm.MapZ.common.image;
+package com.mapz.api.common.image;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

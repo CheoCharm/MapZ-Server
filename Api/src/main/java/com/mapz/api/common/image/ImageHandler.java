@@ -1,4 +1,4 @@
-package com.cheocharm.MapZ.common.image;
+package com.mapz.api.common.image;
 
 import org.springframework.web.multipart.MultipartFile;
 

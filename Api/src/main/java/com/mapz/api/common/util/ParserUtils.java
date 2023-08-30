@@ -1,4 +1,4 @@
-package com.cheocharm.MapZ.common.util;
+package com.mapz.api.common.util;
 
 import java.util.regex.Pattern;
 
