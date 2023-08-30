@@ -24,7 +24,7 @@ jobs:
       - name: Set up YML
         uses: microsoft/variable-substitution@v1
         with:
-          files: ./src/main/resources/application.yml
+          files: ./Api/src/main/resources/application.yml
         env: 
           jwt.secret: ${{ secrets.JWT_KEY }}
           springdoc.swagger-ui.path: ${{ secrets.DOCS_PATH }}
@@ -48,7 +48,7 @@ jobs:
         uses: EnricoMi/publish-unit-test-result-action@v1
         if: ${{ always() }}
         with:
-          files: build/test-results/**/*.xml
+          files: Api/build/test-results/**/*.xml
           
       - name: Cache Gradle packages
         uses: actions/cache@v1

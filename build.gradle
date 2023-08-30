@@ -1,13 +1,7 @@
-buildscript {
-	ext {
-		queryDslVersion = "5.0.0"
-	}
-}
 plugins {
 	id 'org.springframework.boot' version '2.6.8'
 	id 'io.spring.dependency-management' version '1.0.11.RELEASE'
 	id 'java'
-	id "com.ewerk.gradle.plugins.querydsl" version "1.0.10"
 	id 'jacoco'
 }
 
@@ -24,48 +18,45 @@ configurations {
 repositories {
 	mavenCentral()
 }
+subprojects {
+	group = 'com.cheocharm'
+	version = '0.0.1-SNAPSHOT'
+	sourceCompatibility = '11'
 
+	apply plugin: 'java'
+	apply plugin: 'java-library'
+	apply plugin: 'org.springframework.boot'
+	apply plugin: 'io.spring.dependency-management'
+	apply plugin: 'jacoco'
+
+	dependencies {
+		compileOnly 'org.projectlombok:lombok'
+		annotationProcessor 'org.projectlombok:lombok'
+		annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
+		testImplementation 'org.springframework.boot:spring-boot-starter-test'
+		implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+		testImplementation 'org.springframework.security:spring-security-test'
+
+		implementation group: 'org.hibernate', name: 'hibernate-spatial', version: '5.6.9.Final'
+	}
+	configurations {
+		complieOnly {
+			extendsFrom annotationProcessor
+		}
+	}
+
+	repositories {
+		mavenCentral()
+	}
+
+	test {
+		useJUnitPlatform()
+		finalizedBy jacocoTestReport
+	}
+}
 dependencies {
-	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-	implementation 'org.springframework.boot:spring-boot-starter-security'
-	implementation 'org.springframework.boot:spring-boot-starter-validation'
-	implementation 'org.springframework.boot:spring-boot-starter-web'
-	implementation 'org.springframework.boot:spring-boot-starter-mail'
-	implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
-	compileOnly 'org.projectlombok:lombok'
-	developmentOnly 'org.springframework.boot:spring-boot-devtools'
-	runtimeOnly 'com.h2database:h2'
-	runtimeOnly 'mysql:mysql-connector-java'
-	annotationProcessor 'org.projectlombok:lombok'
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
-	testImplementation 'org.springframework.security:spring-security-test'
-
-	implementation "com.querydsl:querydsl-jpa:${queryDslVersion}"
-	implementation "com.querydsl:querydsl-apt:${queryDslVersion}"
-
-	implementation group: 'io.jsonwebtoken', name: 'jjwt-api', version: '0.11.2'
-	runtimeOnly group: 'io.jsonwebtoken', name: 'jjwt-impl', version: '0.11.2'
-	runtimeOnly group: 'io.jsonwebtoken', name: 'jjwt-jackson', version: '0.11.2'
-
-	implementation 'org.springdoc:springdoc-openapi-ui:1.6.9'
-
-	annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
-
-	implementation 'org.springframework.boot:spring-boot-starter-webflux'
-
-	//for health check
-	implementation 'org.springframework.boot:spring-boot-starter-actuator'
-
-	//for coordinate
-	implementation group: 'org.hibernate', name: 'hibernate-spatial', version: '5.6.9.Final'
-
-	compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.9'
-
-	//jeasy
-	testImplementation group: 'org.jeasy', name: 'easy-random-core', version: '5.0.0'
-
-	//mockito inline
-	testImplementation group: 'org.mockito', name: 'mockito-inline', version: '5.2.0'
+//	developmentOnly 'org.springframework.boot:spring-boot-devtools'
+//	compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.9'
 }
 jacoco {
 	toolVersion = "0.8.8"
@@ -135,21 +126,6 @@ jacocoTestReport {
 tasks.named('jar') {
 	enabled = false
 }
-
-def querydslDir = "$buildDir/generated/querydsl"
-querydsl {
-	jpa = true
-	querydslSourcesDir = querydslDir
-}
-sourceSets {
-	main.java.srcDir querydslDir
-}
-configurations {
-	compileOnly {
-		extendsFrom annotationProcessor
-	}
-	querydsl.extendsFrom compileClasspath
-}
-compileQuerydsl {
-	options.annotationProcessorPath = configurations.querydsl
+bootJar {
+	enabled = false
 }

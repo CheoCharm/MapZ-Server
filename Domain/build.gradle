@@ -1,0 +1,45 @@
+bootJar.enabled = false
+jar.enabled = true
+
+//plugins {
+//    id 'java'
+//}
+
+//group 'com.cheocharm'
+//version '0.0.1-SNAPSHOT'
+
+//repositories {
+//    mavenCentral()
+//}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    runtimeOnly 'mysql:mysql-connector-java'
+    runtimeOnly 'com.h2database:h2'
+
+    api ("com.querydsl:querydsl-core") // querydsl
+    api ("com.querydsl:querydsl-jpa:5.0.0") // querydsl
+    annotationProcessor "com.querydsl:querydsl-apt:5.0.0:jpa" // querydsl JPAAnnotationProcessor 사용 지정
+    annotationProcessor("jakarta.persistence:jakarta.persistence-api")
+    annotationProcessor("jakarta.annotation:jakarta.annotation-api")
+
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+def generated = "$buildDir/generated/querydsl"
+sourceSets {
+    main.java.srcDirs += [ generated ]
+}
+
+tasks.withType(JavaCompile) {
+    options.annotationProcessorGeneratedSourcesDirectory = file(generated)
+}
+
+clean.doLast {
+    file(generated).deleteDir()
+}
