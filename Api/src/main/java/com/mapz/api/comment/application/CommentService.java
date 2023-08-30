@@ -1,16 +1,16 @@
-package com.cheocharm.MapZ.comment.application;
+package com.mapz.api.comment.application;
 
-import com.cheocharm.MapZ.comment.domain.Comment;
-import com.cheocharm.MapZ.comment.domain.repository.vo.CommentVO;
-import com.cheocharm.MapZ.comment.presentation.dto.request.CreateCommentRequest;
-import com.cheocharm.MapZ.comment.presentation.dto.request.DeleteCommentRequest;
-import com.cheocharm.MapZ.comment.presentation.dto.response.GetCommentResponse;
-import com.cheocharm.MapZ.comment.domain.repository.CommentRepository;
-import com.cheocharm.MapZ.common.exception.diary.NotFoundDiaryException;
-import com.cheocharm.MapZ.common.interceptor.UserThreadLocal;
-import com.cheocharm.MapZ.diary.domain.Diary;
-import com.cheocharm.MapZ.diary.domain.repository.DiaryRepository;
-import com.cheocharm.MapZ.user.domain.User;
+import com.mapz.api.common.exception.diary.NotFoundDiaryException;
+import com.mapz.api.common.interceptor.UserThreadLocal;
+import com.mapz.api.common.util.PagingUtils;
+import com.mapz.domain.domains.comment.entity.Comment;
+import com.mapz.domain.domains.comment.vo.CommentVO;
+import com.mapz.api.comment.presentation.dto.request.CreateCommentRequest;
+import com.mapz.api.comment.presentation.dto.response.GetCommentResponse;
+import com.mapz.domain.domains.comment.repository.CommentRepository;
+import com.mapz.domain.domains.diary.entity.Diary;
+import com.mapz.domain.domains.diary.repository.DiaryRepository;
+import com.mapz.domain.domains.user.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
@@ -19,9 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.Objects;
 
-import static com.cheocharm.MapZ.common.util.PagingUtils.COMMENT_SIZE;
-import static com.cheocharm.MapZ.common.util.PagingUtils.FIELD_CREATED_AT;
-import static com.cheocharm.MapZ.common.util.PagingUtils.applyAscPageConfigBy;
+import static com.mapz.api.common.util.PagingUtils.applyAscPageConfigBy;
 
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -40,7 +38,7 @@ public class CommentService {
                 .orElseThrow(NotFoundDiaryException::new);
 
         commentRepository.save(
-                Comment.of(request, user, diary)
+                Comment.of(request.getContent(), request.getParentId(), user, diary)
         );
     }
 
@@ -62,7 +60,7 @@ public class CommentService {
                 userId,
                 diaryId,
                 cursorId,
-                applyAscPageConfigBy(page, COMMENT_SIZE, FIELD_CREATED_AT)
+                applyAscPageConfigBy(page, PagingUtils.COMMENT_SIZE, PagingUtils.FIELD_CREATED_AT)
         );
 
         List<CommentVO> commentVOS = content.getContent();

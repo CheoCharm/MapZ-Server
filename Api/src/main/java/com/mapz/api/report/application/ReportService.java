@@ -1,12 +1,12 @@
-package com.cheocharm.MapZ.report.application;
+package com.mapz.api.report.application;
 
-import com.cheocharm.MapZ.common.exception.diary.NotFoundDiaryException;
-import com.cheocharm.MapZ.common.exception.report.AlreadyReportedDiary;
-import com.cheocharm.MapZ.common.interceptor.UserThreadLocal;
-import com.cheocharm.MapZ.diary.domain.repository.DiaryRepository;
-import com.cheocharm.MapZ.report.domain.Report;
-import com.cheocharm.MapZ.report.presentation.dto.ReportRequest;
-import com.cheocharm.MapZ.report.domain.repository.ReportRepository;
+import com.mapz.api.common.exception.diary.NotFoundDiaryException;
+import com.mapz.api.common.exception.report.AlreadyReportedDiary;
+import com.mapz.api.common.interceptor.UserThreadLocal;
+import com.mapz.domain.domains.diary.repository.DiaryRepository;
+import com.mapz.domain.domains.report.entity.Report;
+import com.mapz.api.report.presentation.dto.ReportRequest;
+import com.mapz.domain.domains.report.repository.ReportRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

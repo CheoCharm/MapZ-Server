@@ -1,34 +1,35 @@
-package com.cheocharm.MapZ.user.application;
+package com.mapz.api.user.application;
 
-import com.cheocharm.MapZ.agreement.Agreement;
-import com.cheocharm.MapZ.agreement.repository.AgreementRepository;
-import com.cheocharm.MapZ.common.client.webclient.GoogleAuthWebClient;
-import com.cheocharm.MapZ.common.exception.jwt.InvalidJwtException;
-import com.cheocharm.MapZ.common.exception.user.DuplicatedEmailException;
-import com.cheocharm.MapZ.common.exception.user.DuplicatedUsernameException;
-import com.cheocharm.MapZ.common.exception.user.PresentUserException;
-import com.cheocharm.MapZ.common.exception.user.WrongPasswordException;
-import com.cheocharm.MapZ.common.exception.user.NotFoundUserException;
-import com.cheocharm.MapZ.common.image.ImageHandler;
-import com.cheocharm.MapZ.common.image.ImageDirectory;
-import com.cheocharm.MapZ.common.interceptor.UserThreadLocal;
-import com.cheocharm.MapZ.common.jwt.JwtCreateUtils;
-import com.cheocharm.MapZ.common.oauth.GoogleYml;
-import com.cheocharm.MapZ.common.util.RandomUtils;
-import com.cheocharm.MapZ.user.domain.User;
-import com.cheocharm.MapZ.user.domain.UserProvider;
-import com.cheocharm.MapZ.user.domain.repository.UserRepository;
-import com.cheocharm.MapZ.user.presentation.dto.request.GoogleSignInRequest;
-import com.cheocharm.MapZ.user.presentation.dto.request.GoogleSignUpRequest;
-import com.cheocharm.MapZ.user.presentation.dto.request.MapZSignInRequest;
-import com.cheocharm.MapZ.user.presentation.dto.request.MapZSignUpRequest;
-import com.cheocharm.MapZ.user.presentation.dto.request.PasswordChangeRequest;
-import com.cheocharm.MapZ.user.presentation.dto.response.GetUserListResponse;
-import com.cheocharm.MapZ.user.presentation.dto.response.GoogleIdTokenResponse;
-import com.cheocharm.MapZ.user.presentation.dto.response.MyPageInfoResponse;
-import com.cheocharm.MapZ.user.presentation.dto.response.TokenPairResponse;
-import com.cheocharm.MapZ.usergroup.domain.UserGroup;
-import com.cheocharm.MapZ.usergroup.domain.repository.UserGroupRepository;
+import com.mapz.api.common.exception.user.NotFoundUserException;
+import com.mapz.api.common.oauth.GoogleYml;
+import com.mapz.api.common.util.PagingUtils;
+import com.mapz.api.common.util.RandomUtils;
+import com.mapz.domain.domains.agreement.entity.Agreement;
+import com.mapz.domain.domains.agreement.repository.AgreementRepository;
+import com.mapz.api.common.client.webclient.GoogleAuthWebClient;
+import com.mapz.api.common.exception.jwt.InvalidJwtException;
+import com.mapz.api.common.exception.user.DuplicatedEmailException;
+import com.mapz.api.common.exception.user.DuplicatedUsernameException;
+import com.mapz.api.common.exception.user.PresentUserException;
+import com.mapz.api.common.exception.user.WrongPasswordException;
+import com.mapz.api.common.image.ImageHandler;
+import com.mapz.api.common.image.ImageDirectory;
+import com.mapz.api.common.interceptor.UserThreadLocal;
+import com.mapz.api.common.jwt.JwtCreateUtils;
+import com.mapz.domain.domains.user.entity.User;
+import com.mapz.domain.domains.user.enums.UserProvider;
+import com.mapz.domain.domains.user.repository.UserRepository;
+import com.mapz.api.user.presentation.dto.request.GoogleSignInRequest;
+import com.mapz.api.user.presentation.dto.request.GoogleSignUpRequest;
+import com.mapz.api.user.presentation.dto.request.MapZSignInRequest;
+import com.mapz.api.user.presentation.dto.request.MapZSignUpRequest;
+import com.mapz.api.user.presentation.dto.request.PasswordChangeRequest;
+import com.mapz.api.user.presentation.dto.response.GetUserListResponse;
+import com.mapz.api.user.presentation.dto.response.GoogleIdTokenResponse;
+import com.mapz.api.user.presentation.dto.response.MyPageInfoResponse;
+import com.mapz.api.user.presentation.dto.response.TokenPairResponse;
+import com.mapz.domain.domains.usergroup.entity.UserGroup;
+import com.mapz.domain.domains.usergroup.repository.UserGroupRepository;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.data.domain.Slice;
@@ -41,11 +42,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
-import static com.cheocharm.MapZ.common.util.PagingUtils.applyCursorId;
-import static com.cheocharm.MapZ.common.util.PagingUtils.applyDescPageConfigBy;
-import static com.cheocharm.MapZ.common.util.PagingUtils.FIELD_CREATED_AT;
-import static com.cheocharm.MapZ.common.util.PagingUtils.USER_SIZE;
-import static com.cheocharm.MapZ.user.domain.User.createUserNoPassword;
+import static com.mapz.domain.domains.user.entity.User.createUserNoPassword;
 
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -211,8 +208,8 @@ public class UserService {
         Slice<User> content = userRepository.fetchByUserAndSearchName(
                 UserThreadLocal.get(),
                 searchName,
-                applyCursorId(cursorId),
-                applyDescPageConfigBy(page, USER_SIZE, FIELD_CREATED_AT)
+                PagingUtils.applyCursorId(cursorId),
+                PagingUtils.applyDescPageConfigBy(page, PagingUtils.USER_SIZE, PagingUtils.FIELD_CREATED_AT)
         );
 
         final List<User> userEntities = content.getContent();

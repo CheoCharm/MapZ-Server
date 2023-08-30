@@ -1,17 +1,17 @@
-package com.cheocharm.MapZ.like.application;
+package com.mapz.api.like.application;
 
-import com.cheocharm.MapZ.common.exception.diary.AlreadyLikedDiaryException;
-import com.cheocharm.MapZ.common.exception.diary.NotFoundDiaryException;
-import com.cheocharm.MapZ.common.interceptor.UserThreadLocal;
-import com.cheocharm.MapZ.diary.domain.Diary;
-import com.cheocharm.MapZ.like.domain.DiaryLike;
-import com.cheocharm.MapZ.like.presentation.dto.response.DiaryLikePeopleResponse;
-import com.cheocharm.MapZ.like.presentation.dto.request.LikeDiaryRequest;
-import com.cheocharm.MapZ.like.presentation.dto.response.MyLikeDiaryResponse;
-import com.cheocharm.MapZ.like.domain.repository.DiaryLikeRepository;
-import com.cheocharm.MapZ.diary.domain.repository.DiaryRepository;
-import com.cheocharm.MapZ.diary.domain.repository.vo.MyLikeDiaryVO;
-import com.cheocharm.MapZ.user.domain.User;
+import com.mapz.api.common.exception.diary.AlreadyLikedDiaryException;
+import com.mapz.api.common.exception.diary.NotFoundDiaryException;
+import com.mapz.api.common.interceptor.UserThreadLocal;
+import com.mapz.domain.domains.diary.entity.Diary;
+import com.mapz.domain.domains.like.entity.DiaryLike;
+import com.mapz.api.like.presentation.dto.response.DiaryLikePeopleResponse;
+import com.mapz.api.like.presentation.dto.request.LikeDiaryRequest;
+import com.mapz.api.like.presentation.dto.response.MyLikeDiaryResponse;
+import com.mapz.domain.domains.like.repository.DiaryLikeRepository;
+import com.mapz.domain.domains.diary.repository.DiaryRepository;
+import com.mapz.domain.domains.diary.vo.MyLikeDiaryVO;
+import com.mapz.domain.domains.user.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
@@ -19,10 +19,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-import static com.cheocharm.MapZ.common.util.PagingUtils.FIELD_CREATED_AT;
-import static com.cheocharm.MapZ.common.util.PagingUtils.MY_LIKE_DIARY_SIZE;
-import static com.cheocharm.MapZ.common.util.PagingUtils.applyCursorId;
-import static com.cheocharm.MapZ.common.util.PagingUtils.applyDescPageConfigBy;
+import static com.mapz.api.common.util.PagingUtils.FIELD_CREATED_AT;
+import static com.mapz.api.common.util.PagingUtils.MY_LIKE_DIARY_SIZE;
+import static com.mapz.api.common.util.PagingUtils.applyCursorId;
+import static com.mapz.api.common.util.PagingUtils.applyDescPageConfigBy;
 
 @RequiredArgsConstructor
 @Service

@@ -1,46 +1,46 @@
-package com.cheocharm.MapZ.group.application;
+package com.mapz.api.group.application;
 
-import com.cheocharm.MapZ.comment.domain.repository.CommentRepository;
-import com.cheocharm.MapZ.common.exception.group.DuplicatedGroupException;
-import com.cheocharm.MapZ.common.exception.group.NotFoundGroupException;
-import com.cheocharm.MapZ.common.exception.user.ExitGroupChiefException;
-import com.cheocharm.MapZ.common.exception.user.NoPermissionUserException;
-import com.cheocharm.MapZ.common.exception.user.NotFoundUserException;
-import com.cheocharm.MapZ.common.exception.usergroup.GroupMemberSizeExceedException;
-import com.cheocharm.MapZ.common.exception.usergroup.NotFoundUserGroupException;
-import com.cheocharm.MapZ.common.exception.usergroup.SelfKickException;
-import com.cheocharm.MapZ.common.image.ImageHandler;
-import com.cheocharm.MapZ.common.image.ImageDirectory;
-import com.cheocharm.MapZ.common.interceptor.UserThreadLocal;
-import com.cheocharm.MapZ.diary.domain.Diary;
-import com.cheocharm.MapZ.diary.domain.repository.DiaryImageRepository;
-import com.cheocharm.MapZ.group.domain.Group;
-import com.cheocharm.MapZ.group.domain.GroupLimit;
-import com.cheocharm.MapZ.group.presentation.dto.request.AcceptInvitationRequest;
-import com.cheocharm.MapZ.group.presentation.dto.response.MyInvitationResponse;
-import com.cheocharm.MapZ.like.domain.repository.DiaryLikeRepository;
-import com.cheocharm.MapZ.diary.domain.repository.DiaryRepository;
-import com.cheocharm.MapZ.group.domain.repository.GroupRepository;
-import com.cheocharm.MapZ.group.presentation.dto.request.ChangeChiefRequest;
-import com.cheocharm.MapZ.group.presentation.dto.request.UpdateGroupRequest;
-import com.cheocharm.MapZ.group.presentation.dto.request.UpdateInvitationStatusRequest;
-import com.cheocharm.MapZ.group.presentation.dto.request.CreateGroupRequest;
-import com.cheocharm.MapZ.group.presentation.dto.request.ExitGroupRequest;
-import com.cheocharm.MapZ.group.presentation.dto.request.InviteGroupRequest;
-import com.cheocharm.MapZ.group.presentation.dto.request.JoinGroupRequest;
-import com.cheocharm.MapZ.group.presentation.dto.response.GetMyGroupResponse;
-import com.cheocharm.MapZ.group.presentation.dto.response.GroupMemberResponse;
-import com.cheocharm.MapZ.group.presentation.dto.response.JoinGroupResultResponse;
-import com.cheocharm.MapZ.group.presentation.dto.response.PagingGroupListResponse;
-import com.cheocharm.MapZ.user.domain.User;
-import com.cheocharm.MapZ.user.domain.repository.UserRepository;
-import com.cheocharm.MapZ.usergroup.domain.InvitationStatus;
-import com.cheocharm.MapZ.usergroup.domain.UserGroup;
-import com.cheocharm.MapZ.usergroup.domain.UserRole;
-import com.cheocharm.MapZ.usergroup.domain.repository.UserGroupRepository;
-import com.cheocharm.MapZ.usergroup.domain.repository.vo.ChiefUserImageVO;
-import com.cheocharm.MapZ.usergroup.domain.repository.vo.CountUserGroupVO;
-import com.cheocharm.MapZ.usergroup.domain.repository.vo.MyInvitationVO;
+import com.mapz.api.common.exception.user.NotFoundUserException;
+import com.mapz.domain.domains.comment.repository.CommentRepository;
+import com.mapz.api.common.exception.group.DuplicatedGroupException;
+import com.mapz.api.common.exception.group.NotFoundGroupException;
+import com.mapz.api.common.exception.user.ExitGroupChiefException;
+import com.mapz.api.common.exception.user.NoPermissionUserException;
+import com.mapz.api.common.exception.usergroup.GroupMemberSizeExceedException;
+import com.mapz.api.common.exception.usergroup.NotFoundUserGroupException;
+import com.mapz.api.common.exception.usergroup.SelfKickException;
+import com.mapz.api.common.image.ImageHandler;
+import com.mapz.api.common.image.ImageDirectory;
+import com.mapz.api.common.interceptor.UserThreadLocal;
+import com.mapz.domain.domains.diary.entity.Diary;
+import com.mapz.domain.domains.diary.repository.DiaryImageRepository;
+import com.mapz.domain.domains.group.entity.Group;
+import com.mapz.api.group.domain.GroupLimit;
+import com.mapz.api.group.presentation.dto.request.AcceptInvitationRequest;
+import com.mapz.api.group.presentation.dto.response.MyInvitationResponse;
+import com.mapz.domain.domains.like.repository.DiaryLikeRepository;
+import com.mapz.domain.domains.diary.repository.DiaryRepository;
+import com.mapz.domain.domains.group.repository.GroupRepository;
+import com.mapz.api.group.presentation.dto.request.ChangeChiefRequest;
+import com.mapz.api.group.presentation.dto.request.UpdateGroupRequest;
+import com.mapz.api.group.presentation.dto.request.UpdateInvitationStatusRequest;
+import com.mapz.api.group.presentation.dto.request.CreateGroupRequest;
+import com.mapz.api.group.presentation.dto.request.ExitGroupRequest;
+import com.mapz.api.group.presentation.dto.request.InviteGroupRequest;
+import com.mapz.api.group.presentation.dto.request.JoinGroupRequest;
+import com.mapz.api.group.presentation.dto.response.GetMyGroupResponse;
+import com.mapz.api.group.presentation.dto.response.GroupMemberResponse;
+import com.mapz.api.group.presentation.dto.response.JoinGroupResultResponse;
+import com.mapz.api.group.presentation.dto.response.PagingGroupListResponse;
+import com.mapz.domain.domains.user.entity.User;
+import com.mapz.domain.domains.user.repository.UserRepository;
+import com.mapz.domain.domains.usergroup.enums.InvitationStatus;
+import com.mapz.domain.domains.usergroup.entity.UserGroup;
+import com.mapz.domain.domains.usergroup.enums.UserRole;
+import com.mapz.domain.domains.usergroup.repository.UserGroupRepository;
+import com.mapz.domain.domains.usergroup.vo.ChiefUserImageVO;
+import com.mapz.domain.domains.usergroup.vo.CountUserGroupVO;
+import com.mapz.domain.domains.usergroup.vo.MyInvitationVO;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.data.domain.Slice;
@@ -51,11 +51,11 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 import java.util.Objects;
 
-import static com.cheocharm.MapZ.common.util.PagingUtils.MY_INVITATION_SIZE;
-import static com.cheocharm.MapZ.common.util.PagingUtils.applyCursorId;
-import static com.cheocharm.MapZ.common.util.PagingUtils.applyDescPageConfigBy;
-import static com.cheocharm.MapZ.common.util.PagingUtils.FIELD_CREATED_AT;
-import static com.cheocharm.MapZ.common.util.PagingUtils.GROUP_SIZE;
+import static com.mapz.api.common.util.PagingUtils.MY_INVITATION_SIZE;
+import static com.mapz.api.common.util.PagingUtils.applyCursorId;
+import static com.mapz.api.common.util.PagingUtils.applyDescPageConfigBy;
+import static com.mapz.api.common.util.PagingUtils.FIELD_CREATED_AT;
+import static com.mapz.api.common.util.PagingUtils.GROUP_SIZE;
 
 @RequiredArgsConstructor
 @Service
@@ -119,7 +119,7 @@ public class GroupService {
         checkDuplicateGroupName(request.getGroupName().trim());
         updateGroupImage(multipartFile, group);
 
-        group.updateGroupInfo(request);
+        group.updateGroupInfo(request.getGroupName(), request.getBio(), request.getIsOpenGroup());
     }
 
     @Transactional
