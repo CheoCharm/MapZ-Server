@@ -24,7 +24,7 @@ jobs:
       - name: Set up YML
         uses: microsoft/variable-substitution@v1
         with:
-          files: ./src/main/resources/application.yml
+          files: ./Api/src/main/resources/application.yml
         env: 
           jwt.secret: ${{ secrets.JWT_KEY }}
           springdoc.swagger-ui.path: ${{ secrets.DOCS_PATH }}
