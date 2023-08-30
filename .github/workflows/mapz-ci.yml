@@ -48,7 +48,7 @@ jobs:
         uses: EnricoMi/publish-unit-test-result-action@v1
         if: ${{ always() }}
         with:
-          files: build/test-results/**/*.xml
+          files: Api/build/test-results/**/*.xml
           
       - name: Cache Gradle packages
         uses: actions/cache@v1
