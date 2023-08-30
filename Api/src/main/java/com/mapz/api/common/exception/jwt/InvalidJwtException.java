@@ -1,7 +1,7 @@
-package com.cheocharm.MapZ.common.exception.jwt;
+package com.mapz.api.common.exception.jwt;
 
-import com.cheocharm.MapZ.common.exception.CustomException;
-import com.cheocharm.MapZ.common.exception.ExceptionDetails;
+import com.mapz.api.common.exception.CustomException;
+import com.mapz.api.common.exception.ExceptionDetails;
 
 public class InvalidJwtException extends CustomException {
     public InvalidJwtException(Throwable cause) {

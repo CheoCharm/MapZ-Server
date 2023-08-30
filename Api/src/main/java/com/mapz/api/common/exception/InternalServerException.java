@@ -1,4 +1,4 @@
-package com.cheocharm.MapZ.common.exception;
+package com.mapz.api.common.exception;
 
 public class InternalServerException extends CustomException {
     public InternalServerException() {

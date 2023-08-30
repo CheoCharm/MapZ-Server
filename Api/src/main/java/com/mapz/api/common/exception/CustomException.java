@@ -1,4 +1,4 @@
-package com.cheocharm.MapZ.common.exception;
+package com.mapz.api.common.exception;
 
 import lombok.Getter;
 import org.springframework.http.HttpStatus;

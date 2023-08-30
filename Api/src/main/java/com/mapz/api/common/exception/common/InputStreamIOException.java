@@ -1,7 +1,7 @@
-package com.cheocharm.MapZ.common.exception.common;
+package com.mapz.api.common.exception.common;
 
-import com.cheocharm.MapZ.common.exception.CustomException;
-import com.cheocharm.MapZ.common.exception.ExceptionDetails;
+import com.mapz.api.common.exception.CustomException;
+import com.mapz.api.common.exception.ExceptionDetails;
 
 public class InputStreamIOException extends CustomException {
     public InputStreamIOException(Throwable cause) {
