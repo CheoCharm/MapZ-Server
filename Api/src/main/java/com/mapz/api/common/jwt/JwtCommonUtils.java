@@ -1,8 +1,8 @@
-package com.cheocharm.MapZ.common.jwt;
+package com.mapz.api.common.jwt;
 
-import com.cheocharm.MapZ.user.domain.User;
-import com.cheocharm.MapZ.user.domain.UserProvider;
-import com.cheocharm.MapZ.user.domain.repository.UserRepository;
+import com.mapz.domain.domains.user.entity.User;
+import com.mapz.domain.domains.user.enums.UserProvider;
+import com.mapz.domain.domains.user.repository.UserRepository;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;

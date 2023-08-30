@@ -1,7 +1,7 @@
-package com.cheocharm.MapZ.common.jwt;
+package com.mapz.api.common.jwt;
 
-import com.cheocharm.MapZ.common.exception.jwt.InvalidJwtException;
-import com.cheocharm.MapZ.common.exception.jwt.JwtExpiredException;
+import com.mapz.api.common.exception.jwt.InvalidJwtException;
+import com.mapz.api.common.exception.jwt.JwtExpiredException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;

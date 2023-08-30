@@ -1,9 +1,9 @@
-package com.cheocharm.MapZ.common.jwt;
+package com.mapz.api.common.jwt;
 
-import com.cheocharm.MapZ.common.exception.jwt.InvalidJwtException;
-import com.cheocharm.MapZ.user.domain.User;
-import com.cheocharm.MapZ.user.domain.UserProvider;
-import com.cheocharm.MapZ.user.presentation.dto.response.TokenPairResponse;
+import com.mapz.api.common.exception.jwt.InvalidJwtException;
+import com.mapz.api.user.presentation.dto.response.TokenPairResponse;
+import com.mapz.domain.domains.user.entity.User;
+import com.mapz.domain.domains.user.enums.UserProvider;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
