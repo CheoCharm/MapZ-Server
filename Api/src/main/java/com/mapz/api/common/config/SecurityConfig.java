@@ -1,7 +1,7 @@
-package com.cheocharm.MapZ.common.config;
+package com.mapz.api.common.config;
 
-import com.cheocharm.MapZ.common.jwt.JwtAuthenticationFilter;
-import com.cheocharm.MapZ.common.jwt.JwtAuthenticationUtils;
+import com.mapz.api.common.jwt.JwtAuthenticationFilter;
+import com.mapz.api.common.jwt.JwtAuthenticationUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

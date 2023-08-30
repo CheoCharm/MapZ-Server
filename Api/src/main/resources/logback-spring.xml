@@ -13,13 +13,13 @@
         <root level="WARN">
             <appender-ref ref="CONSOLE"/>
         </root>
-        <logger name="com.cheocharm.MapZ" level="DEBUG" additivity="false">
+        <logger name="com.mapz.api" level="DEBUG" additivity="false">
             <appender-ref ref="CONSOLE"/>
         </logger>
     </springProfile>
 
     <springProfile name="prod">
-        <logger name="com.cheocharm.MapZ" level="INFO" additivity="false">
+        <logger name="com.mapz.api" level="INFO" additivity="false">
             <appender-ref ref="CONSOLE"/>
         </logger>
     </springProfile>
