@@ -1,0 +1,102 @@
+plugins {
+    id 'java'
+}
+
+group 'com.cheocharm'
+version '0.0.1-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springframework.boot:spring-boot-starter-mail'
+    implementation 'org.springframework.cloud:spring-cloud-starter-aws:2.2.6.RELEASE'
+    implementation 'org.springdoc:springdoc-openapi-ui:1.6.9'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation project(':Domain')
+
+    implementation group: 'io.jsonwebtoken', name: 'jjwt-api', version: '0.11.2'
+    runtimeOnly group: 'io.jsonwebtoken', name: 'jjwt-impl', version: '0.11.2'
+    runtimeOnly group: 'io.jsonwebtoken', name: 'jjwt-jackson', version: '0.11.2'
+
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'
+
+    //for health check
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+
+    //jeasy
+    testImplementation group: 'org.jeasy', name: 'easy-random-core', version: '5.0.0'
+
+    //mockito inline
+    testImplementation group: 'org.mockito', name: 'mockito-inline', version: '5.2.0'
+
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+jacocoTestCoverageVerification {
+    def QDomains = []
+    for (qPattern in '*.QA'..'*.QZ') {
+        QDomains.add(qPattern + '*')
+    }
+
+    violationRules {
+        rule {
+            enabled = true
+            element = "CLASS"
+
+            // 모든 클래스 각각 라인 커버리지 10% 만족시 빌드 성공
+            limit {
+                counter = 'LINE'
+                value = 'COVEREDRATIO'
+                minimum = 0.6
+            }
+
+            excludes = [
+                    '*.*Application',
+                    '*.*Exception',
+                    '*.dto.*',
+                    '*.infrastructure.*',
+                    '*.common.*',
+                    '*.*.repository.vo.*',
+                    '*.BaseEntity',
+                    '*.ControllerAdvice',
+            ] + QDomains
+        }
+    }
+}
+jacocoTestReport {
+
+    dependsOn test
+
+    def Qdomains = []
+    for(qPattern in "**/QA" .. "**/QZ"){
+        Qdomains.add(qPattern+"*")
+    }
+
+
+    afterEvaluate {
+        classDirectories.setFrom(files(classDirectories.files.collect {
+            fileTree(dir: it, exclude: [
+                    "**/*request*",
+                    "**/*response*",
+                    "**/*vo*",
+                    "**/config/*",
+                    "**/*exception*"
+            ] + Qdomains)
+
+        }))
+    }
+    finalizedBy 'jacocoTestCoverageVerification'
+}
+
+tasks.named('jar') {
+    enabled = false
+}
