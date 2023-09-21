@@ -17,12 +17,12 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Component
-public class SlackService implements ExceptionAlert {
+public class SlackAlert implements ExceptionAlert {
 
     @Value("${webhook.slack.url}")
     private String SLACK_WEBHOOK_URL;
 
-    private final Logger logger = LoggerFactory.getLogger(SlackService.class);
+    private final Logger logger = LoggerFactory.getLogger(SlackAlert.class);
 
     private final Slack slackClient = Slack.getInstance();
     private static final String BASE_TEXT = "예외 발생";
