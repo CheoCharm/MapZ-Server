@@ -38,6 +38,9 @@ spring:
     multipart:
       max-file-size: 5MB
       max-request-size: 27MB
+  redis:
+    host: localhost
+    port: 6379
 
 logging:
   level:
@@ -47,3 +50,7 @@ logging:
           EC2MetadataUtils: error
 google:
   client-id: ${GOOGLE_CLIENT_ID}
+
+webhook:
+  slack:
+    url: ${WEBHOOK_SLACK_URL}
