@@ -1,5 +1,6 @@
-package com.mapz.api.common.log.slack;
+package com.mapz.api.common.log.alert.slack;
 
+import com.mapz.api.common.log.alert.ExceptionAlert;
 import com.slack.api.Slack;
 import com.slack.api.model.Attachment;
 import com.slack.api.model.Field;
@@ -16,7 +17,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Component
-public class SlackService {
+public class SlackService implements ExceptionAlert {
 
     @Value("${webhook.slack.url}")
     private String SLACK_WEBHOOK_URL;
@@ -34,6 +35,7 @@ public class SlackService {
 
     private static final String FAIL_MESSAGE = "슬랙 알림 전달 실패";
 
+    @Override
     @Async
     public void sendExceptionMessage(Exception exception, HttpServletRequest httpServletRequest) {
         try {
@@ -49,6 +51,7 @@ public class SlackService {
         }
     }
 
+    @Override
     @Async
     public void sendExceptionMessageWithCause(Exception exception, HttpServletRequest httpServletRequest, Throwable cause) {
         try {

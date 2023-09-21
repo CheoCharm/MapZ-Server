@@ -9,7 +9,7 @@ import com.mapz.api.common.exception.user.ExitGroupChiefException;
 import com.mapz.api.common.exception.user.NoPermissionUserException;
 import com.mapz.api.common.exception.usergroup.GroupMemberSizeExceedException;
 import com.mapz.api.common.exception.usergroup.SelfKickException;
-import com.mapz.api.common.log.slack.SlackService;
+import com.mapz.api.common.log.alert.ExceptionAlert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -28,10 +28,10 @@ import java.util.Objects;
 public class GlobalExceptionHandler {
 
     private final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
-    private final SlackService slackService;
+    private final ExceptionAlert exceptionAlert;
 
-    public GlobalExceptionHandler(SlackService slackService) {
-        this.slackService = slackService;
+    public GlobalExceptionHandler(ExceptionAlert exceptionAlert) {
+        this.exceptionAlert = exceptionAlert;
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
@@ -44,7 +44,7 @@ public class GlobalExceptionHandler {
             AlreadyReportedDiary.class
     })
     protected CommonResponse<?> handleBadRequest(CustomException exception, HttpServletRequest httpServletRequest) {
-        slackService.sendExceptionMessage(exception, httpServletRequest);
+        exceptionAlert.sendExceptionMessage(exception, httpServletRequest);
         return CommonResponse.fail(exception.getStatusCode(), exception.getCustomCode(), exception.getMessage());
     }
 
@@ -59,9 +59,9 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(CustomException.class)
     protected CommonResponse<?> handleCustomException(CustomException exception, HttpServletRequest httpServletRequest) {
         if (Objects.nonNull(exception.getCause())) {
-            slackService.sendExceptionMessageWithCause(exception, httpServletRequest, exception.getCause());
+            exceptionAlert.sendExceptionMessageWithCause(exception, httpServletRequest, exception.getCause());
         } else {
-            slackService.sendExceptionMessage(exception, httpServletRequest);
+            exceptionAlert.sendExceptionMessage(exception, httpServletRequest);
         }
         return CommonResponse.fail(exception.getStatusCode(), exception.getCustomCode(), exception.getMessage());
     }
@@ -98,14 +98,14 @@ public class GlobalExceptionHandler {
     protected CommonResponse<?> handleException(Exception exception, HttpServletRequest httpServletRequest) {
         ExceptionDetails exceptionDetails = ExceptionDetails.INTERNAL_SERVER_ERROR;
         logger.error("error message => {}", exception.getCause().toString());
-        slackService.sendExceptionMessageWithCause(exception, httpServletRequest, exception.getCause());
+        exceptionAlert.sendExceptionMessageWithCause(exception, httpServletRequest, exception.getCause());
         return CommonResponse.fail(exceptionDetails.getStatusCode(), exceptionDetails.getCustomCode(), exceptionDetails.getMessage());
     }
 
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
     @ExceptionHandler(JwtExpiredException.class)
     protected CommonResponse<?> handleJwtExpiredException(JwtExpiredException exception, HttpServletRequest httpServletRequest) {
-        slackService.sendExceptionMessage(exception, httpServletRequest);
+        exceptionAlert.sendExceptionMessage(exception, httpServletRequest);
         return CommonResponse.fail(exception.getStatusCode(), exception.getCustomCode(), exception.getMessage());
     }
 }
