@@ -10,7 +10,10 @@ import lombok.NoArgsConstructor;
 import javax.persistence.*;
 
 @Getter
-@Table(name = "User")
+@Table(name = "User", indexes = {
+        @Index(name = "idx_email", columnList = "email"),
+        @Index(name = "idx_username", columnList = "username")
+})
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
 public class User extends BaseEntity {
@@ -21,7 +24,6 @@ public class User extends BaseEntity {
 
     private String email;
 
-    @Column(unique = true)
     private String username;
 
     private String password;
