@@ -12,6 +12,7 @@ import com.mapz.api.common.exception.usergroup.SelfKickException;
 import com.mapz.api.common.log.alert.ExceptionAlert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -34,6 +35,9 @@ public class GlobalExceptionHandler {
         this.exceptionAlert = exceptionAlert;
     }
 
+    @Value("spring.config.activate.on-profile")
+    private String activeProfile;
+
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler({
             ExitGroupChiefException.class,
@@ -43,8 +47,7 @@ public class GlobalExceptionHandler {
             DuplicatedEmailException.class,
             AlreadyReportedDiary.class
     })
-    protected CommonResponse<?> handleBadRequest(CustomException exception, HttpServletRequest httpServletRequest) {
-        exceptionAlert.sendExceptionMessage(exception, httpServletRequest);
+    protected CommonResponse<?> handleBadRequest(CustomException exception) {
         return CommonResponse.fail(exception.getStatusCode(), exception.getCustomCode(), exception.getMessage());
     }
 
@@ -58,10 +61,8 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(CustomException.class)
     protected CommonResponse<?> handleCustomException(CustomException exception, HttpServletRequest httpServletRequest) {
-        if (Objects.nonNull(exception.getCause())) {
+        if (Objects.nonNull(exception.getCause()) && isActiveProfileProd()) {
             exceptionAlert.sendExceptionMessageWithCause(exception, httpServletRequest, exception.getCause());
-        } else {
-            exceptionAlert.sendExceptionMessage(exception, httpServletRequest);
         }
         return CommonResponse.fail(exception.getStatusCode(), exception.getCustomCode(), exception.getMessage());
     }
@@ -98,14 +99,19 @@ public class GlobalExceptionHandler {
     protected CommonResponse<?> handleException(Exception exception, HttpServletRequest httpServletRequest) {
         ExceptionDetails exceptionDetails = ExceptionDetails.INTERNAL_SERVER_ERROR;
         logger.error("error message => {}", exception.getCause().toString());
-        exceptionAlert.sendExceptionMessageWithCause(exception, httpServletRequest, exception.getCause());
+        if (isActiveProfileProd()) {
+            exceptionAlert.sendExceptionMessageWithCause(exception, httpServletRequest, exception.getCause());
+        }
         return CommonResponse.fail(exceptionDetails.getStatusCode(), exceptionDetails.getCustomCode(), exceptionDetails.getMessage());
     }
 
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
     @ExceptionHandler(JwtExpiredException.class)
-    protected CommonResponse<?> handleJwtExpiredException(JwtExpiredException exception, HttpServletRequest httpServletRequest) {
-        exceptionAlert.sendExceptionMessage(exception, httpServletRequest);
+    protected CommonResponse<?> handleJwtExpiredException(JwtExpiredException exception) {
         return CommonResponse.fail(exception.getStatusCode(), exception.getCustomCode(), exception.getMessage());
+    }
+
+    private boolean isActiveProfileProd() {
+        return activeProfile.equals("prod");
     }
 }
